@@ -3,401 +3,354 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>AyurMind AI v3 — Complete Ayurvedic Health Platform</title>
+<title>AyurMind AI v5 — Complete Ayurvedic Health Platform</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-:root {
-  --dg: #1A3A2A; --mg: #2D5A3D; --sg: #7A9E7E;
-  --gold: #C9973A; --gl: #E8C070; --cream: #F5F0E8;
-  --white: #FFFFFF; --text: #1C1C1C; --muted: #666;
-  --border: #D4C9B0; --light: #EEF5EE; --pale: #FFF8EC;
-  --vata: #5B8FA8; --pitta: #D4693A; --kapha: #4A7C5E;
-  --red: #C0392B; --orange: #E67E22; --green: #27AE60;
+:root{
+  --dg:#1A3A2A;--mg:#2D5A3D;--sg:#7A9E7E;
+  --gold:#C9973A;--gl:#E8C070;--cream:#F7F2EA;
+  --white:#FFFFFF;--text:#1A1A1A;--muted:#5A5A5A;
+  --border:#DDD5C0;--light:#EEF5EE;--pale:#FFF8EC;
+  --vata:#4A7EA0;--pitta:#C85A28;--kapha:#3D7050;
+  --red:#B83030;--orange:#D06A10;--green:#238B45;
+  --shadow-sm:0 1px 4px rgba(0,0,0,.06);
+  --shadow-md:0 4px 16px rgba(0,0,0,.08);
+  --shadow-lg:0 8px 32px rgba(0,0,0,.12);
+  --radius-sm:8px;--radius-md:14px;--radius-lg:20px;
+  --transition:.22s ease;
 }
 *{margin:0;padding:0;box-sizing:border-box;}
-html{scroll-behavior:smooth;}
-body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text);min-height:100vh;overflow-x:hidden;}
-
-/* ═══ SCREENS ═══ */
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%;}
+body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text);min-height:100vh;overflow-x:hidden;-webkit-font-smoothing:antialiased;}
 .screen{display:none;min-height:100vh;flex-direction:column;}
 .screen.active{display:flex;}
-
-/* ═══ HEADER ═══ */
-.hdr{background:var(--dg);padding:13px 18px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:200;box-shadow:0 2px 16px rgba(0,0,0,0.25);}
-.logo{font-family:'Playfair Display',serif;font-size:19px;font-weight:700;color:#fff;letter-spacing:.3px;}
+.hdr{background:var(--dg);padding:14px 18px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:200;box-shadow:0 2px 12px rgba(0,0,0,.3);}
+.logo{font-family:'Playfair Display',serif;font-size:20px;font-weight:700;color:#fff;letter-spacing:.2px;}
 .logo span{color:var(--gl);}
-.logo sub{font-size:9px;color:var(--sg);vertical-align:super;font-family:'DM Mono',monospace;font-weight:500;margin-left:2px;}
+.logo sub{font-size:9px;color:var(--sg);vertical-align:super;font-family:'DM Mono',monospace;margin-left:3px;}
 .hdr-right{display:flex;align-items:center;gap:8px;}
-.lang-btn{background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:#fff;font-size:11px;font-weight:600;padding:5px 10px;border-radius:20px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;}
+.lang-btn{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#fff;font-size:11px;font-weight:600;padding:5px 11px;border-radius:20px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:var(--transition);}
 .lang-btn:hover{background:var(--gold);color:var(--dg);border-color:var(--gold);}
-.mode-toggle{display:flex;background:rgba(255,255,255,0.08);border-radius:20px;overflow:hidden;border:1px solid rgba(255,255,255,0.15);}
-.mode-btn{padding:5px 12px;font-size:10px;font-weight:600;cursor:pointer;color:rgba(255,255,255,0.6);background:transparent;border:none;font-family:'DM Sans',sans-serif;transition:all .2s;letter-spacing:.5px;}
+.mode-toggle{display:flex;background:rgba(255,255,255,.08);border-radius:20px;overflow:hidden;border:1px solid rgba(255,255,255,.15);}
+.mode-btn{padding:5px 12px;font-size:10px;font-weight:700;cursor:pointer;color:rgba(255,255,255,.55);background:transparent;border:none;font-family:'DM Sans',sans-serif;transition:var(--transition);letter-spacing:.6px;text-transform:uppercase;}
 .mode-btn.active{background:var(--gold);color:var(--dg);}
-
-/* ═══ BOTTOM NAV ═══ */
-.bnav{position:fixed;bottom:0;left:0;right:0;background:var(--dg);display:flex;z-index:200;border-top:1px solid rgba(255,255,255,0.1);padding-bottom:env(safe-area-inset-bottom);}
-.bnav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px 4px;cursor:pointer;color:rgba(255,255,255,0.45);font-size:9px;font-weight:600;letter-spacing:.5px;transition:all .2s;gap:3px;border:none;background:transparent;font-family:'DM Sans',sans-serif;}
-.bnav-item .ni{font-size:19px;line-height:1;}
+.bnav{position:fixed;bottom:0;left:0;right:0;background:var(--dg);display:flex;z-index:200;border-top:1px solid rgba(255,255,255,.12);padding-bottom:env(safe-area-inset-bottom);box-shadow:0 -2px 16px rgba(0,0,0,.25);}
+.bnav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:9px 3px 7px;cursor:pointer;color:rgba(255,255,255,.4);font-size:8.5px;font-weight:700;letter-spacing:.4px;transition:var(--transition);gap:3px;border:none;background:transparent;font-family:'DM Sans',sans-serif;text-transform:uppercase;min-width:48px;}
+.bnav-item .ni{font-size:18px;line-height:1;transition:transform .2s;}
 .bnav-item.active{color:var(--gl);}
-.bnav-item:hover{color:var(--sg);}
-
-/* ═══ PAGE CONTENT (above bottom nav) ═══ */
-.page-body{flex:1;padding:20px 18px 90px;overflow-y:auto;}
-.page-title{font-family:'Playfair Display',serif;font-size:24px;font-weight:700;color:var(--dg);margin-bottom:4px;}
-.page-sub{font-size:13px;color:var(--muted);margin-bottom:22px;}
+.bnav-item.active .ni{transform:translateY(-2px);}
+.bnav-item:active .ni{transform:scale(.88);}
+.page-body{flex:1;padding:20px 16px 96px;overflow-y:auto;}
+.page-title{font-family:'Playfair Display',serif;font-size:26px;font-weight:700;color:var(--dg);margin-bottom:4px;line-height:1.2;}
+.page-sub{font-size:13px;color:var(--muted);margin-bottom:20px;line-height:1.6;}
 .section-label{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--sg);margin-bottom:8px;}
-
-/* ═══ CARDS ═══ */
-.card{background:var(--white);border:1px solid var(--border);border-radius:16px;padding:18px;margin-bottom:14px;box-shadow:0 2px 12px rgba(0,0,0,0.04);}
-.card-title{font-family:'Playfair Display',serif;font-size:16px;font-weight:700;color:var(--dg);margin-bottom:10px;display:flex;align-items:center;gap:8px;}
-.card-title .ci{font-size:18px;}
-
-/* ═══ BUTTONS ═══ */
-.btn{border:none;border-radius:12px;padding:13px 22px;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;display:inline-flex;align-items:center;justify-content:center;gap:8px;}
-.btn-gold{background:linear-gradient(135deg,var(--gold),#B8832A);color:var(--dg);box-shadow:0 4px 16px rgba(201,151,58,0.35);}
-.btn-gold:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(201,151,58,0.45);}
-.btn-green{background:var(--dg);color:#fff;}
+.card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius-md);padding:18px;margin-bottom:14px;box-shadow:var(--shadow-sm);}
+.card-title{font-family:'Playfair Display',serif;font-size:16px;font-weight:700;color:var(--dg);margin-bottom:12px;display:flex;align-items:center;gap:9px;}
+.card-title .ci{font-size:20px;}
+.btn{border:none;border-radius:var(--radius-sm);padding:13px 22px;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:var(--transition);display:inline-flex;align-items:center;justify-content:center;gap:8px;letter-spacing:.2px;}
+.btn-gold{background:linear-gradient(135deg,var(--gold),#A8721E);color:#fff;box-shadow:0 4px 14px rgba(201,151,58,.4);}
+.btn-gold:hover{transform:translateY(-2px);box-shadow:0 7px 22px rgba(201,151,58,.5);}
+.btn-gold:active{transform:translateY(0);}
+.btn-green{background:var(--dg);color:#fff;box-shadow:var(--shadow-sm);}
 .btn-green:hover{background:var(--mg);}
-.btn-outline{background:transparent;border:2px solid var(--border);color:var(--muted);}
+.btn-outline{background:transparent;border:1.5px solid var(--border);color:var(--muted);}
 .btn-outline:hover{border-color:var(--sg);color:var(--dg);}
 .btn-full{width:100%;}
-.btn-sm{padding:8px 14px;font-size:12px;border-radius:8px;}
-
-/* ═══ TABS ═══ */
-.tabs{display:flex;gap:8px;margin-bottom:18px;overflow-x:auto;padding-bottom:4px;}
+.btn-sm{padding:8px 14px;font-size:12px;border-radius:6px;}
+.tabs{display:flex;gap:7px;margin-bottom:18px;overflow-x:auto;padding-bottom:4px;}
 .tabs::-webkit-scrollbar{display:none;}
-.tab{padding:7px 16px;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;border:2px solid var(--border);background:var(--white);color:var(--muted);transition:all .2s;font-family:'DM Sans',sans-serif;}
+.tab{padding:7px 15px;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;border:1.5px solid var(--border);background:var(--white);color:var(--muted);transition:var(--transition);font-family:'DM Sans',sans-serif;}
 .tab.active{background:var(--dg);color:var(--gl);border-color:var(--dg);}
-
-/* ═══ PILLS / TAGS ═══ */
-.pill{display:inline-block;padding:3px 10px;border-radius:20px;font-size:10px;font-weight:700;letter-spacing:.5px;}
-.pill-green{background:#EEF5EE;color:var(--mg);}
-.pill-gold{background:var(--pale);color:#8B5A00;}
-.pill-red{background:#FEF0EE;color:var(--red);}
-.pill-blue{background:#EEF4F8;color:#2D5A8B;}
-
-/* ═══ WELCOME SCREEN ═══ */
-#s-welcome{background:linear-gradient(160deg,var(--dg) 0%,#0D2418 55%,#1A4A2A 100%);}
-.welcome-body{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px;text-align:center;position:relative;overflow:hidden;}
-.welcome-body::before{content:'';position:absolute;width:380px;height:380px;border-radius:50%;background:radial-gradient(circle,rgba(201,151,58,.12) 0%,transparent 70%);top:-100px;right:-80px;}
-.welcome-body::after{content:'';position:absolute;width:280px;height:280px;border-radius:50%;background:radial-gradient(circle,rgba(122,158,126,.1) 0%,transparent 70%);bottom:-60px;left:-60px;}
-.hero-icon{font-size:68px;margin-bottom:18px;position:relative;z-index:1;animation:float 3s ease-in-out infinite;}
+.pill{display:inline-block;padding:3px 10px;border-radius:20px;font-size:10px;font-weight:700;letter-spacing:.4px;}
+.pill-green{background:#EBF5EC;color:#1F6B30;}
+.pill-gold{background:var(--pale);color:#7A4E00;}
+.pill-red{background:#FEF0EE;color:#992222;}
+.pill-blue{background:#EEF4FA;color:#1F4E8B;}
+#s-welcome{background:linear-gradient(160deg,#102018 0%,#1A3A2A 45%,#0E2A1A 100%);}
+.welcome-body{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 22px;text-align:center;position:relative;overflow:hidden;}
+.welcome-body::before{content:'';position:absolute;width:420px;height:420px;border-radius:50%;background:radial-gradient(circle,rgba(201,151,58,.1) 0%,transparent 65%);top:-110px;right:-90px;pointer-events:none;}
+.welcome-body::after{content:'';position:absolute;width:300px;height:300px;border-radius:50%;background:radial-gradient(circle,rgba(122,158,126,.08) 0%,transparent 65%);bottom:-70px;left:-70px;pointer-events:none;}
+.hero-icon{font-size:64px;margin-bottom:16px;position:relative;z-index:1;animation:float 3.5s ease-in-out infinite;}
 @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
-.hero-title{font-family:'Playfair Display',serif;font-size:38px;font-weight:900;color:#fff;line-height:1.15;margin-bottom:10px;position:relative;z-index:1;}
+.hero-title{font-family:'Playfair Display',serif;font-size:40px;font-weight:900;color:#fff;line-height:1.12;margin-bottom:12px;position:relative;z-index:1;}
 .hero-title span{color:var(--gl);}
-.hero-sub{font-size:14px;color:rgba(255,255,255,.68);max-width:320px;line-height:1.7;margin-bottom:28px;position:relative;z-index:1;}
-.hero-stats{display:flex;gap:12px;margin-bottom:28px;position:relative;z-index:1;flex-wrap:wrap;justify-content:center;}
-.hstat{text-align:center;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);border-radius:12px;padding:10px 14px;}
+.hero-sub{font-size:14px;color:rgba(255,255,255,.65);max-width:300px;line-height:1.75;margin-bottom:26px;position:relative;z-index:1;}
+.hero-stats{display:flex;gap:10px;margin-bottom:26px;position:relative;z-index:1;flex-wrap:wrap;justify-content:center;}
+.hstat{text-align:center;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:10px 14px;min-width:68px;}
 .hstat-n{font-family:'Playfair Display',serif;font-size:20px;font-weight:700;color:var(--gl);}
-.hstat-l{font-size:9px;color:rgba(255,255,255,.55);margin-top:2px;}
-.mode-select{display:flex;gap:10px;margin-bottom:20px;position:relative;z-index:1;}
-.mcard{flex:1;background:rgba(255,255,255,.08);border:2px solid rgba(255,255,255,.15);border-radius:14px;padding:16px 12px;cursor:pointer;text-align:center;transition:all .25s;}
-.mcard:hover,.mcard.chosen{background:rgba(201,151,58,.2);border-color:var(--gold);}
-.mcard .me{font-size:28px;margin-bottom:8px;}
-.mcard h4{font-size:13px;font-weight:700;color:#fff;margin-bottom:4px;}
-.mcard p{font-size:11px;color:rgba(255,255,255,.55);}
-.welcome-footer{background:rgba(255,255,255,.04);border-top:1px solid rgba(255,255,255,.08);padding:12px 20px;text-align:center;font-size:10px;color:rgba(255,255,255,.35);font-style:italic;}
-
-/* ═══ HOME SCREEN ═══ */
-.dosha-banner{border-radius:16px;padding:18px 20px;margin-bottom:18px;display:flex;align-items:center;justify-content:space-between;position:relative;overflow:hidden;}
-.dosha-banner.vata{background:linear-gradient(135deg,#1A2D3A,#2D4A5E);}
-.dosha-banner.pitta{background:linear-gradient(135deg,#3A1A0D,#5E3420);}
-.dosha-banner.kapha{background:linear-gradient(135deg,#0D3A1A,#1A5E2D);}
-.dosha-banner.none{background:linear-gradient(135deg,var(--dg),var(--mg));}
-.db-left h3{font-family:'Playfair Display',serif;font-size:20px;color:#fff;margin-bottom:3px;}
-.db-left p{font-size:11px;color:rgba(255,255,255,.65);}
-.db-emoji{font-size:42px;opacity:.85;}
-.quick-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:18px;}
-.qcard{background:var(--white);border:1px solid var(--border);border-radius:14px;padding:16px 14px;cursor:pointer;transition:all .22s;text-align:center;}
-.qcard:hover{transform:translateY(-3px);box-shadow:0 8px 24px rgba(0,0,0,.09);border-color:var(--sg);}
-.qcard .qe{font-size:30px;margin-bottom:8px;}
-.qcard h4{font-size:13px;font-weight:700;color:var(--dg);margin-bottom:3px;}
-.qcard p{font-size:11px;color:var(--muted);}
-.doctor-banner{background:var(--dg);border-radius:14px;padding:16px 18px;display:flex;align-items:center;gap:14px;margin-bottom:14px;cursor:pointer;transition:all .2s;}
-.doctor-banner:hover{background:var(--mg);}
-.doctor-banner .de{font-size:32px;}
+.hstat-l{font-size:9px;color:rgba(255,255,255,.5);margin-top:2px;letter-spacing:.3px;}
+.mode-select{display:flex;gap:10px;margin-bottom:20px;position:relative;z-index:1;width:100%;max-width:340px;}
+.mcard{flex:1;background:rgba(255,255,255,.06);border:1.5px solid rgba(255,255,255,.12);border-radius:var(--radius-md);padding:16px 10px;cursor:pointer;text-align:center;transition:var(--transition);}
+.mcard:hover,.mcard.chosen{background:rgba(201,151,58,.18);border-color:var(--gold);transform:translateY(-2px);}
+.mcard .me{font-size:26px;margin-bottom:8px;}
+.mcard h4{font-size:13px;font-weight:700;color:#fff;margin-bottom:3px;}
+.mcard p{font-size:10px;color:rgba(255,255,255,.5);}
+.welcome-footer{background:rgba(0,0,0,.15);border-top:1px solid rgba(255,255,255,.06);padding:12px 20px;text-align:center;font-size:9.5px;color:rgba(255,255,255,.3);font-style:italic;line-height:1.5;}
+.dosha-banner{border-radius:var(--radius-md);padding:18px 20px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;position:relative;overflow:hidden;box-shadow:var(--shadow-md);}
+.dosha-banner.vata{background:linear-gradient(135deg,#1A2D3A,#2A4560);}
+.dosha-banner.pitta{background:linear-gradient(135deg,#3A1A0D,#5E3010);}
+.dosha-banner.kapha{background:linear-gradient(135deg,#0D3A1A,#185A2A);}
+.dosha-banner.none{background:linear-gradient(135deg,var(--dg),#2A5A40);}
+.db-left h3{font-family:'Playfair Display',serif;font-size:21px;color:#fff;margin-bottom:3px;}
+.db-left p{font-size:11px;color:rgba(255,255,255,.6);}
+.db-emoji{font-size:40px;opacity:.9;}
+.quick-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px;}
+.qcard{background:var(--white);border:1px solid var(--border);border-radius:var(--radius-md);padding:14px 10px;cursor:pointer;transition:var(--transition);text-align:center;box-shadow:var(--shadow-sm);}
+.qcard:hover{transform:translateY(-3px);box-shadow:var(--shadow-md);border-color:var(--sg);}
+.qcard:active{transform:translateY(0);}
+.qcard .qe{font-size:26px;margin-bottom:7px;}
+.qcard h4{font-size:12px;font-weight:700;color:var(--dg);margin-bottom:2px;}
+.qcard p{font-size:10px;color:var(--muted);}
+.doctor-banner{background:linear-gradient(135deg,var(--dg),#234A35);border-radius:var(--radius-md);padding:14px 18px;display:flex;align-items:center;gap:14px;margin-bottom:12px;cursor:pointer;transition:var(--transition);box-shadow:var(--shadow-sm);}
+.doctor-banner:hover{transform:translateY(-2px);box-shadow:var(--shadow-md);}
+.doctor-banner .de{font-size:30px;}
 .doctor-banner div h4{font-size:14px;font-weight:700;color:var(--gl);}
-.doctor-banner div p{font-size:11px;color:rgba(255,255,255,.65);}
-
-/* ═══ QUIZ SCREEN ═══ */
+.doctor-banner div p{font-size:11px;color:rgba(255,255,255,.6);}
 .q-progress-wrap{background:var(--dg);padding:10px 18px 14px;}
 .q-prog-top{display:flex;justify-content:space-between;margin-bottom:5px;}
 .q-prog-top span{font-size:11px;color:rgba(255,255,255,.65);}
-.q-prog-top strong{font-size:11px;color:var(--gl);}
-.q-track{height:6px;background:rgba(255,255,255,.12);border-radius:3px;overflow:hidden;}
+.q-prog-top strong{font-size:11px;color:var(--gl);font-weight:700;}
+.q-track{height:5px;background:rgba(255,255,255,.12);border-radius:3px;overflow:hidden;}
 .q-fill{height:100%;background:linear-gradient(90deg,var(--gold),var(--gl));border-radius:3px;transition:width .4s ease;}
-.q-body{flex:1;padding:20px 18px;overflow-y:auto;}
-.q-cat{display:inline-block;background:var(--mg);color:#fff;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;padding:4px 12px;border-radius:20px;margin-bottom:14px;}
-.q-text{font-family:'Playfair Display',serif;font-size:19px;font-weight:700;color:var(--dg);line-height:1.45;margin-bottom:6px;}
-.q-hint{font-size:12px;color:var(--muted);font-style:italic;margin-bottom:20px;}
+.q-body{flex:1;padding:22px 18px;overflow-y:auto;}
+.q-cat{display:inline-flex;align-items:center;gap:6px;background:var(--mg);color:#fff;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;padding:4px 12px;border-radius:20px;margin-bottom:14px;}
+.q-text{font-family:'Playfair Display',serif;font-size:20px;font-weight:700;color:var(--dg);line-height:1.45;margin-bottom:6px;}
+.q-hint{font-size:12px;color:var(--muted);font-style:italic;margin-bottom:20px;line-height:1.5;}
 .q-opts{display:flex;flex-direction:column;gap:10px;}
-.qopt{background:var(--white);border:2px solid var(--border);border-radius:14px;padding:14px 16px;cursor:pointer;font-size:13px;color:var(--text);font-family:'DM Sans',sans-serif;transition:all .2s;display:flex;align-items:flex-start;gap:12px;text-align:left;}
-.qopt:hover{border-color:var(--sg);background:#F0F7F0;transform:translateX(4px);}
-.qopt.sel{border-color:var(--mg);background:#EEF5EE;color:var(--dg);}
-.qopt.sel::before{content:'✓';font-weight:700;color:var(--mg);flex-shrink:0;margin-top:1px;}
+.qopt{background:var(--white);border:1.5px solid var(--border);border-radius:var(--radius-md);padding:14px 16px;cursor:pointer;font-size:13px;color:var(--text);font-family:'DM Sans',sans-serif;transition:var(--transition);display:flex;align-items:flex-start;gap:12px;text-align:left;box-shadow:var(--shadow-sm);line-height:1.5;}
+.qopt:hover{border-color:var(--sg);background:#F0F8F2;transform:translateX(3px);}
+.qopt.sel{border-color:var(--mg);background:#E8F5EC;color:var(--dg);font-weight:500;}
+.qopt.sel::before{content:'✓';font-weight:700;color:var(--mg);flex-shrink:0;margin-top:1px;font-size:15px;}
 .qopt-icon{font-size:18px;flex-shrink:0;margin-top:1px;}
-.q-nav{display:flex;gap:10px;padding:14px 18px;background:var(--white);border-top:1px solid var(--border);}
-.q-nav .btn-green{flex:1;}
-.q-nav .btn-outline{padding:13px 16px;}
-
-/* ═══ LOADING SCREEN ═══ */
-#s-loading{background:var(--dg);align-items:center;justify-content:center;text-align:center;padding:40px 24px;}
-.spin{width:80px;height:80px;border-radius:50%;border:4px solid rgba(255,255,255,.1);border-top:4px solid var(--gold);animation:spin 1s linear infinite;margin-bottom:24px;}
+.q-nav{display:flex;gap:10px;padding:14px 18px;background:var(--white);border-top:1px solid var(--border);box-shadow:0 -2px 8px rgba(0,0,0,.04);}
+.q-nav .btn-green{flex:1;padding:14px;}
+.q-nav .btn-outline{padding:14px 16px;}
+#s-loading{background:linear-gradient(160deg,#102018,#1A3A2A);align-items:center;justify-content:center;text-align:center;padding:40px 24px;}
+.spin{width:72px;height:72px;border-radius:50%;border:3px solid rgba(255,255,255,.08);border-top:3px solid var(--gold);animation:spin 1s linear infinite;margin-bottom:24px;}
 @keyframes spin{to{transform:rotate(360deg)}}
-.lstep{font-size:12px;color:rgba(255,255,255,.45);padding:6px 0;transition:color .4s;}
+.lstep{font-size:12px;color:rgba(255,255,255,.38);padding:6px 0;transition:all .4s;letter-spacing:.2px;}
 .lstep.done{color:var(--gl);}
-
-/* ═══ RESULTS SCREEN ═══ */
-.result-hero{padding:26px 18px 22px;text-align:center;position:relative;overflow:hidden;}
-.result-hero.vata{background:linear-gradient(160deg,#1A2D3A,#2D4A5E);}
-.result-hero.pitta{background:linear-gradient(160deg,#3A1A0D,#5E3420);}
-.result-hero.kapha{background:linear-gradient(160deg,#0D3A1A,#1A5E2D);}
-.rd-label{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:3px;color:rgba(255,255,255,.55);margin-bottom:6px;}
-.rd-name{font-family:'Playfair Display',serif;font-size:42px;font-weight:900;color:#fff;margin-bottom:4px;}
-.rd-name.vata{color:#9FC8E0;}.rd-name.pitta{color:#F0A070;}.rd-name.kapha{color:#80C890;}
-.rd-sub{font-size:13px;color:rgba(255,255,255,.65);margin-bottom:20px;font-style:italic;}
-.dosha-bars{display:flex;gap:8px;justify-content:center;margin-bottom:10px;}
-.dbar-item{text-align:center;min-width:68px;}
-.dbar-label{font-size:10px;font-weight:700;color:rgba(255,255,255,.75);margin-bottom:3px;}
-.dbar-track{height:8px;background:rgba(255,255,255,.1);border-radius:4px;overflow:hidden;margin-bottom:3px;}
+.result-hero{padding:28px 18px 22px;text-align:center;position:relative;overflow:hidden;}
+.result-hero.vata{background:linear-gradient(160deg,#1A2D3A,#253C55);}
+.result-hero.pitta{background:linear-gradient(160deg,#3A1A0D,#5A2A12);}
+.result-hero.kapha{background:linear-gradient(160deg,#0D3A1A,#15522A);}
+.rd-label{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:3px;color:rgba(255,255,255,.5);margin-bottom:6px;}
+.rd-name{font-family:'Playfair Display',serif;font-size:36px;font-weight:900;color:#fff;margin-bottom:5px;line-height:1.1;}
+.rd-name.vata{color:#8EC8E0;}.rd-name.pitta{color:#F0A070;}.rd-name.kapha{color:#78C890;}
+.rd-sub{font-size:13px;color:rgba(255,255,255,.62);margin-bottom:20px;font-style:italic;}
+.dosha-bars{display:flex;gap:8px;justify-content:center;margin-bottom:8px;}
+.dbar-item{text-align:center;min-width:72px;}
+.dbar-label{font-size:10px;font-weight:700;color:rgba(255,255,255,.7);margin-bottom:3px;letter-spacing:1px;}
+.dbar-track{height:7px;background:rgba(255,255,255,.1);border-radius:4px;overflow:hidden;margin-bottom:3px;}
 .dbar-fill{height:100%;border-radius:4px;transition:width 1.2s ease;}
 .vf{background:var(--vata);}.pf{background:var(--pitta);}.kf{background:var(--kapha);}
-.dbar-pct{font-size:12px;font-weight:700;color:rgba(255,255,255,.9);}
-.res-actions{display:flex;gap:10px;padding:14px 18px;background:var(--white);border-bottom:1px solid var(--border);}
-.res-body{padding:16px 18px 100px;}
-.share-btn{flex:1;background:var(--dg);color:var(--gl);border:none;border-radius:10px;padding:11px;font-size:12px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;}
-.pdf-btn{flex:1;background:var(--pale);color:var(--dg);border:2px solid var(--gold);border-radius:10px;padding:11px;font-size:12px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;}
-
-/* ═══ TRAIT / INFO GRIDS ═══ */
+.dbar-pct{font-size:13px;font-weight:700;color:rgba(255,255,255,.9);}
+.res-actions{display:flex;gap:8px;padding:12px 16px;background:var(--white);border-bottom:1px solid var(--border);}
+.share-btn{flex:1;background:var(--dg);color:var(--gl);border:none;border-radius:10px;padding:11px;font-size:12px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;transition:var(--transition);}
+.share-btn:hover{background:var(--mg);}
+.pdf-btn{flex:1;background:var(--pale);color:#7A4E00;border:1.5px solid var(--gold);border-radius:10px;padding:11px;font-size:12px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;transition:var(--transition);}
+.pdf-btn:hover{background:var(--gold);color:#fff;}
+.res-body{padding:16px 16px 100px;}
 .trait-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
-.trait-chip{background:var(--cream);border:1px solid var(--border);border-radius:10px;padding:8px 11px;}
-.trait-chip strong{display:block;font-size:10px;color:var(--muted);margin-bottom:2px;font-weight:500;}
-.trait-chip span{font-size:12px;color:var(--text);}
+.trait-chip{background:var(--cream);border:1px solid var(--border);border-radius:10px;padding:9px 12px;}
+.trait-chip strong{display:block;font-size:10px;color:var(--muted);margin-bottom:2px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;}
+.trait-chip span{font-size:12.5px;color:var(--text);}
 .diet-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
 .diet-col{border-radius:10px;padding:12px;}
-.diet-col.eat{background:#EEF5EE;border:1px solid #A8C9A8;}
-.diet-col.avoid{background:#FFF0EE;border:1px solid #F0A898;}
-.diet-col h4{font-size:11px;font-weight:700;margin-bottom:8px;}
-.diet-col.eat h4{color:var(--mg);}.diet-col.avoid h4{color:#C04020;}
-.diet-col li{font-size:11px;color:var(--text);padding:2px 0;list-style:none;}
+.diet-col.eat{background:#EBF5EC;border:1px solid #9DC8A0;}
+.diet-col.avoid{background:#FEF0EE;border:1px solid #E8A898;}
+.diet-col h4{font-size:11px;font-weight:700;margin-bottom:8px;letter-spacing:.3px;}
+.diet-col.eat h4{color:#1F6B30;}.diet-col.avoid h4{color:#A03020;}
+.diet-col li{font-size:11.5px;color:var(--text);padding:3px 0;list-style:none;line-height:1.5;}
 .diet-col li::before{content:"• ";color:var(--sg);}
-.herb-item{display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(--border);}
-.herb-item:last-child{border-bottom:none;}
-.herb-icon{font-size:24px;flex-shrink:0;}
-.herb-info h4{font-size:13px;font-weight:600;color:var(--dg);margin-bottom:2px;}
-.herb-info p{font-size:11px;color:var(--muted);line-height:1.5;}
-.routine-row{display:flex;gap:12px;align-items:center;padding:7px 0;border-bottom:1px dashed var(--border);}
+.herb-item{display:flex;gap:13px;padding:12px 0;border-bottom:1px solid var(--border);}
+.herb-item:last-child{border-bottom:none;padding-bottom:0;}
+.herb-icon{font-size:26px;flex-shrink:0;margin-top:2px;}
+.herb-info h4{font-size:13.5px;font-weight:700;color:var(--dg);margin-bottom:3px;}
+.herb-info p{font-size:11.5px;color:var(--muted);line-height:1.55;}
+.routine-row{display:flex;gap:14px;align-items:flex-start;padding:9px 0;border-bottom:1px dashed var(--border);}
 .routine-row:last-child{border:none;}
-.rt{font-family:'DM Mono',monospace;font-size:10px;color:var(--gold);min-width:52px;}
-.ra{font-size:12px;color:var(--text);}
-.risk-item{display:flex;gap:10px;padding:10px 12px;background:var(--cream);border-radius:10px;border-left:3px solid var(--gold);margin-bottom:8px;}
-.risk-icon{font-size:20px;flex-shrink:0;}
-.risk-info strong{display:block;font-size:12px;color:var(--dg);margin-bottom:2px;}
-.risk-info span{font-size:11px;color:var(--muted);line-height:1.5;}
-
-/* ═══ SYMPTOM CHECKER ═══ */
+.rt{font-family:'DM Mono',monospace;font-size:10.5px;color:var(--gold);min-width:54px;padding-top:1px;font-weight:500;}
+.ra{font-size:12.5px;color:var(--text);line-height:1.5;}
+.risk-item{display:flex;gap:12px;padding:11px 13px;background:var(--cream);border-radius:10px;border-left:3px solid var(--gold);margin-bottom:9px;}
+.risk-icon{font-size:20px;flex-shrink:0;margin-top:1px;}
+.risk-info strong{display:block;font-size:12.5px;color:var(--dg);margin-bottom:3px;font-weight:700;}
+.risk-info span{font-size:11px;color:var(--muted);line-height:1.55;}
 .sym-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px;}
-.sym-chip{background:var(--white);border:2px solid var(--border);border-radius:12px;padding:10px 12px;cursor:pointer;font-size:12px;font-weight:500;color:var(--text);transition:all .2s;display:flex;align-items:center;gap:7px;font-family:'DM Sans',sans-serif;}
-.sym-chip:hover{border-color:var(--sg);}
-.sym-chip.picked{border-color:var(--mg);background:#EEF5EE;color:var(--dg);}
-.sym-result{background:var(--dg);border-radius:14px;padding:18px;color:#fff;}
+.sym-chip{background:var(--white);border:1.5px solid var(--border);border-radius:12px;padding:11px 12px;cursor:pointer;font-size:12px;font-weight:500;color:var(--text);transition:var(--transition);display:flex;align-items:center;gap:8px;font-family:'DM Sans',sans-serif;box-shadow:var(--shadow-sm);}
+.sym-chip:hover{border-color:var(--sg);background:#F0F8F2;}
+.sym-chip.picked{border-color:var(--mg);background:#E8F5EC;color:var(--dg);font-weight:600;}
+.sym-result{background:var(--dg);border-radius:var(--radius-md);padding:18px;color:#fff;box-shadow:var(--shadow-md);}
 .sym-result h4{font-family:'Playfair Display',serif;font-size:17px;color:var(--gl);margin-bottom:8px;}
-.sym-result p{font-size:13px;color:rgba(255,255,255,.8);line-height:1.6;margin-bottom:10px;}
+.sym-result p{font-size:13px;color:rgba(255,255,255,.8);line-height:1.65;margin-bottom:10px;}
 .remedy-list{list-style:none;}
-.remedy-list li{font-size:12px;color:rgba(255,255,255,.75);padding:5px 0;border-bottom:1px solid rgba(255,255,255,.1);}
-.remedy-list li::before{content:"🌿 ";}
+.remedy-list li{font-size:12px;color:rgba(255,255,255,.75);padding:6px 0;border-bottom:1px solid rgba(255,255,255,.1);display:flex;gap:8px;align-items:flex-start;line-height:1.5;}
+.remedy-list li::before{content:"🌿";flex-shrink:0;}
 .remedy-list li:last-child{border:none;}
-
-/* ═══ RITUCHARYA ═══ */
-.season-card{border-radius:14px;padding:16px;margin-bottom:12px;border:1px solid var(--border);}
+.season-card{border-radius:var(--radius-md);padding:16px;margin-bottom:12px;border:1px solid var(--border);background:var(--white);box-shadow:var(--shadow-sm);}
 .season-card.current{border:2px solid var(--gold);background:var(--pale);}
-.season-card h4{font-family:'Playfair Display',serif;font-size:15px;font-weight:700;color:var(--dg);margin-bottom:4px;display:flex;align-items:center;gap:6px;}
-.season-card p{font-size:12px;color:var(--muted);margin-bottom:10px;}
+.season-card h4{font-family:'Playfair Display',serif;font-size:16px;font-weight:700;color:var(--dg);margin-bottom:4px;display:flex;align-items:center;gap:7px;}
+.season-card p{font-size:12px;color:var(--muted);margin-bottom:10px;line-height:1.6;}
 .season-tips{display:flex;flex-wrap:wrap;gap:6px;}
-.stip{background:var(--light);border-radius:8px;padding:4px 10px;font-size:11px;color:var(--mg);}
-
-/* ═══ BMI / VITALS ═══ */
+.stip{background:var(--light);border-radius:8px;padding:4px 10px;font-size:11px;color:var(--mg);font-weight:500;}
 .vitals-form{display:flex;flex-direction:column;gap:12px;margin-bottom:16px;}
 .vfield{display:flex;flex-direction:column;gap:5px;}
-.vfield label{font-size:12px;font-weight:600;color:var(--dg);}
-.vfield input, .vfield select{background:var(--white);border:2px solid var(--border);border-radius:10px;padding:11px 14px;font-size:14px;font-family:'DM Sans',sans-serif;color:var(--text);outline:none;transition:border-color .2s;}
-.vfield input:focus, .vfield select:focus{border-color:var(--sg);}
-.vitals-result{border-radius:14px;padding:16px;border:1px solid var(--border);}
-.bmi-circle{width:90px;height:90px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;margin:0 auto 12px;border:3px solid var(--gold);}
-.bmi-num{font-family:'Playfair Display',serif;font-size:24px;font-weight:700;color:var(--dg);}
-.bmi-cat{font-size:9px;color:var(--muted);font-weight:600;margin-top:1px;}
+.vfield label{font-size:12px;font-weight:700;color:var(--dg);letter-spacing:.2px;}
+.vfield input,.vfield select{background:var(--white);border:1.5px solid var(--border);border-radius:10px;padding:12px 14px;font-size:14px;font-family:'DM Sans',sans-serif;color:var(--text);outline:none;transition:border-color .2s;box-shadow:var(--shadow-sm);}
+.vfield input:focus,.vfield select:focus{border-color:var(--sg);box-shadow:0 0 0 3px rgba(122,158,126,.12);}
+.vitals-result{border-radius:var(--radius-md);padding:16px;border:1px solid var(--border);}
+.bmi-circle{width:94px;height:94px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;margin:0 auto 14px;border:3px solid var(--gold);box-shadow:var(--shadow-sm);}
+.bmi-num{font-family:'Playfair Display',serif;font-size:26px;font-weight:700;color:var(--dg);}
+.bmi-cat{font-size:9px;color:var(--muted);font-weight:700;margin-top:2px;letter-spacing:.5px;text-transform:uppercase;}
 .vitals-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
-.vstat{background:var(--cream);border-radius:10px;padding:10px;text-align:center;}
-.vstat-val{font-size:18px;font-weight:700;color:var(--dg);font-family:'Playfair Display',serif;}
-.vstat-lbl{font-size:10px;color:var(--muted);}
-
-/* ═══ HERB DOSE CALC ═══ */
-.herb-select-list{display:flex;flex-direction:column;gap:8px;margin-bottom:16px;}
-.hsel{background:var(--white);border:2px solid var(--border);border-radius:12px;padding:12px 14px;cursor:pointer;transition:all .2s;display:flex;justify-content:space-between;align-items:center;}
-.hsel:hover{border-color:var(--sg);}
+.vstat{background:var(--cream);border-radius:10px;padding:11px;text-align:center;border:1px solid var(--border);}
+.vstat-val{font-size:19px;font-weight:700;color:var(--dg);font-family:'Playfair Display',serif;}
+.vstat-lbl{font-size:10px;color:var(--muted);margin-top:2px;letter-spacing:.3px;}
+.herb-select-list{display:flex;flex-direction:column;gap:8px;margin-bottom:14px;}
+.hsel{background:var(--white);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:12px 14px;cursor:pointer;transition:var(--transition);display:flex;justify-content:space-between;align-items:center;box-shadow:var(--shadow-sm);}
+.hsel:hover{border-color:var(--sg);transform:translateX(2px);}
 .hsel.chosen{border-color:var(--gold);background:var(--pale);}
-.hsel-info h4{font-size:13px;font-weight:600;color:var(--dg);margin-bottom:2px;}
+.hsel-info h4{font-size:13px;font-weight:700;color:var(--dg);margin-bottom:2px;}
 .hsel-info p{font-size:11px;color:var(--muted);}
-.hsel-dosha{font-size:18px;}
-.dose-result{background:var(--dg);border-radius:14px;padding:18px;color:#fff;margin-bottom:10px;}
-.dose-result h4{font-family:'Playfair Display',serif;font-size:16px;color:var(--gl);margin-bottom:10px;}
-.dose-row{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.1);font-size:12px;}
+.hsel-dosha{font-size:20px;}
+.dose-result{background:var(--dg);border-radius:var(--radius-md);padding:18px;color:#fff;margin-bottom:10px;box-shadow:var(--shadow-md);}
+.dose-result h4{font-family:'Playfair Display',serif;font-size:16px;color:var(--gl);margin-bottom:12px;}
+.dose-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.1);font-size:12.5px;align-items:flex-start;gap:12px;}
 .dose-row:last-child{border:none;}
-.dose-row span:first-child{color:rgba(255,255,255,.65);}
-.dose-row span:last-child{color:#fff;font-weight:600;}
-
-/* ═══ DOCTOR FINDER ═══ */
-.doc-card{background:var(--white);border:1px solid var(--border);border-radius:14px;padding:15px;margin-bottom:10px;display:flex;gap:14px;align-items:flex-start;}
-.doc-avatar{width:48px;height:48px;border-radius:50%;background:var(--light);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;}
+.dose-row span:first-child{color:rgba(255,255,255,.6);flex-shrink:0;}
+.dose-row span:last-child{color:#fff;font-weight:600;text-align:right;}
+.doc-card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius-md);padding:15px;margin-bottom:10px;display:flex;gap:14px;align-items:flex-start;box-shadow:var(--shadow-sm);}
+.doc-avatar{width:48px;height:48px;border-radius:50%;background:var(--light);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;border:2px solid var(--border);}
 .doc-info h4{font-size:14px;font-weight:700;color:var(--dg);margin-bottom:2px;}
-.doc-info p{font-size:11px;color:var(--muted);margin-bottom:6px;}
+.doc-info p{font-size:11px;color:var(--muted);margin-bottom:6px;line-height:1.4;}
 .doc-info .doc-tags{display:flex;gap:5px;flex-wrap:wrap;}
-.doc-actions{margin-left:auto;display:flex;flex-direction:column;gap:6px;align-items:flex-end;}
-
-/* ═══ VIKRITI ═══ */
 .vikriti-compare{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;}
-.vc-card{border-radius:12px;padding:14px;text-align:center;}
-.vc-card.prakriti{background:var(--light);border:1px solid #A8C9A8;}
-.vc-card.vikriti{background:var(--pale);border:1px solid var(--gl);}
-.vc-card h4{font-size:10px;font-weight:700;letter-spacing:1px;margin-bottom:6px;text-transform:uppercase;}
-.vc-card.prakriti h4{color:var(--mg);}
-.vc-card.vikriti h4{color:#8B5A00;}
+.vc-card{border-radius:var(--radius-sm);padding:14px;text-align:center;}
+.vc-card.prakriti{background:var(--light);border:1px solid #9DC8A0;}
+.vc-card.vikriti{background:var(--pale);border:1.5px solid var(--gl);}
+.vc-card h4{font-size:9.5px;font-weight:700;letter-spacing:1.5px;margin-bottom:6px;text-transform:uppercase;color:var(--muted);}
 .vc-dosha{font-family:'Playfair Display',serif;font-size:22px;font-weight:700;color:var(--dg);}
-.vc-pct{font-size:12px;color:var(--muted);}
-.imbalance-alert{background:linear-gradient(135deg,#3A1A0D,#5E2D0D);border-radius:12px;padding:14px 16px;margin-bottom:12px;}
-.imbalance-alert h4{font-size:14px;font-weight:700;color:#F0A070;margin-bottom:4px;}
-.imbalance-alert p{font-size:12px;color:rgba(255,255,255,.75);line-height:1.6;}
-
-/* ═══ PDF MODAL ═══ */
+.vc-pct{font-size:11px;color:var(--muted);margin-top:2px;}
+.imbalance-alert{background:linear-gradient(135deg,#3A1A0D,#5E2810);border-radius:var(--radius-sm);padding:14px 16px;margin-bottom:12px;}
+.imbalance-alert h4{font-size:14px;font-weight:700;color:#F0A070;margin-bottom:5px;}
+.imbalance-alert p{font-size:12px;color:rgba(255,255,255,.78);line-height:1.6;}
 .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:500;align-items:flex-end;justify-content:center;}
 .modal-overlay.open{display:flex;}
 .modal-box{background:var(--white);border-radius:24px 24px 0 0;padding:24px 20px 40px;width:100%;max-width:480px;animation:slideUp .3s ease;}
 @keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
 .modal-handle{width:40px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 20px;}
 .modal-title{font-family:'Playfair Display',serif;font-size:20px;font-weight:700;color:var(--dg);margin-bottom:6px;}
-.modal-sub{font-size:13px;color:var(--muted);margin-bottom:20px;}
-
-/* ═══ DOCTOR MODE ═══ */
-.dmode-banner{background:linear-gradient(135deg,#1A2D3A,#2D4A5E);border-radius:14px;padding:16px 18px;margin-bottom:16px;}
-.dmode-banner h3{font-family:'Playfair Display',serif;font-size:17px;color:var(--gl);margin-bottom:4px;}
-.dmode-banner p{font-size:12px;color:rgba(255,255,255,.65);}
-.patient-row{background:var(--white);border:1px solid var(--border);border-radius:12px;padding:13px 15px;display:flex;align-items:center;gap:12px;margin-bottom:8px;cursor:pointer;transition:all .2s;}
-.patient-row:hover{border-color:var(--sg);transform:translateX(4px);}
-.pr-avatar{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;}
-.pr-vata{background:#EEF4F8;}.pr-pitta{background:#FEF0EE;}.pr-kapha{background:#EEF5EE;}
-.pr-info h4{font-size:13px;font-weight:600;color:var(--dg);margin-bottom:1px;}
+.modal-sub{font-size:13px;color:var(--muted);margin-bottom:18px;line-height:1.6;}
+.dmode-banner{background:linear-gradient(135deg,#1A2D3A,#2A4560);border-radius:var(--radius-md);padding:16px 18px;margin-bottom:16px;box-shadow:var(--shadow-md);}
+.dmode-banner h3{font-family:'Playfair Display',serif;font-size:18px;color:var(--gl);margin-bottom:4px;}
+.dmode-banner p{font-size:12px;color:rgba(255,255,255,.6);}
+.patient-row{background:var(--white);border:1px solid var(--border);border-radius:var(--radius-sm);padding:13px 15px;display:flex;align-items:center;gap:12px;margin-bottom:8px;cursor:pointer;transition:var(--transition);box-shadow:var(--shadow-sm);}
+.patient-row:hover{border-color:var(--sg);transform:translateX(3px);box-shadow:var(--shadow-md);}
+.pr-avatar{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;}
+.pr-vata{background:#E8F2F8;}.pr-pitta{background:#FEF0EE;}.pr-kapha{background:#EBF5EC;}
+.pr-info h4{font-size:13px;font-weight:700;color:var(--dg);margin-bottom:1px;}
 .pr-info p{font-size:11px;color:var(--muted);}
 .pr-right{margin-left:auto;text-align:right;}
-.pr-right .pill{font-size:9px;}
 .pr-time{font-size:10px;color:var(--muted);margin-top:3px;}
-
-/* ═══ ANIMATIONS ═══ */
-.fade-in{animation:fadeIn .35s ease forwards;}
-@keyframes fadeIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
-.slide-in{animation:slideIn .3s ease forwards;}
-@keyframes slideIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
-
-/* ═══ DOSHA RADAR CHART ═══ */
-.chart-wrap{background:var(--white);border-radius:16px;padding:18px;border:1px solid var(--border);margin-bottom:14px;}
-.chart-wrap canvas{display:block;margin:0 auto;}
+.chart-wrap{background:var(--white);border-radius:var(--radius-md);padding:18px;border:1px solid var(--border);margin-bottom:14px;box-shadow:var(--shadow-sm);}
 .chart-title{font-family:'Playfair Display',serif;font-size:16px;font-weight:700;color:var(--dg);margin-bottom:14px;display:flex;align-items:center;gap:8px;}
 .dosha-score-row{display:flex;gap:10px;margin-top:12px;}
-.ds-chip{flex:1;text-align:center;padding:10px 8px;border-radius:12px;}
-.ds-chip.vata-chip{background:#EEF4F8;border:2px solid var(--vata);}
+.ds-chip{flex:1;text-align:center;padding:11px 8px;border-radius:12px;}
+.ds-chip.vata-chip{background:#EBF2F8;border:2px solid var(--vata);}
 .ds-chip.pitta-chip{background:#FEF0EE;border:2px solid var(--pitta);}
-.ds-chip.kapha-chip{background:#EEF5EE;border:2px solid var(--kapha);}
-.ds-num{font-family:'Playfair Display',serif;font-size:24px;font-weight:700;}
+.ds-chip.kapha-chip{background:#EBF5EC;border:2px solid var(--kapha);}
+.ds-num{font-family:'Playfair Display',serif;font-size:26px;font-weight:700;}
 .ds-chip.vata-chip .ds-num{color:var(--vata);}
 .ds-chip.pitta-chip .ds-num{color:var(--pitta);}
 .ds-chip.kapha-chip .ds-num{color:var(--kapha);}
-.ds-label{font-size:10px;font-weight:700;letter-spacing:1.5px;margin-top:3px;}
+.ds-label{font-size:9.5px;font-weight:700;letter-spacing:1.5px;margin-top:3px;text-transform:uppercase;}
 .ds-chip.vata-chip .ds-label{color:var(--vata);}
 .ds-chip.pitta-chip .ds-label{color:var(--pitta);}
 .ds-chip.kapha-chip .ds-label{color:var(--kapha);}
-
-/* ═══ WELLNESS SCORE ═══ */
-.wellness-banner{background:linear-gradient(135deg,var(--dg),var(--mg));border-radius:16px;padding:20px;margin-bottom:14px;text-align:center;position:relative;overflow:hidden;}
-.wellness-banner::before{content:'';position:absolute;width:200px;height:200px;border-radius:50%;background:rgba(201,151,58,.1);top:-60px;right:-60px;}
-.ws-label{font-size:11px;letter-spacing:2px;color:var(--sg);margin-bottom:6px;font-family:'DM Mono',monospace;}
-.ws-score{font-family:'Playfair Display',serif;font-size:56px;font-weight:900;color:var(--gl);line-height:1;}
-.ws-max{font-size:18px;color:rgba(255,255,255,.5);}
-.ws-status{font-size:14px;color:rgba(255,255,255,.8);margin-top:6px;}
+.wellness-banner{background:linear-gradient(135deg,var(--dg),#234A35);border-radius:var(--radius-md);padding:20px;margin-bottom:14px;text-align:center;position:relative;overflow:hidden;box-shadow:var(--shadow-md);}
+.wellness-banner::before{content:'';position:absolute;width:180px;height:180px;border-radius:50%;background:rgba(201,151,58,.08);top:-50px;right:-50px;pointer-events:none;}
+.ws-label{font-size:10px;letter-spacing:2.5px;color:var(--sg);margin-bottom:7px;font-family:'DM Mono',monospace;}
+.ws-score{font-family:'Playfair Display',serif;font-size:58px;font-weight:900;color:var(--gl);line-height:1;}
+.ws-max{font-size:18px;color:rgba(255,255,255,.4);vertical-align:middle;}
+.ws-status{font-size:13px;color:rgba(255,255,255,.75);margin-top:7px;font-style:italic;}
 .ws-bar-wrap{margin-top:14px;}
-.ws-bar-track{height:8px;background:rgba(255,255,255,.15);border-radius:4px;overflow:hidden;}
-.ws-bar-fill{height:100%;background:linear-gradient(90deg,var(--gold),var(--gl));border-radius:4px;transition:width 1.2s ease;}
+.ws-bar-track{height:7px;background:rgba(255,255,255,.12);border-radius:4px;overflow:hidden;}
+.ws-bar-fill{height:100%;background:linear-gradient(90deg,var(--gold),var(--gl));border-radius:4px;transition:width 1.4s ease;}
 .ws-factors{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:12px;}
-.wsf{background:rgba(255,255,255,.08);border-radius:10px;padding:8px;text-align:center;}
-.wsf-val{font-size:15px;font-weight:700;color:var(--gl);}
-.wsf-lbl{font-size:9px;color:rgba(255,255,255,.55);margin-top:2px;}
-
-/* ═══ YOGA ═══ */
-.yoga-card{background:var(--white);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:10px;display:flex;gap:14px;align-items:flex-start;}
-.yoga-icon{font-size:36px;flex-shrink:0;}
+.wsf{background:rgba(255,255,255,.07);border-radius:10px;padding:9px 6px;text-align:center;}
+.wsf-val{font-size:16px;font-weight:700;color:var(--gl);font-family:'Playfair Display',serif;}
+.wsf-lbl{font-size:9px;color:rgba(255,255,255,.5);margin-top:3px;letter-spacing:.5px;text-transform:uppercase;}
+.yoga-card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius-md);padding:16px;margin-bottom:10px;display:flex;gap:14px;align-items:flex-start;box-shadow:var(--shadow-sm);transition:var(--transition);}
+.yoga-card:hover{box-shadow:var(--shadow-md);}
+.yoga-icon{font-size:36px;flex-shrink:0;margin-top:2px;}
 .yoga-info h4{font-size:14px;font-weight:700;color:var(--dg);margin-bottom:2px;}
-.yoga-info .yoga-sanskrit{font-size:11px;color:var(--gold);font-style:italic;margin-bottom:5px;}
-.yoga-info p{font-size:12px;color:var(--muted);line-height:1.55;}
-.yoga-tags{display:flex;gap:5px;margin-top:6px;flex-wrap:wrap;}
-.yt{background:var(--light);border-radius:6px;padding:3px 8px;font-size:10px;font-weight:600;color:var(--mg);}
-.yoga-duration{font-size:11px;color:var(--gold);font-weight:600;margin-top:4px;}
-
-/* ═══ WEEKLY DIET ═══ */
+.yoga-info .yoga-sanskrit{font-size:11px;color:var(--gold);font-style:italic;margin-bottom:6px;font-family:'Playfair Display',serif;}
+.yoga-info p{font-size:12px;color:var(--muted);line-height:1.6;}
+.yoga-tags{display:flex;gap:5px;margin-top:8px;flex-wrap:wrap;}
+.yt{background:var(--light);border-radius:6px;padding:3px 9px;font-size:10px;font-weight:600;color:var(--mg);}
+.yoga-duration{font-size:11px;color:var(--gold);font-weight:700;margin-top:5px;letter-spacing:.2px;}
 .week-tabs{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;margin-bottom:16px;}
 .week-tabs::-webkit-scrollbar{display:none;}
-.wtab{padding:6px 12px;border-radius:20px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;border:2px solid var(--border);background:var(--white);color:var(--muted);transition:all .2s;font-family:'DM Sans',sans-serif;}
+.wtab{padding:7px 14px;border-radius:20px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;border:1.5px solid var(--border);background:var(--white);color:var(--muted);transition:var(--transition);font-family:'DM Sans',sans-serif;}
 .wtab.active{background:var(--dg);color:var(--gl);border-color:var(--dg);}
-.meal-card{background:var(--white);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:10px;}
-.meal-header{padding:10px 14px;display:flex;align-items:center;gap:8px;}
+.meal-card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius-md);overflow:hidden;margin-bottom:10px;box-shadow:var(--shadow-sm);}
+.meal-header{padding:11px 14px;display:flex;align-items:center;gap:9px;}
 .meal-header.breakfast{background:#FFF8EC;}
-.meal-header.lunch{background:#EEF5EE;}
+.meal-header.lunch{background:#EBF5EC;}
 .meal-header.dinner{background:#FEF0EE;}
-.meal-header h4{font-size:13px;font-weight:700;}
-.meal-header.breakfast h4{color:#8B5A00;}
-.meal-header.lunch h4{color:var(--mg);}
-.meal-header.dinner h4{color:var(--pitta);}
+.meal-header h4{font-size:13.5px;font-weight:700;}
+.meal-header.breakfast h4{color:#7A4E00;}
+.meal-header.lunch h4{color:#1F6B30;}
+.meal-header.dinner h4{color:#8B2A1A;}
 .meal-body{padding:12px 14px;}
 .meal-items{list-style:none;}
-.meal-items li{font-size:12px;color:var(--text);padding:4px 0;border-bottom:1px dashed var(--border);display:flex;justify-content:space-between;}
-.meal-items li:last-child{border:none;}
-.meal-note{font-size:11px;color:var(--muted);font-style:italic;margin-top:8px;}
-.season-tag{background:var(--dg);color:var(--gl);font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px;margin-bottom:14px;display:inline-block;}
-
-/* ═══ PROGRESS TRACKER ═══ */
-.prog-empty{text-align:center;padding:30px 20px;}
-.prog-empty .pe-icon{font-size:48px;margin-bottom:12px;}
-.prog-entry{background:var(--white);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:8px;}
-.prog-entry-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+.meal-items li{font-size:12px;color:var(--text);padding:4px 0;border-bottom:1px dashed var(--border);line-height:1.4;}
+.meal-items li:last-child{border-bottom:none;}
+.meal-note{font-size:11px;color:var(--muted);font-style:italic;margin-top:8px;line-height:1.5;}
+.season-tag{background:var(--dg);color:var(--gl);font-size:10px;font-weight:700;padding:4px 12px;border-radius:20px;margin-bottom:14px;display:inline-block;letter-spacing:.5px;}
+.prog-empty{text-align:center;padding:36px 20px;}
+.prog-empty .pe-icon{font-size:52px;margin-bottom:14px;}
+.prog-entry{background:var(--white);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px;margin-bottom:8px;box-shadow:var(--shadow-sm);}
+.prog-entry-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:9px;}
 .prog-date{font-size:11px;color:var(--muted);font-family:'DM Mono',monospace;}
-.prog-dosha{font-size:13px;font-weight:700;color:var(--dg);}
-.prog-bars{display:flex;flex-direction:column;gap:5px;}
-.pb-row{display:flex;align-items:center;gap:8px;}
-.pb-label{font-size:10px;font-weight:700;width:36px;color:var(--muted);}
-.pb-track{flex:1;height:6px;background:var(--cream);border-radius:3px;overflow:hidden;}
-.pb-fill{height:100%;border-radius:3px;transition:width .8s ease;}
-.pb-val{font-size:10px;color:var(--muted);width:28px;text-align:right;}
-.trend-card{background:var(--white);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:14px;}
-.trend-card canvas{display:block;margin:0 auto;}
-
-/* ═══ PANCHAKARMA ═══ */
-.pk-hero{background:linear-gradient(135deg,#2C1810,#5E3420);border-radius:14px;padding:18px;margin-bottom:14px;text-align:center;}
-.pk-hero h3{font-family:'Playfair Display',serif;font-size:20px;color:var(--gl);margin-bottom:6px;}
-.pk-hero p{font-size:12px;color:rgba(255,255,255,.7);line-height:1.6;}
-.pk-card{background:var(--white);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:10px;}
+.prog-dosha{font-size:13.5px;font-weight:700;color:var(--dg);}
+.prog-bars{display:flex;flex-direction:column;gap:6px;}
+.pb-row{display:flex;align-items:center;gap:9px;}
+.pb-label{font-size:10px;font-weight:700;width:38px;letter-spacing:.5px;}
+.pb-track{flex:1;height:7px;background:var(--cream);border-radius:4px;overflow:hidden;border:1px solid var(--border);}
+.pb-fill{height:100%;border-radius:4px;transition:width .9s ease;}
+.pb-val{font-size:10px;color:var(--muted);width:30px;text-align:right;font-family:'DM Mono',monospace;}
+.trend-card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius-md);padding:16px;margin-bottom:14px;box-shadow:var(--shadow-sm);}
+.pk-hero{background:linear-gradient(135deg,#2C1810,#5E3010);border-radius:var(--radius-md);padding:20px;margin-bottom:16px;text-align:center;box-shadow:var(--shadow-md);}
+.pk-hero h3{font-family:'Playfair Display',serif;font-size:21px;color:var(--gl);margin-bottom:7px;}
+.pk-hero p{font-size:12px;color:rgba(255,255,255,.7);line-height:1.65;}
+.pk-card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius-md);padding:16px;margin-bottom:10px;box-shadow:var(--shadow-sm);}
 .pk-card-header{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
-.pk-num{width:28px;height:28px;border-radius:50%;background:var(--dg);color:var(--gl);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
-.pk-card h4{font-family:'Playfair Display',serif;font-size:15px;color:var(--dg);}
-.pk-card .pk-sanskrit{font-size:11px;color:var(--gold);font-style:italic;margin-bottom:6px;}
-.pk-card p{font-size:12px;color:var(--muted);line-height:1.6;margin-bottom:8px;}
-.pk-meta{display:flex;gap:8px;flex-wrap:wrap;}
-.pk-chip{font-size:10px;padding:3px 10px;border-radius:6px;background:var(--cream);color:var(--mg);font-weight:600;}
-
-/* ═══ PRINT / PDF STYLES ═══ */
-@media print {
-  .hdr,.bnav,.res-actions,.restart-btn,.no-print{display:none!important;}
+.pk-num{width:30px;height:30px;border-radius:50%;background:var(--dg);color:var(--gl);font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.pk-card h4{font-family:'Playfair Display',serif;font-size:15.5px;color:var(--dg);font-weight:700;}
+.pk-card p{font-size:12px;color:var(--muted);line-height:1.65;margin-bottom:9px;}
+.pk-meta{display:flex;gap:7px;flex-wrap:wrap;}
+.pk-chip{font-size:10px;padding:3px 10px;border-radius:6px;background:var(--cream);color:var(--mg);font-weight:600;border:1px solid var(--border);}
+.disc-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:999;display:flex;align-items:flex-end;justify-content:center;}
+.disc-box{background:var(--white);border-radius:24px 24px 0 0;padding:24px 20px 42px;width:100%;max-width:480px;animation:slideUp .35s ease;}
+.disc-handle{width:40px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 18px;}
+.disc-title{font-family:'Playfair Display',serif;font-size:20px;font-weight:700;color:var(--dg);margin-bottom:6px;}
+.disc-body{font-size:12.5px;color:var(--muted);line-height:1.8;margin-bottom:18px;}
+.disc-body strong{color:var(--dg);}
+.disc-accept{width:100%;background:var(--dg);color:var(--white);border:none;border-radius:12px;padding:14px;font-size:15px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;margin-bottom:10px;transition:var(--transition);}
+.disc-accept:hover{background:var(--mg);}
+.disc-footer{font-size:10px;color:var(--muted);text-align:center;font-style:italic;line-height:1.6;}
+.disc-banner{background:var(--pale);border:1.5px solid var(--gold);border-radius:var(--radius-sm);padding:11px 14px;margin-bottom:12px;font-size:11.5px;color:var(--dg);line-height:1.65;}
+.disc-banner strong{color:#8B3A00;}
+.fade-in{animation:fadeIn .35s ease forwards;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+.slide-in{animation:slideIn .3s ease forwards;}
+@keyframes slideIn{from{opacity:0;transform:translateX(16px)}to{opacity:1;transform:translateX(0)}}
+@media print{
+  .hdr,.bnav,.res-actions,.no-print,.disc-overlay,.disc-banner{display:none!important;}
   .screen{display:block!important;}
-  #s-result{display:block!important;}
   body{background:white;}
   .result-hero{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
-  .page-break{page-break-before:always;}
 }
 </style>
 </head>
@@ -408,7 +361,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text);
 <!-- ══════════════════════════════════════════ -->
 <div id="s-welcome" class="screen active">
   <div class="hdr">
-    <div class="logo">Ayur<span>Mind</span> AI<sub>v3</sub></div>
+    <div class="logo">Ayur<span>Mind</span> AI<sub>v5</sub></div>
     <div class="hdr-right">
       <button class="lang-btn" onclick="cycleLang()">🌐 <span id="lang-label">EN</span></button>
     </div>
@@ -418,7 +371,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text);
     <h1 class="hero-title" data-key="welcome_title">Know Your<br><span>Prakriti</span></h1>
     <p class="hero-sub" data-key="welcome_sub">Discover your Ayurvedic body constitution in 3 minutes. Get a personalized health plan backed by 5,000 years of classical wisdom.</p>
     <div class="hero-stats">
-      <div class="hstat"><div class="hstat-n">12</div><div class="hstat-l" data-key="stat_q">Questions</div></div>
+      <div class="hstat"><div class="hstat-n">24</div><div class="hstat-l" data-key="stat_q">Questions</div></div>
       <div class="hstat"><div class="hstat-n">3 min</div><div class="hstat-l" data-key="stat_t">Quick Quiz</div></div>
       <div class="hstat"><div class="hstat-n">Free</div><div class="hstat-l" data-key="stat_f">Always</div></div>
       <div class="hstat"><div class="hstat-n">8</div><div class="hstat-l" data-key="stat_feat">Features</div></div>
@@ -447,7 +400,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text);
 <div id="s-quiz" class="screen">
   <div class="hdr">
     <div class="logo">Ayur<span>Mind</span> AI</div>
-    <div id="q-counter" class="lang-btn" style="cursor:default;">1 / 12</div>
+    <div id="q-counter" class="lang-btn" style="cursor:default;">1 / 24</div>
   </div>
   <div class="q-progress-wrap">
     <div class="q-prog-top">
@@ -484,7 +437,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text);
 <!-- ══════════════════════════════════════════ -->
 <div id="s-app" class="screen">
   <div class="hdr">
-    <div class="logo">Ayur<span>Mind</span> AI<sub>v3</sub></div>
+    <div class="logo">Ayur<span>Mind</span> AI<sub>v5</sub></div>
     <div class="hdr-right">
       <button class="lang-btn" onclick="cycleLang()">🌐 <span id="lang-label2">EN</span></button>
       <div class="mode-toggle">
@@ -798,6 +751,67 @@ const QS = [
     {i:"📋",t:"Goal-driven; structured; ambitious; consistent habits",s:{v:0,p:3,k:1}},
     {i:"🏠",t:"Prefer routine; love comfort; resist change; very habitual",s:{v:0,p:0,k:3}},
   ]},
+  // ── 12 new CCRAS-PAS domains (Q13–Q24) ──
+  {cat:"Nails & Joints",q:"How would you describe your nails and joints?",hint:"Look at your nails right now — their usual state",opts:[
+    {i:"💅",t:"Thin, dry, brittle nails; joints crack and pop easily",s:{v:3,p:0,k:0}},
+    {i:"🔴",t:"Pinkish-red, soft, lustrous nails; flexible joints",s:{v:0,p:3,k:0}},
+    {i:"🌙",t:"Thick, smooth, oily nails; large, well-lubricated joints",s:{v:0,p:0,k:3}},
+  ]},
+  {cat:"Sweat & Body Odour",q:"How is your sweating pattern typically?",hint:"In normal daily conditions, not intense exercise",opts:[
+    {i:"🌵",t:"Minimal sweating even in heat; skin stays dry",s:{v:3,p:0,k:0}},
+    {i:"💦",t:"Profuse sweating; strong body odour noticeable",s:{v:0,p:3,k:0}},
+    {i:"💧",t:"Moderate sweating; cool, pleasant smell",s:{v:0,p:0,k:3}},
+  ]},
+  {cat:"Thirst & Hunger",q:"How do thirst and hunger feel for you?",hint:"Your baseline pattern on a regular day",opts:[
+    {i:"🌊",t:"Variable thirst and hunger — sometimes forget to drink or eat",s:{v:3,p:0,k:1}},
+    {i:"🔥",t:"Strong, sharp thirst and hunger — get irritable if not satisfied",s:{v:0,p:3,k:0}},
+    {i:"🐢",t:"Low thirst; hunger is mild and easy to ignore for hours",s:{v:0,p:0,k:3}},
+  ]},
+  {cat:"Eyes & Vision",q:"How would you describe your eyes?",hint:"Their natural appearance, not related to screen time",opts:[
+    {i:"👁️",t:"Small, nervous, active eyes; tend to be dry or gritty",s:{v:3,p:0,k:0}},
+    {i:"🔴",t:"Sharp, penetrating eyes; get red easily; sensitive to light",s:{v:0,p:3,k:0}},
+    {i:"🌙",t:"Large, beautiful, calm eyes; white part is very white",s:{v:0,p:0,k:3}},
+  ]},
+  {cat:"Stool & Elimination",q:"How is your elimination pattern?",hint:"Your usual bowel habit, not during illness",opts:[
+    {i:"💨",t:"Irregular, often constipated; hard, dry stools; gas common",s:{v:3,p:0,k:0}},
+    {i:"🌡️",t:"Regular, 1–2 times daily; loose tendency; burning sensation possible",s:{v:0,p:3,k:0}},
+    {i:"🐌",t:"Once daily or less; heavy, well-formed, slow; mucus possible",s:{v:0,p:0,k:3}},
+  ]},
+  {cat:"Voice & Speech",q:"How do people usually describe your voice?",hint:"Your natural voice, not when ill",opts:[
+    {i:"💨",t:"Thin, hoarse, or cracking; talks fast, sometimes stammers",s:{v:3,p:0,k:0}},
+    {i:"🎙️",t:"Sharp, clear, commanding; convincing and authoritative",s:{v:0,p:3,k:0}},
+    {i:"🎵",t:"Deep, melodious, resonant, pleasing to hear",s:{v:0,p:0,k:3}},
+  ]},
+  {cat:"Pain Sensitivity",q:"How do you experience physical pain or discomfort?",hint:"Your natural sensitivity level",opts:[
+    {i:"⚡",t:"High sensitivity; minor pain feels intense; cramps, spasms common",s:{v:3,p:0,k:0}},
+    {i:"🌡️",t:"Moderate sensitivity; burning, inflamed type of pain; sharp",s:{v:0,p:3,k:0}},
+    {i:"🏋️",t:"High tolerance; pain is dull and aching; takes time to feel",s:{v:0,p:0,k:3}},
+  ]},
+  {cat:"Dream Patterns",q:"What kind of dreams do you typically have?",hint:"Your most common dream themes",opts:[
+    {i:"🌪️",t:"Active, fearful, flying, running, forgetting — vivid and disturbing",s:{v:3,p:0,k:0}},
+    {i:"🔥",t:"Intense, competitive, violent or passionate — colourful",s:{v:0,p:3,k:0}},
+    {i:"🌊",t:"Calm, romantic, watery, slow — often hard to remember",s:{v:0,p:0,k:3}},
+  ]},
+  {cat:"Emotional Attachment",q:"How do you handle relationships and change?",hint:"Your emotional default pattern",opts:[
+    {i:"🦋",t:"Make friends quickly but move on; not deeply attached",s:{v:3,p:0,k:0}},
+    {i:"🦅",t:"Selective but intensely loyal; strong opinions about people",s:{v:0,p:3,k:0}},
+    {i:"🐘",t:"Deep, lasting attachments; very hard to let go of people",s:{v:0,p:0,k:3}},
+  ]},
+  {cat:"Urine Characteristics",q:"How is your urine typically?",hint:"Under normal hydration, not illness",opts:[
+    {i:"💧",t:"Scanty, colourless; infrequent — sometimes forget to drink water",s:{v:3,p:0,k:0}},
+    {i:"🌡️",t:"Dark yellow, concentrated, strong odour; frequent and urgent",s:{v:0,p:3,k:0}},
+    {i:"🌊",t:"Abundant, pale, clear; feels heavy in bladder",s:{v:0,p:0,k:3}},
+  ]},
+  {cat:"Tongue Appearance",q:"How does your tongue usually look?",hint:"Check in the morning before eating",opts:[
+    {i:"🌵",t:"Thin, dry, cracked, or dark-coloured; trembles slightly",s:{v:3,p:0,k:0}},
+    {i:"🔴",t:"Red or pink, sharp edges, yellowish coating possible",s:{v:0,p:3,k:0}},
+    {i:"💧",t:"Pale pink, thick white coating, wet and swollen",s:{v:0,p:0,k:3}},
+  ]},
+  {cat:"Agni (Digestive Fire)",q:"How would you describe your digestive strength?",hint:"Your consistent pattern when eating normally",opts:[
+    {i:"🌀",t:"Vishama Agni — erratic: sometimes very hungry, sometimes no appetite at all",s:{v:3,p:0,k:0}},
+    {i:"🔥",t:"Tikshna Agni — sharp and intense: digests quickly, feels burning if not fed",s:{v:0,p:3,k:0}},
+    {i:"🐢",t:"Manda Agni — slow and sluggish: food sits heavy; bloated even after small meals",s:{v:0,p:0,k:3}},
+  ]},
 ];
 
 // ══════════════════════════════════════════════
@@ -821,10 +835,10 @@ const PD = {
     routine:[{t:"6:00 AM",a:"Warm sesame oil self-massage (Abhyanga)"},{t:"6:30 AM",a:"Gentle yoga — forward bends, hip openers"},{t:"7:30 AM",a:"Warm breakfast — porridge or cooked grains"},{t:"12:30 PM",a:"Main warm meal of the day"},{t:"3:00 PM",a:"Short rest or light walk"},{t:"6:30 PM",a:"Light warm dinner before 7 PM"},{t:"9:30 PM",a:"Warm milk + Ashwagandha; sleep by 10 PM"}],
     risks:[
       {i:"🧠",c:"Neurological Disorders",d:"Vata governs the nervous system. Anxiety, insomnia, tremors are primary Vata diseases. (Charaka Samhita, Sutrasthana 12)"},
-      {i:"🦴",c:"Bone & Joint Issues",d:"Vata is associated with bone tissue (Asthi dhatu). Osteoporosis, arthritis, dry joints. (PMC4012357)"},
+      {i:"🦴",c:"Bone & Joint Issues",d:"Vata Prakriti increases susceptibility to bone tissue disorders (Asthi dhatu). Osteoporosis, arthritis, dry joints — Vata types must prioritise bone nourishment. (Charaka Samhita Sutrasthana 12; PMC4012357)"},
       {i:"💨",c:"Digestive Irregularity",d:"Constipation, bloating, IBS are classic Vata imbalances due to erratic Apana Vata."},
     ],
-    src:"Charaka Samhita Vimanasthana 8.95-106 | Nature Scientific Reports 2015 | PMC4012357"
+    src:"Charaka Samhita Vimanasthana 8.95-106 | Sutrasthana Ch.12 | Nature Scientific Reports 2015 (PMC4625161)"
   },
   pitta:{
     name:"Pitta",emoji:"🔥",element:"Fire + Water",
@@ -843,7 +857,7 @@ const PD = {
     routine:[{t:"6:00 AM",a:"Wake up; 10 min cooling pranayama (Sheetali)"},{t:"6:30 AM",a:"Moderate yoga — twists, cooling poses"},{t:"7:30 AM",a:"Cool breakfast — sweet fruits, coconut milk"},{t:"12:00 PM",a:"Largest meal at noon (peak Pitta fire)"},{t:"3:00 PM",a:"Brief walk in cool environment"},{t:"6:30 PM",a:"Light, cooling dinner"},{t:"10:00 PM",a:"Cooled Brahmi milk; read; sleep by 10:30 PM"}],
     risks:[
       {i:"🫁",c:"Inflammatory Conditions",d:"Pitta governs transformation. Ulcers, gastritis, colitis, liver disorders are primary Pitta diseases."},
-      {i:"🩺",c:"Skin Disorders",d:"Pitta in Rakta dhatu causes psoriasis, eczema, rashes, acne. (PMC4625161)"},
+      {i:"🩺",c:"Skin Disorders",d:"Pitta in Rakta dhatu (blood tissue) increases susceptibility to skin conditions like psoriasis, eczema, rashes and acne — not a certainty but a known tendency. (Charaka Samhita Sutrasthana 12; PMC4625161)"},
       {i:"🧠",c:"Irritability & Burnout",d:"Pitta imbalance correlates with poor mood (p≤0.01) and intense anger responses. (PMC6822152)"},
     ],
     src:"Charaka Samhita Vimanasthana 8.95-106 | Nature Scientific Reports 2015 (PGM1) | PMC6822152"
@@ -864,11 +878,11 @@ const PD = {
     avoid:["Heavy, oily, cold foods","Sweet, salty, sour tastes","Dairy especially cheese","Fried & processed foods","Excessive sleep","Cold water & ice cream"],
     routine:[{t:"5:30 AM",a:"Wake before sunrise — fight Kapha inertia!"},{t:"6:00 AM",a:"Vigorous yoga or brisk walk — 30–45 min"},{t:"7:30 AM",a:"Light warm breakfast — hot ginger tea, light grain"},{t:"12:30 PM",a:"Medium lunch — avoid overeating; include bitter greens"},{t:"3:00 PM",a:"Active walk; avoid afternoon nap (worsens Kapha)"},{t:"6:00 PM",a:"Lightest meal of the day — ideally by 6 PM"},{t:"10:00 PM",a:"Trikatu tea; no late-night snacking"}],
     risks:[
-      {i:"⚖️",c:"Obesity & Metabolic Syndrome",d:"Kapha governs adipose tissue (Meda dhatu). Obesity, diabetes, high cholesterol are primary Kapha diseases. (PMC4012357)"},
+      {i:"⚖️",c:"Obesity & Metabolic Syndrome",d:"Kapha governs adipose tissue (Meda dhatu). Kapha types have higher susceptibility to Medo Roga (obesity), diabetes, and high cholesterol — manageable with proper diet and exercise. (Charaka Samhita Sutrasthana 21; PMC4012357)"},
       {i:"🫁",c:"Respiratory Disorders",d:"Kapha resides in chest and lungs. Asthma, bronchitis, sinusitis, and congestion are Kapha diseases."},
       {i:"🧠",c:"Depression & Low Motivation",d:"Kapha imbalance correlates with higher stress and reduced motivation. (PMC6822152)"},
     ],
-    src:"Charaka Samhita Vimanasthana 8.95-106 | PMC4012357 | Ashtanga Hridayam Sutrasthana 1"
+    src:"Charaka Samhita Vimanasthana 8.95-106 | Sutrasthana Ch.21 (Medo Roga) | PMC4012357 | Ashtanga Hridayam Sutrasthana 1"
   }
 };
 
@@ -887,13 +901,13 @@ const SYMPTOMS = [
 const SYM_ANALYSIS = {
   vata:{
     title:"Vata Aggravation Detected",
-    desc:"Your symptoms point to Vata imbalance — excess air and space in the body. This causes nervous system hyperactivity, dryness, irregular digestion, and anxiety.",
+    desc:"Your symptoms suggest a Vata imbalance — excess air and space qualities in the body. This is associated with nervous system sensitivity, dryness, irregular digestion, and anxiety tendencies. This is an educational assessment — consult a Vaidya for clinical confirmation.",
     remedies:["Warm sesame oil self-massage (Abhyanga) daily","Drink warm water and ginger tea throughout the day","Eat warm cooked meals at regular times — avoid cold food","Take Ashwagandha (1 tsp) in warm milk at bedtime","Reduce screen time before sleep; maintain regular sleep schedule","Practice gentle Yoga Nidra or restorative yoga"],
     ref:"Charaka Samhita, Sutrasthana Ch.12 — Vata Vyadhi Chikitsa"
   },
   pitta:{
     title:"Pitta Aggravation Detected",
-    desc:"Your symptoms indicate Pitta imbalance — excess fire in the body. This causes inflammation, acidity, skin issues, and short-tempered behaviour.",
+    desc:"Your symptoms suggest a Pitta imbalance — excess fire qualities in the body. This is associated with inflammation, acidity, skin issues, and emotional intensity. This is an educational assessment — consult a Vaidya for clinical confirmation.",
     remedies:["Drink coconut water or cold (not ice) milk first thing in morning","Avoid spicy, oily, fermented foods strictly","Apply pure coconut oil to scalp and soles at night","Take Amalaki (Amla) powder 1 tsp with cool water daily","Practice Sheetali pranayama (cooling breath) for 5 minutes","Avoid prolonged sun exposure; exercise in cool hours"],
     ref:"Charaka Samhita, Sutrasthana Ch.12 — Pitta Vyadhi Chikitsa"
   },
@@ -1295,10 +1309,11 @@ function calcBMI(){
   if(!wt||!ht) return;
   const bmi = wt/((ht/100)**2);
   let cat, col, ayurveda, advice;
-  if(bmi<18.5){cat="Underweight";col="var(--vata)";ayurveda="Indicates Vata excess or Kapha deficiency — body lacks bulk (Mamsa/Meda dhatu)";advice="Increase nourishing foods: ghee, dairy, root vegetables, soaked nuts. Take Ashwagandha + Shatavari.";}
-  else if(bmi<25){cat="Normal";col="var(--green)";ayurveda="Ideal body constitution — balanced doshas and healthy dhatu (tissue) formation";advice="Maintain with balanced seasonal diet (Ritucharya). Regular Yoga and Pranayama.";}
-  else if(bmi<30){cat="Overweight";col="var(--orange)";ayurveda="Suggests Kapha excess and Meda dhatu (fat tissue) accumulation. Weak Agni (digestive fire)";advice="Reduce sweet, heavy, cold foods. Take Trikatu + Guggulu. Daily vigorous exercise.";}
-  else{cat="Obese";col="var(--red)";ayurveda="Significant Kapha imbalance. Medo Roga (obesity) as defined in Charaka Samhita. Panchakarma recommended.";advice="Consult an Ayurvedic physician for Panchakarma. Strict Kapha diet. Triphala + Guggulu daily.";}
+  // India-specific WHO Asia-Pacific cutoffs (2000): overweight ≥23, obese ≥25
+  if(bmi<18.5){cat="Underweight";col="var(--vata)";ayurveda="Suggests Vata excess or Kapha deficiency — body lacks adequate bulk in Mamsa and Meda dhatu (muscle & fat tissues).";advice="Increase nourishing foods: ghee, dairy, root vegetables, soaked nuts. Take Ashwagandha + Shatavari. Consult a Vaidya.";}
+  else if(bmi<23){cat="Normal";col="var(--green)";ayurveda="Healthy range (India-specific WHO Asia-Pacific guideline). Indicates balanced doshas and healthy dhatu (tissue) formation.";advice="Maintain with balanced seasonal Ritucharya diet. Regular Yoga and Pranayama. Annual Prakriti review.";}
+  else if(bmi<25){cat="Overweight";col="var(--orange)";ayurveda="Early Kapha accumulation in Meda dhatu. WHO Asia-Pacific guideline: overweight starts at BMI 23 for South Asian populations.";advice="Reduce sweet, heavy, cold foods. Increase exercise. Take Trikatu + warm water daily. Consult Vaidya.";}
+  else{cat="Obese";col="var(--red)";ayurveda="Significant Kapha imbalance — Medo Roga as defined in Charaka Samhita Sutrasthana Ch.21. Increased risk of metabolic disorders.";advice="Consult an Ayurvedic physician for Panchakarma assessment. Strict Kapha diet. Triphala + Guggulu (under supervision).";}
   const ibw = gender==='Male' ? 50 + 0.91*(ht-152.4) : 45.5 + 0.91*(ht-152.4);
   const bmiResultEl = document.getElementById('bmi-result');
   if(!bmiResultEl) return;
@@ -1618,8 +1633,20 @@ function renderResult(){
   rc.innerHTML = `
     <div class="result-hero ${d.color} fade-in">
       <div class="rd-label">${t('prakriti_your')}</div>
-      <div class="rd-name ${d.color}">${d.emoji} ${d.name} Prakriti</div>
-      <div class="rd-sub">${d.element} · ${d.subtitle}</div>
+      <div class="rd-name ${d.color}">${d.emoji} ${
+        r.prakritiType==='sama'
+          ? 'Sama (Balanced) Prakriti'
+          : r.prakritiType==='dual'
+            ? d.name+'-'+PD[r.secondDom].name+' Prakriti'
+            : d.name+' Prakriti'
+      }</div>
+      <div class="rd-sub">${d.element} · ${
+        r.prakritiType==='sama'
+          ? 'All three doshas in near-equal balance — rare &amp; auspicious (Charaka Samhita 8.95)'
+          : r.prakritiType==='dual'
+            ? 'Dual constitution — '+d.name+' &amp; '+PD[r.secondDom].name+' qualities both prominent'
+            : d.subtitle
+      }</div>
       <div class="dosha-bars">
         <div class="dbar-item"><div class="dbar-label">VATA</div><div class="dbar-track"><div class="dbar-fill vf" style="width:${r.vata}%"></div></div><div class="dbar-pct">${r.vata}%</div></div>
         <div class="dbar-item"><div class="dbar-label">PITTA</div><div class="dbar-track"><div class="dbar-fill pf" style="width:${r.pitta}%"></div></div><div class="dbar-pct">${r.pitta}%</div></div>
@@ -1632,6 +1659,7 @@ function renderResult(){
       <button class="share-btn" onclick="resetQuiz()" style="background:rgba(0,0,0,.1);color:var(--dg);">🔄 Retake</button>
     </div>
     <div class="res-body">
+      <div class="disc-banner">⚕️ <strong>Educational tool only.</strong> This self-assessment is for awareness purposes. For clinical Prakriti determination and health decisions, consult a qualified <strong>Vaidya (BAMS/MD Ayurveda)</strong> or your doctor. <em>Source: Charaka Samhita Vimanasthana Ch.8 | CCRAS-PAS framework</em></div>
       <!-- WELLNESS SCORE -->
       <div class="wellness-banner">
         <div class="ws-label">WELLNESS SCORE</div>
@@ -1670,21 +1698,48 @@ function renderResult(){
 }
 
 function calcWellnessScore(r){
-  const dom = r.dominant;
-  // Balance score: how close are the doshas to ideal ratio (50:30:20)
-  const ideal = {vata:40,pitta:35,kapha:25};
-  const diff = Math.abs(r.vata-ideal.vata)+Math.abs(r.pitta-ideal.pitta)+Math.abs(r.kapha-ideal.kapha);
-  const balance = Math.max(40, Math.round(100 - diff*0.8));
-  const clarity = Math.round(60 + Math.random()*20);
-  const vitality = Math.round(55 + Math.random()*25);
-  const score = Math.round((balance+clarity+vitality)/3);
-  const status = score>=80 ? "Excellent Dosha Balance 🌟" : score>=65 ? "Good Balance — Minor Adjustments Needed" : "Imbalance Detected — Follow Your Plan";
-  return {score, balance, clarity:Math.round(clarity), vitality:Math.round(vitality), status};
+  // All calculations deterministic — no Math.random()
+  // Balance: how balanced are the three doshas (lower spread = higher balance)
+  const spread = Math.max(r.vata,r.pitta,r.kapha) - Math.min(r.vata,r.pitta,r.kapha);
+  const balance = Math.max(35, Math.round(100 - spread * 1.1));
+  // Clarity: derived from mental/emotional quiz answers (questions 4,8 = mind, stress)
+  // Use stored answer indices — Q4=mind(idx4), Q8=stress(idx8)
+  const mindAns = appState.answers[4]; // Mind & Emotions question
+  const stressAns = appState.answers[8]; // Stress Response question
+  // Vata mind answer (0) = anxious = lower clarity; Kapha (2) = stable = higher
+  const clarityMap = {0:{0:62,1:74,2:80}, 1:{0:70,1:82,2:76}, 2:{0:72,1:78,2:85}};
+  const clarity = (mindAns!==undefined && stressAns!==undefined)
+    ? (clarityMap[mindAns]?.[stressAns] || 72) : 72;
+  // Vitality: derived from energy & sleep questions (Q5=energy, Q3=sleep)
+  const energyAns = appState.answers[5];
+  const sleepAns = appState.answers[3];
+  const vitalityMap = {0:{0:60,1:70,2:75}, 1:{0:68,1:78,2:72}, 2:{0:65,1:72,2:80}};
+  const vitality = (energyAns!==undefined && sleepAns!==undefined)
+    ? (vitalityMap[energyAns]?.[sleepAns] || 70) : 70;
+  const score = Math.round((balance + clarity + vitality) / 3);
+  const status = score>=80 ? "Excellent Dosha Balance 🌟" : score>=65 ? "Good — Minor Adjustments Needed" : "Imbalance Detected — Follow Your Plan";
+  return {score, balance, clarity, vitality, status};
 }
 
 function drawDoshaChart(r){
   const canvas = document.getElementById('dosha-chart');
-  if(!canvas || !window.Chart) return;
+  if(!canvas) return;
+  if(!window.Chart){
+    // Offline fallback: CSS bar chart
+    const wrap = canvas.parentElement;
+    wrap.innerHTML = `<div style="padding:8px 0;">
+      ${[{l:'Vata',v:r.vata,c:'#5B8FA8'},{l:'Pitta',v:r.pitta,c:'#D4693A'},{l:'Kapha',v:r.kapha,c:'#4A7C5E'}].map(d=>`
+      <div style="margin-bottom:10px;">
+        <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;">
+          <span style="font-weight:700;color:${d.c}">${d.l}</span><span style="color:#666">${d.v}%</span>
+        </div>
+        <div style="height:12px;background:#f0f0f0;border-radius:6px;overflow:hidden;">
+          <div style="height:100%;width:${d.v}%;background:${d.c};border-radius:6px;transition:width 1s;"></div>
+        </div>
+      </div>`).join('')}
+    </div>`;
+    return;
+  }
   // Destroy existing chart if any
   if(window._doshaChart) { window._doshaChart.destroy(); }
   window._doshaChart = new Chart(canvas, {
@@ -1733,23 +1788,24 @@ function renderYoga(){
           <div class="yoga-tags">${a.tags.map(tag=>`<span class="yt">${tag}</span>`).join('')}</div>
         </div>
       </div>`).join('')}
-    <div style="font-size:10px;color:var(--muted);text-align:center;padding:8px 0;font-style:italic;">📚 Based on Hatha Yoga Pradipika · Yoga Sutras of Patanjali · Ayurvedic Yoga Therapy (Dr. David Frawley)</div>`;
+    <div style="font-size:10px;color:var(--muted);text-align:center;padding:8px 0;font-style:italic;">📚 Dosha-specific yoga guidance: Dr. David Frawley & Dr. Vasant Lad — Yoga of Herbs (1986); Dr. Claudia Welch — Balance Your Hormones (2011); Ashtanga Hridayam Ch.2 (Dinacharyam). Individual asana-dosha links are from contemporary Ayurvedic yoga therapy practice — not directly from Hatha Yoga Pradipika.</div>`;
 }
 
 // ══════════════════════════════════════════════
 // RENDER: WEEKLY DIET
 // ══════════════════════════════════════════════
-let activeDietDay = 0;
+// activeDietDay stored in appState
 function renderWeeklyDiet(){
   const el = document.getElementById('diet-content');
   if(!el) return;
   const r = appState.resultData;
   if(!r){ el.innerHTML=`<div class="card"><p style="color:var(--muted);text-align:center;padding:20px;">${t('no_result')}</p><button class="btn btn-gold btn-full" onclick="resetQuiz()">${t('take_quiz')}</button></div>`; return; }
   const plan = WEEKLY_DIET[r.dominant];
-  const day = plan.days[activeDietDay];
+  if(appState.activeDietDay===undefined) appState.activeDietDay=0;
+  const day = plan.days[appState.activeDietDay];
   el.innerHTML = `
     <div class="season-tag">🍂 ${plan.season}</div>
-    <div class="week-tabs">${plan.days.map((d,i)=>`<button class="wtab ${i===activeDietDay?'active':''}" onclick="switchDietDay(${i})">${d.day}</button>`).join('')}</div>
+    <div class="week-tabs">${plan.days.map((d,i)=>`<button class="wtab ${i===appState.activeDietDay?'active':''}" onclick="switchDietDay(${i})">${d.day}</button>`).join('')}</div>
     <div id="day-meals" class="fade-in">
       ${renderDayMeals(day)}
     </div>
@@ -1770,7 +1826,7 @@ function renderDayMeals(day){
   }).join('');
 }
 function switchDietDay(i){
-  activeDietDay = i;
+  appState.activeDietDay = i;
   renderWeeklyDiet();
 }
 
@@ -1829,7 +1885,8 @@ function renderProgress(){
         </div>
       </div>`).join('')}
     ${history.length < 2 ? `<div style="text-align:center;font-size:12px;color:var(--muted);padding:12px;font-style:italic;">Take the quiz again after following your plan to see your progress chart</div>` : ''}
-    <button class="btn btn-outline btn-full" onclick="clearProgress()" style="margin-top:10px;font-size:12px;">🗑️ Clear History</button>`;
+    <p style='font-size:10px;color:var(--muted);text-align:center;margin:8px 0;font-style:italic;'>💾 Progress saved on this device only — use the same browser to track over time. Clearing browser data will erase history.</p>
+    <button class="btn btn-outline btn-full" onclick="clearProgress()" style="margin-top:6px;font-size:12px;">🗑️ Clear History</button>`;
   if(history.length >= 2){
     setTimeout(()=>drawProgressChart(history), 100);
   }
@@ -1935,10 +1992,13 @@ function computeResult(){
   const vP=Math.round(sc.v/tot*100);
   const pP=Math.round(sc.p/tot*100);
   const kP=100-vP-pP;
-  let dom='vata';
-  if(sc.p>=sc.v&&sc.p>=sc.k) dom='pitta';
-  else if(sc.k>=sc.v&&sc.k>=sc.p) dom='kapha';
-  appState.resultData={dominant:dom,vata:vP,pitta:pP,kapha:kP,scores:sc};
+  // Dual-dosha & Sama logic (Charaka Samhita Vimanasthana 8.95 — 7 Prakriti types)
+  const scores=[{d:'vata',v:vP},{d:'pitta',v:pP},{d:'kapha',v:kP}].sort((a,b)=>b.v-a.v);
+  const spread=scores[0].v-scores[2].v;
+  let dom=scores[0].d, prakritiType='single', secondDom=scores[1].d;
+  if(spread<=8){ prakritiType='sama'; }
+  else if(scores[0].v-scores[1].v<=12){ prakritiType='dual'; }
+  appState.resultData={dominant:dom,secondDom,prakritiType,vata:vP,pitta:pP,kapha:kP,scores:sc};
   showScreen('s-app');
   renderHome();
   renderSymptoms();
@@ -1947,6 +2007,42 @@ function computeResult(){
   renderDoctors();
   showTab('result');
 }
+
+// ══════════════════════════════════════════════
+// DISCLAIMER — shown on first visit each session
+// ══════════════════════════════════════════════
+function showDisclaimerIfNeeded(){
+  try{
+    if(!sessionStorage.getItem('ayurmind_disc_accepted')){
+      document.getElementById('disc-overlay').style.display='flex';
+    }
+  }catch(e){}
+}
+function acceptDisclaimer(){
+  try{ sessionStorage.setItem('ayurmind_disc_accepted','1'); }catch(e){}
+  document.getElementById('disc-overlay').style.display='none';
+}
+// Show disclaimer on load
+showDisclaimerIfNeeded();
 </script>
+
+<!-- DISCLAIMER MODAL — shown on first launch -->
+<div class="disc-overlay" id="disc-overlay" style="display:none;">
+  <div class="disc-box">
+    <div class="disc-handle"></div>
+    <div class="disc-title">⚕️ Important Health Notice</div>
+    <div class="disc-body">
+      <strong>AyurMind AI is an educational awareness tool only.</strong><br><br>
+      This app provides general Ayurvedic information based on classical texts and published research. It does <strong>not</strong> constitute medical diagnosis, clinical advice, or a substitute for professional consultation.<br><br>
+      <strong>Before starting any herbal treatment, diet change, or Panchakarma therapy, always consult:</strong><br>
+      • A qualified Ayurvedic Vaidya (BAMS/MD Ayurveda)<br>
+      • Your registered medical doctor (MBBS/MD)<br><br>
+      Prakriti assessment by questionnaire is a <strong>self-awareness tool</strong>. For clinical Prakriti determination, an in-person examination by a trained Vaidya is required.<br><br>
+      <span style="font-size:11px;color:var(--pitta);">⚠️ If you have any medical condition, are pregnant, or are on prescription medication, do not change your treatment without consulting your doctor.</span>
+    </div>
+    <button class="disc-accept" onclick="acceptDisclaimer()">I Understand — Continue to App</button>
+    <div class="disc-footer">By continuing, you acknowledge this is for educational purposes only.<br>Under Indian IT Act 2000 & IMC Act 1956 — not a medical device.</div>
+  </div>
+</div>
 </body>
 </html>
