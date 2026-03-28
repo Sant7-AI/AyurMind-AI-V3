@@ -1,0 +1,1952 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>AyurMind AI v3 — Complete Ayurvedic Health Platform</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --dg: #1A3A2A; --mg: #2D5A3D; --sg: #7A9E7E;
+  --gold: #C9973A; --gl: #E8C070; --cream: #F5F0E8;
+  --white: #FFFFFF; --text: #1C1C1C; --muted: #666;
+  --border: #D4C9B0; --light: #EEF5EE; --pale: #FFF8EC;
+  --vata: #5B8FA8; --pitta: #D4693A; --kapha: #4A7C5E;
+  --red: #C0392B; --orange: #E67E22; --green: #27AE60;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text);min-height:100vh;overflow-x:hidden;}
+
+/* ═══ SCREENS ═══ */
+.screen{display:none;min-height:100vh;flex-direction:column;}
+.screen.active{display:flex;}
+
+/* ═══ HEADER ═══ */
+.hdr{background:var(--dg);padding:13px 18px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:200;box-shadow:0 2px 16px rgba(0,0,0,0.25);}
+.logo{font-family:'Playfair Display',serif;font-size:19px;font-weight:700;color:#fff;letter-spacing:.3px;}
+.logo span{color:var(--gl);}
+.logo sub{font-size:9px;color:var(--sg);vertical-align:super;font-family:'DM Mono',monospace;font-weight:500;margin-left:2px;}
+.hdr-right{display:flex;align-items:center;gap:8px;}
+.lang-btn{background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:#fff;font-size:11px;font-weight:600;padding:5px 10px;border-radius:20px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;}
+.lang-btn:hover{background:var(--gold);color:var(--dg);border-color:var(--gold);}
+.mode-toggle{display:flex;background:rgba(255,255,255,0.08);border-radius:20px;overflow:hidden;border:1px solid rgba(255,255,255,0.15);}
+.mode-btn{padding:5px 12px;font-size:10px;font-weight:600;cursor:pointer;color:rgba(255,255,255,0.6);background:transparent;border:none;font-family:'DM Sans',sans-serif;transition:all .2s;letter-spacing:.5px;}
+.mode-btn.active{background:var(--gold);color:var(--dg);}
+
+/* ═══ BOTTOM NAV ═══ */
+.bnav{position:fixed;bottom:0;left:0;right:0;background:var(--dg);display:flex;z-index:200;border-top:1px solid rgba(255,255,255,0.1);padding-bottom:env(safe-area-inset-bottom);}
+.bnav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px 4px;cursor:pointer;color:rgba(255,255,255,0.45);font-size:9px;font-weight:600;letter-spacing:.5px;transition:all .2s;gap:3px;border:none;background:transparent;font-family:'DM Sans',sans-serif;}
+.bnav-item .ni{font-size:19px;line-height:1;}
+.bnav-item.active{color:var(--gl);}
+.bnav-item:hover{color:var(--sg);}
+
+/* ═══ PAGE CONTENT (above bottom nav) ═══ */
+.page-body{flex:1;padding:20px 18px 90px;overflow-y:auto;}
+.page-title{font-family:'Playfair Display',serif;font-size:24px;font-weight:700;color:var(--dg);margin-bottom:4px;}
+.page-sub{font-size:13px;color:var(--muted);margin-bottom:22px;}
+.section-label{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--sg);margin-bottom:8px;}
+
+/* ═══ CARDS ═══ */
+.card{background:var(--white);border:1px solid var(--border);border-radius:16px;padding:18px;margin-bottom:14px;box-shadow:0 2px 12px rgba(0,0,0,0.04);}
+.card-title{font-family:'Playfair Display',serif;font-size:16px;font-weight:700;color:var(--dg);margin-bottom:10px;display:flex;align-items:center;gap:8px;}
+.card-title .ci{font-size:18px;}
+
+/* ═══ BUTTONS ═══ */
+.btn{border:none;border-radius:12px;padding:13px 22px;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;display:inline-flex;align-items:center;justify-content:center;gap:8px;}
+.btn-gold{background:linear-gradient(135deg,var(--gold),#B8832A);color:var(--dg);box-shadow:0 4px 16px rgba(201,151,58,0.35);}
+.btn-gold:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(201,151,58,0.45);}
+.btn-green{background:var(--dg);color:#fff;}
+.btn-green:hover{background:var(--mg);}
+.btn-outline{background:transparent;border:2px solid var(--border);color:var(--muted);}
+.btn-outline:hover{border-color:var(--sg);color:var(--dg);}
+.btn-full{width:100%;}
+.btn-sm{padding:8px 14px;font-size:12px;border-radius:8px;}
+
+/* ═══ TABS ═══ */
+.tabs{display:flex;gap:8px;margin-bottom:18px;overflow-x:auto;padding-bottom:4px;}
+.tabs::-webkit-scrollbar{display:none;}
+.tab{padding:7px 16px;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;border:2px solid var(--border);background:var(--white);color:var(--muted);transition:all .2s;font-family:'DM Sans',sans-serif;}
+.tab.active{background:var(--dg);color:var(--gl);border-color:var(--dg);}
+
+/* ═══ PILLS / TAGS ═══ */
+.pill{display:inline-block;padding:3px 10px;border-radius:20px;font-size:10px;font-weight:700;letter-spacing:.5px;}
+.pill-green{background:#EEF5EE;color:var(--mg);}
+.pill-gold{background:var(--pale);color:#8B5A00;}
+.pill-red{background:#FEF0EE;color:var(--red);}
+.pill-blue{background:#EEF4F8;color:#2D5A8B;}
+
+/* ═══ WELCOME SCREEN ═══ */
+#s-welcome{background:linear-gradient(160deg,var(--dg) 0%,#0D2418 55%,#1A4A2A 100%);}
+.welcome-body{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px;text-align:center;position:relative;overflow:hidden;}
+.welcome-body::before{content:'';position:absolute;width:380px;height:380px;border-radius:50%;background:radial-gradient(circle,rgba(201,151,58,.12) 0%,transparent 70%);top:-100px;right:-80px;}
+.welcome-body::after{content:'';position:absolute;width:280px;height:280px;border-radius:50%;background:radial-gradient(circle,rgba(122,158,126,.1) 0%,transparent 70%);bottom:-60px;left:-60px;}
+.hero-icon{font-size:68px;margin-bottom:18px;position:relative;z-index:1;animation:float 3s ease-in-out infinite;}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+.hero-title{font-family:'Playfair Display',serif;font-size:38px;font-weight:900;color:#fff;line-height:1.15;margin-bottom:10px;position:relative;z-index:1;}
+.hero-title span{color:var(--gl);}
+.hero-sub{font-size:14px;color:rgba(255,255,255,.68);max-width:320px;line-height:1.7;margin-bottom:28px;position:relative;z-index:1;}
+.hero-stats{display:flex;gap:12px;margin-bottom:28px;position:relative;z-index:1;flex-wrap:wrap;justify-content:center;}
+.hstat{text-align:center;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);border-radius:12px;padding:10px 14px;}
+.hstat-n{font-family:'Playfair Display',serif;font-size:20px;font-weight:700;color:var(--gl);}
+.hstat-l{font-size:9px;color:rgba(255,255,255,.55);margin-top:2px;}
+.mode-select{display:flex;gap:10px;margin-bottom:20px;position:relative;z-index:1;}
+.mcard{flex:1;background:rgba(255,255,255,.08);border:2px solid rgba(255,255,255,.15);border-radius:14px;padding:16px 12px;cursor:pointer;text-align:center;transition:all .25s;}
+.mcard:hover,.mcard.chosen{background:rgba(201,151,58,.2);border-color:var(--gold);}
+.mcard .me{font-size:28px;margin-bottom:8px;}
+.mcard h4{font-size:13px;font-weight:700;color:#fff;margin-bottom:4px;}
+.mcard p{font-size:11px;color:rgba(255,255,255,.55);}
+.welcome-footer{background:rgba(255,255,255,.04);border-top:1px solid rgba(255,255,255,.08);padding:12px 20px;text-align:center;font-size:10px;color:rgba(255,255,255,.35);font-style:italic;}
+
+/* ═══ HOME SCREEN ═══ */
+.dosha-banner{border-radius:16px;padding:18px 20px;margin-bottom:18px;display:flex;align-items:center;justify-content:space-between;position:relative;overflow:hidden;}
+.dosha-banner.vata{background:linear-gradient(135deg,#1A2D3A,#2D4A5E);}
+.dosha-banner.pitta{background:linear-gradient(135deg,#3A1A0D,#5E3420);}
+.dosha-banner.kapha{background:linear-gradient(135deg,#0D3A1A,#1A5E2D);}
+.dosha-banner.none{background:linear-gradient(135deg,var(--dg),var(--mg));}
+.db-left h3{font-family:'Playfair Display',serif;font-size:20px;color:#fff;margin-bottom:3px;}
+.db-left p{font-size:11px;color:rgba(255,255,255,.65);}
+.db-emoji{font-size:42px;opacity:.85;}
+.quick-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:18px;}
+.qcard{background:var(--white);border:1px solid var(--border);border-radius:14px;padding:16px 14px;cursor:pointer;transition:all .22s;text-align:center;}
+.qcard:hover{transform:translateY(-3px);box-shadow:0 8px 24px rgba(0,0,0,.09);border-color:var(--sg);}
+.qcard .qe{font-size:30px;margin-bottom:8px;}
+.qcard h4{font-size:13px;font-weight:700;color:var(--dg);margin-bottom:3px;}
+.qcard p{font-size:11px;color:var(--muted);}
+.doctor-banner{background:var(--dg);border-radius:14px;padding:16px 18px;display:flex;align-items:center;gap:14px;margin-bottom:14px;cursor:pointer;transition:all .2s;}
+.doctor-banner:hover{background:var(--mg);}
+.doctor-banner .de{font-size:32px;}
+.doctor-banner div h4{font-size:14px;font-weight:700;color:var(--gl);}
+.doctor-banner div p{font-size:11px;color:rgba(255,255,255,.65);}
+
+/* ═══ QUIZ SCREEN ═══ */
+.q-progress-wrap{background:var(--dg);padding:10px 18px 14px;}
+.q-prog-top{display:flex;justify-content:space-between;margin-bottom:5px;}
+.q-prog-top span{font-size:11px;color:rgba(255,255,255,.65);}
+.q-prog-top strong{font-size:11px;color:var(--gl);}
+.q-track{height:6px;background:rgba(255,255,255,.12);border-radius:3px;overflow:hidden;}
+.q-fill{height:100%;background:linear-gradient(90deg,var(--gold),var(--gl));border-radius:3px;transition:width .4s ease;}
+.q-body{flex:1;padding:20px 18px;overflow-y:auto;}
+.q-cat{display:inline-block;background:var(--mg);color:#fff;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;padding:4px 12px;border-radius:20px;margin-bottom:14px;}
+.q-text{font-family:'Playfair Display',serif;font-size:19px;font-weight:700;color:var(--dg);line-height:1.45;margin-bottom:6px;}
+.q-hint{font-size:12px;color:var(--muted);font-style:italic;margin-bottom:20px;}
+.q-opts{display:flex;flex-direction:column;gap:10px;}
+.qopt{background:var(--white);border:2px solid var(--border);border-radius:14px;padding:14px 16px;cursor:pointer;font-size:13px;color:var(--text);font-family:'DM Sans',sans-serif;transition:all .2s;display:flex;align-items:flex-start;gap:12px;text-align:left;}
+.qopt:hover{border-color:var(--sg);background:#F0F7F0;transform:translateX(4px);}
+.qopt.sel{border-color:var(--mg);background:#EEF5EE;color:var(--dg);}
+.qopt.sel::before{content:'✓';font-weight:700;color:var(--mg);flex-shrink:0;margin-top:1px;}
+.qopt-icon{font-size:18px;flex-shrink:0;margin-top:1px;}
+.q-nav{display:flex;gap:10px;padding:14px 18px;background:var(--white);border-top:1px solid var(--border);}
+.q-nav .btn-green{flex:1;}
+.q-nav .btn-outline{padding:13px 16px;}
+
+/* ═══ LOADING SCREEN ═══ */
+#s-loading{background:var(--dg);align-items:center;justify-content:center;text-align:center;padding:40px 24px;}
+.spin{width:80px;height:80px;border-radius:50%;border:4px solid rgba(255,255,255,.1);border-top:4px solid var(--gold);animation:spin 1s linear infinite;margin-bottom:24px;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.lstep{font-size:12px;color:rgba(255,255,255,.45);padding:6px 0;transition:color .4s;}
+.lstep.done{color:var(--gl);}
+
+/* ═══ RESULTS SCREEN ═══ */
+.result-hero{padding:26px 18px 22px;text-align:center;position:relative;overflow:hidden;}
+.result-hero.vata{background:linear-gradient(160deg,#1A2D3A,#2D4A5E);}
+.result-hero.pitta{background:linear-gradient(160deg,#3A1A0D,#5E3420);}
+.result-hero.kapha{background:linear-gradient(160deg,#0D3A1A,#1A5E2D);}
+.rd-label{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:3px;color:rgba(255,255,255,.55);margin-bottom:6px;}
+.rd-name{font-family:'Playfair Display',serif;font-size:42px;font-weight:900;color:#fff;margin-bottom:4px;}
+.rd-name.vata{color:#9FC8E0;}.rd-name.pitta{color:#F0A070;}.rd-name.kapha{color:#80C890;}
+.rd-sub{font-size:13px;color:rgba(255,255,255,.65);margin-bottom:20px;font-style:italic;}
+.dosha-bars{display:flex;gap:8px;justify-content:center;margin-bottom:10px;}
+.dbar-item{text-align:center;min-width:68px;}
+.dbar-label{font-size:10px;font-weight:700;color:rgba(255,255,255,.75);margin-bottom:3px;}
+.dbar-track{height:8px;background:rgba(255,255,255,.1);border-radius:4px;overflow:hidden;margin-bottom:3px;}
+.dbar-fill{height:100%;border-radius:4px;transition:width 1.2s ease;}
+.vf{background:var(--vata);}.pf{background:var(--pitta);}.kf{background:var(--kapha);}
+.dbar-pct{font-size:12px;font-weight:700;color:rgba(255,255,255,.9);}
+.res-actions{display:flex;gap:10px;padding:14px 18px;background:var(--white);border-bottom:1px solid var(--border);}
+.res-body{padding:16px 18px 100px;}
+.share-btn{flex:1;background:var(--dg);color:var(--gl);border:none;border-radius:10px;padding:11px;font-size:12px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;}
+.pdf-btn{flex:1;background:var(--pale);color:var(--dg);border:2px solid var(--gold);border-radius:10px;padding:11px;font-size:12px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;}
+
+/* ═══ TRAIT / INFO GRIDS ═══ */
+.trait-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.trait-chip{background:var(--cream);border:1px solid var(--border);border-radius:10px;padding:8px 11px;}
+.trait-chip strong{display:block;font-size:10px;color:var(--muted);margin-bottom:2px;font-weight:500;}
+.trait-chip span{font-size:12px;color:var(--text);}
+.diet-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.diet-col{border-radius:10px;padding:12px;}
+.diet-col.eat{background:#EEF5EE;border:1px solid #A8C9A8;}
+.diet-col.avoid{background:#FFF0EE;border:1px solid #F0A898;}
+.diet-col h4{font-size:11px;font-weight:700;margin-bottom:8px;}
+.diet-col.eat h4{color:var(--mg);}.diet-col.avoid h4{color:#C04020;}
+.diet-col li{font-size:11px;color:var(--text);padding:2px 0;list-style:none;}
+.diet-col li::before{content:"• ";color:var(--sg);}
+.herb-item{display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(--border);}
+.herb-item:last-child{border-bottom:none;}
+.herb-icon{font-size:24px;flex-shrink:0;}
+.herb-info h4{font-size:13px;font-weight:600;color:var(--dg);margin-bottom:2px;}
+.herb-info p{font-size:11px;color:var(--muted);line-height:1.5;}
+.routine-row{display:flex;gap:12px;align-items:center;padding:7px 0;border-bottom:1px dashed var(--border);}
+.routine-row:last-child{border:none;}
+.rt{font-family:'DM Mono',monospace;font-size:10px;color:var(--gold);min-width:52px;}
+.ra{font-size:12px;color:var(--text);}
+.risk-item{display:flex;gap:10px;padding:10px 12px;background:var(--cream);border-radius:10px;border-left:3px solid var(--gold);margin-bottom:8px;}
+.risk-icon{font-size:20px;flex-shrink:0;}
+.risk-info strong{display:block;font-size:12px;color:var(--dg);margin-bottom:2px;}
+.risk-info span{font-size:11px;color:var(--muted);line-height:1.5;}
+
+/* ═══ SYMPTOM CHECKER ═══ */
+.sym-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px;}
+.sym-chip{background:var(--white);border:2px solid var(--border);border-radius:12px;padding:10px 12px;cursor:pointer;font-size:12px;font-weight:500;color:var(--text);transition:all .2s;display:flex;align-items:center;gap:7px;font-family:'DM Sans',sans-serif;}
+.sym-chip:hover{border-color:var(--sg);}
+.sym-chip.picked{border-color:var(--mg);background:#EEF5EE;color:var(--dg);}
+.sym-result{background:var(--dg);border-radius:14px;padding:18px;color:#fff;}
+.sym-result h4{font-family:'Playfair Display',serif;font-size:17px;color:var(--gl);margin-bottom:8px;}
+.sym-result p{font-size:13px;color:rgba(255,255,255,.8);line-height:1.6;margin-bottom:10px;}
+.remedy-list{list-style:none;}
+.remedy-list li{font-size:12px;color:rgba(255,255,255,.75);padding:5px 0;border-bottom:1px solid rgba(255,255,255,.1);}
+.remedy-list li::before{content:"🌿 ";}
+.remedy-list li:last-child{border:none;}
+
+/* ═══ RITUCHARYA ═══ */
+.season-card{border-radius:14px;padding:16px;margin-bottom:12px;border:1px solid var(--border);}
+.season-card.current{border:2px solid var(--gold);background:var(--pale);}
+.season-card h4{font-family:'Playfair Display',serif;font-size:15px;font-weight:700;color:var(--dg);margin-bottom:4px;display:flex;align-items:center;gap:6px;}
+.season-card p{font-size:12px;color:var(--muted);margin-bottom:10px;}
+.season-tips{display:flex;flex-wrap:wrap;gap:6px;}
+.stip{background:var(--light);border-radius:8px;padding:4px 10px;font-size:11px;color:var(--mg);}
+
+/* ═══ BMI / VITALS ═══ */
+.vitals-form{display:flex;flex-direction:column;gap:12px;margin-bottom:16px;}
+.vfield{display:flex;flex-direction:column;gap:5px;}
+.vfield label{font-size:12px;font-weight:600;color:var(--dg);}
+.vfield input, .vfield select{background:var(--white);border:2px solid var(--border);border-radius:10px;padding:11px 14px;font-size:14px;font-family:'DM Sans',sans-serif;color:var(--text);outline:none;transition:border-color .2s;}
+.vfield input:focus, .vfield select:focus{border-color:var(--sg);}
+.vitals-result{border-radius:14px;padding:16px;border:1px solid var(--border);}
+.bmi-circle{width:90px;height:90px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;margin:0 auto 12px;border:3px solid var(--gold);}
+.bmi-num{font-family:'Playfair Display',serif;font-size:24px;font-weight:700;color:var(--dg);}
+.bmi-cat{font-size:9px;color:var(--muted);font-weight:600;margin-top:1px;}
+.vitals-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.vstat{background:var(--cream);border-radius:10px;padding:10px;text-align:center;}
+.vstat-val{font-size:18px;font-weight:700;color:var(--dg);font-family:'Playfair Display',serif;}
+.vstat-lbl{font-size:10px;color:var(--muted);}
+
+/* ═══ HERB DOSE CALC ═══ */
+.herb-select-list{display:flex;flex-direction:column;gap:8px;margin-bottom:16px;}
+.hsel{background:var(--white);border:2px solid var(--border);border-radius:12px;padding:12px 14px;cursor:pointer;transition:all .2s;display:flex;justify-content:space-between;align-items:center;}
+.hsel:hover{border-color:var(--sg);}
+.hsel.chosen{border-color:var(--gold);background:var(--pale);}
+.hsel-info h4{font-size:13px;font-weight:600;color:var(--dg);margin-bottom:2px;}
+.hsel-info p{font-size:11px;color:var(--muted);}
+.hsel-dosha{font-size:18px;}
+.dose-result{background:var(--dg);border-radius:14px;padding:18px;color:#fff;margin-bottom:10px;}
+.dose-result h4{font-family:'Playfair Display',serif;font-size:16px;color:var(--gl);margin-bottom:10px;}
+.dose-row{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.1);font-size:12px;}
+.dose-row:last-child{border:none;}
+.dose-row span:first-child{color:rgba(255,255,255,.65);}
+.dose-row span:last-child{color:#fff;font-weight:600;}
+
+/* ═══ DOCTOR FINDER ═══ */
+.doc-card{background:var(--white);border:1px solid var(--border);border-radius:14px;padding:15px;margin-bottom:10px;display:flex;gap:14px;align-items:flex-start;}
+.doc-avatar{width:48px;height:48px;border-radius:50%;background:var(--light);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;}
+.doc-info h4{font-size:14px;font-weight:700;color:var(--dg);margin-bottom:2px;}
+.doc-info p{font-size:11px;color:var(--muted);margin-bottom:6px;}
+.doc-info .doc-tags{display:flex;gap:5px;flex-wrap:wrap;}
+.doc-actions{margin-left:auto;display:flex;flex-direction:column;gap:6px;align-items:flex-end;}
+
+/* ═══ VIKRITI ═══ */
+.vikriti-compare{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;}
+.vc-card{border-radius:12px;padding:14px;text-align:center;}
+.vc-card.prakriti{background:var(--light);border:1px solid #A8C9A8;}
+.vc-card.vikriti{background:var(--pale);border:1px solid var(--gl);}
+.vc-card h4{font-size:10px;font-weight:700;letter-spacing:1px;margin-bottom:6px;text-transform:uppercase;}
+.vc-card.prakriti h4{color:var(--mg);}
+.vc-card.vikriti h4{color:#8B5A00;}
+.vc-dosha{font-family:'Playfair Display',serif;font-size:22px;font-weight:700;color:var(--dg);}
+.vc-pct{font-size:12px;color:var(--muted);}
+.imbalance-alert{background:linear-gradient(135deg,#3A1A0D,#5E2D0D);border-radius:12px;padding:14px 16px;margin-bottom:12px;}
+.imbalance-alert h4{font-size:14px;font-weight:700;color:#F0A070;margin-bottom:4px;}
+.imbalance-alert p{font-size:12px;color:rgba(255,255,255,.75);line-height:1.6;}
+
+/* ═══ PDF MODAL ═══ */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:500;align-items:flex-end;justify-content:center;}
+.modal-overlay.open{display:flex;}
+.modal-box{background:var(--white);border-radius:24px 24px 0 0;padding:24px 20px 40px;width:100%;max-width:480px;animation:slideUp .3s ease;}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.modal-handle{width:40px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 20px;}
+.modal-title{font-family:'Playfair Display',serif;font-size:20px;font-weight:700;color:var(--dg);margin-bottom:6px;}
+.modal-sub{font-size:13px;color:var(--muted);margin-bottom:20px;}
+
+/* ═══ DOCTOR MODE ═══ */
+.dmode-banner{background:linear-gradient(135deg,#1A2D3A,#2D4A5E);border-radius:14px;padding:16px 18px;margin-bottom:16px;}
+.dmode-banner h3{font-family:'Playfair Display',serif;font-size:17px;color:var(--gl);margin-bottom:4px;}
+.dmode-banner p{font-size:12px;color:rgba(255,255,255,.65);}
+.patient-row{background:var(--white);border:1px solid var(--border);border-radius:12px;padding:13px 15px;display:flex;align-items:center;gap:12px;margin-bottom:8px;cursor:pointer;transition:all .2s;}
+.patient-row:hover{border-color:var(--sg);transform:translateX(4px);}
+.pr-avatar{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;}
+.pr-vata{background:#EEF4F8;}.pr-pitta{background:#FEF0EE;}.pr-kapha{background:#EEF5EE;}
+.pr-info h4{font-size:13px;font-weight:600;color:var(--dg);margin-bottom:1px;}
+.pr-info p{font-size:11px;color:var(--muted);}
+.pr-right{margin-left:auto;text-align:right;}
+.pr-right .pill{font-size:9px;}
+.pr-time{font-size:10px;color:var(--muted);margin-top:3px;}
+
+/* ═══ ANIMATIONS ═══ */
+.fade-in{animation:fadeIn .35s ease forwards;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+.slide-in{animation:slideIn .3s ease forwards;}
+@keyframes slideIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
+
+/* ═══ DOSHA RADAR CHART ═══ */
+.chart-wrap{background:var(--white);border-radius:16px;padding:18px;border:1px solid var(--border);margin-bottom:14px;}
+.chart-wrap canvas{display:block;margin:0 auto;}
+.chart-title{font-family:'Playfair Display',serif;font-size:16px;font-weight:700;color:var(--dg);margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+.dosha-score-row{display:flex;gap:10px;margin-top:12px;}
+.ds-chip{flex:1;text-align:center;padding:10px 8px;border-radius:12px;}
+.ds-chip.vata-chip{background:#EEF4F8;border:2px solid var(--vata);}
+.ds-chip.pitta-chip{background:#FEF0EE;border:2px solid var(--pitta);}
+.ds-chip.kapha-chip{background:#EEF5EE;border:2px solid var(--kapha);}
+.ds-num{font-family:'Playfair Display',serif;font-size:24px;font-weight:700;}
+.ds-chip.vata-chip .ds-num{color:var(--vata);}
+.ds-chip.pitta-chip .ds-num{color:var(--pitta);}
+.ds-chip.kapha-chip .ds-num{color:var(--kapha);}
+.ds-label{font-size:10px;font-weight:700;letter-spacing:1.5px;margin-top:3px;}
+.ds-chip.vata-chip .ds-label{color:var(--vata);}
+.ds-chip.pitta-chip .ds-label{color:var(--pitta);}
+.ds-chip.kapha-chip .ds-label{color:var(--kapha);}
+
+/* ═══ WELLNESS SCORE ═══ */
+.wellness-banner{background:linear-gradient(135deg,var(--dg),var(--mg));border-radius:16px;padding:20px;margin-bottom:14px;text-align:center;position:relative;overflow:hidden;}
+.wellness-banner::before{content:'';position:absolute;width:200px;height:200px;border-radius:50%;background:rgba(201,151,58,.1);top:-60px;right:-60px;}
+.ws-label{font-size:11px;letter-spacing:2px;color:var(--sg);margin-bottom:6px;font-family:'DM Mono',monospace;}
+.ws-score{font-family:'Playfair Display',serif;font-size:56px;font-weight:900;color:var(--gl);line-height:1;}
+.ws-max{font-size:18px;color:rgba(255,255,255,.5);}
+.ws-status{font-size:14px;color:rgba(255,255,255,.8);margin-top:6px;}
+.ws-bar-wrap{margin-top:14px;}
+.ws-bar-track{height:8px;background:rgba(255,255,255,.15);border-radius:4px;overflow:hidden;}
+.ws-bar-fill{height:100%;background:linear-gradient(90deg,var(--gold),var(--gl));border-radius:4px;transition:width 1.2s ease;}
+.ws-factors{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:12px;}
+.wsf{background:rgba(255,255,255,.08);border-radius:10px;padding:8px;text-align:center;}
+.wsf-val{font-size:15px;font-weight:700;color:var(--gl);}
+.wsf-lbl{font-size:9px;color:rgba(255,255,255,.55);margin-top:2px;}
+
+/* ═══ YOGA ═══ */
+.yoga-card{background:var(--white);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:10px;display:flex;gap:14px;align-items:flex-start;}
+.yoga-icon{font-size:36px;flex-shrink:0;}
+.yoga-info h4{font-size:14px;font-weight:700;color:var(--dg);margin-bottom:2px;}
+.yoga-info .yoga-sanskrit{font-size:11px;color:var(--gold);font-style:italic;margin-bottom:5px;}
+.yoga-info p{font-size:12px;color:var(--muted);line-height:1.55;}
+.yoga-tags{display:flex;gap:5px;margin-top:6px;flex-wrap:wrap;}
+.yt{background:var(--light);border-radius:6px;padding:3px 8px;font-size:10px;font-weight:600;color:var(--mg);}
+.yoga-duration{font-size:11px;color:var(--gold);font-weight:600;margin-top:4px;}
+
+/* ═══ WEEKLY DIET ═══ */
+.week-tabs{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;margin-bottom:16px;}
+.week-tabs::-webkit-scrollbar{display:none;}
+.wtab{padding:6px 12px;border-radius:20px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;border:2px solid var(--border);background:var(--white);color:var(--muted);transition:all .2s;font-family:'DM Sans',sans-serif;}
+.wtab.active{background:var(--dg);color:var(--gl);border-color:var(--dg);}
+.meal-card{background:var(--white);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:10px;}
+.meal-header{padding:10px 14px;display:flex;align-items:center;gap:8px;}
+.meal-header.breakfast{background:#FFF8EC;}
+.meal-header.lunch{background:#EEF5EE;}
+.meal-header.dinner{background:#FEF0EE;}
+.meal-header h4{font-size:13px;font-weight:700;}
+.meal-header.breakfast h4{color:#8B5A00;}
+.meal-header.lunch h4{color:var(--mg);}
+.meal-header.dinner h4{color:var(--pitta);}
+.meal-body{padding:12px 14px;}
+.meal-items{list-style:none;}
+.meal-items li{font-size:12px;color:var(--text);padding:4px 0;border-bottom:1px dashed var(--border);display:flex;justify-content:space-between;}
+.meal-items li:last-child{border:none;}
+.meal-note{font-size:11px;color:var(--muted);font-style:italic;margin-top:8px;}
+.season-tag{background:var(--dg);color:var(--gl);font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px;margin-bottom:14px;display:inline-block;}
+
+/* ═══ PROGRESS TRACKER ═══ */
+.prog-empty{text-align:center;padding:30px 20px;}
+.prog-empty .pe-icon{font-size:48px;margin-bottom:12px;}
+.prog-entry{background:var(--white);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:8px;}
+.prog-entry-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+.prog-date{font-size:11px;color:var(--muted);font-family:'DM Mono',monospace;}
+.prog-dosha{font-size:13px;font-weight:700;color:var(--dg);}
+.prog-bars{display:flex;flex-direction:column;gap:5px;}
+.pb-row{display:flex;align-items:center;gap:8px;}
+.pb-label{font-size:10px;font-weight:700;width:36px;color:var(--muted);}
+.pb-track{flex:1;height:6px;background:var(--cream);border-radius:3px;overflow:hidden;}
+.pb-fill{height:100%;border-radius:3px;transition:width .8s ease;}
+.pb-val{font-size:10px;color:var(--muted);width:28px;text-align:right;}
+.trend-card{background:var(--white);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:14px;}
+.trend-card canvas{display:block;margin:0 auto;}
+
+/* ═══ PANCHAKARMA ═══ */
+.pk-hero{background:linear-gradient(135deg,#2C1810,#5E3420);border-radius:14px;padding:18px;margin-bottom:14px;text-align:center;}
+.pk-hero h3{font-family:'Playfair Display',serif;font-size:20px;color:var(--gl);margin-bottom:6px;}
+.pk-hero p{font-size:12px;color:rgba(255,255,255,.7);line-height:1.6;}
+.pk-card{background:var(--white);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:10px;}
+.pk-card-header{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.pk-num{width:28px;height:28px;border-radius:50%;background:var(--dg);color:var(--gl);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.pk-card h4{font-family:'Playfair Display',serif;font-size:15px;color:var(--dg);}
+.pk-card .pk-sanskrit{font-size:11px;color:var(--gold);font-style:italic;margin-bottom:6px;}
+.pk-card p{font-size:12px;color:var(--muted);line-height:1.6;margin-bottom:8px;}
+.pk-meta{display:flex;gap:8px;flex-wrap:wrap;}
+.pk-chip{font-size:10px;padding:3px 10px;border-radius:6px;background:var(--cream);color:var(--mg);font-weight:600;}
+
+/* ═══ PRINT / PDF STYLES ═══ */
+@media print {
+  .hdr,.bnav,.res-actions,.restart-btn,.no-print{display:none!important;}
+  .screen{display:block!important;}
+  #s-result{display:block!important;}
+  body{background:white;}
+  .result-hero{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  .page-break{page-break-before:always;}
+}
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════ -->
+<!-- WELCOME SCREEN                             -->
+<!-- ══════════════════════════════════════════ -->
+<div id="s-welcome" class="screen active">
+  <div class="hdr">
+    <div class="logo">Ayur<span>Mind</span> AI<sub>v3</sub></div>
+    <div class="hdr-right">
+      <button class="lang-btn" onclick="cycleLang()">🌐 <span id="lang-label">EN</span></button>
+    </div>
+  </div>
+  <div class="welcome-body">
+    <div class="hero-icon">🌿</div>
+    <h1 class="hero-title" data-key="welcome_title">Know Your<br><span>Prakriti</span></h1>
+    <p class="hero-sub" data-key="welcome_sub">Discover your Ayurvedic body constitution in 3 minutes. Get a personalized health plan backed by 5,000 years of classical wisdom.</p>
+    <div class="hero-stats">
+      <div class="hstat"><div class="hstat-n">12</div><div class="hstat-l" data-key="stat_q">Questions</div></div>
+      <div class="hstat"><div class="hstat-n">3 min</div><div class="hstat-l" data-key="stat_t">Quick Quiz</div></div>
+      <div class="hstat"><div class="hstat-n">Free</div><div class="hstat-l" data-key="stat_f">Always</div></div>
+      <div class="hstat"><div class="hstat-n">8</div><div class="hstat-l" data-key="stat_feat">Features</div></div>
+    </div>
+    <p style="color:rgba(255,255,255,.6);font-size:12px;margin-bottom:14px;font-weight:600;" data-key="choose_mode">Choose your mode:</p>
+    <div class="mode-select">
+      <div class="mcard" onclick="chooseMode('patient')" id="mc-patient">
+        <div class="me">🙋</div>
+        <h4 data-key="mode_patient">Patient / Self</h4>
+        <p data-key="mode_patient_sub">Check your own health</p>
+      </div>
+      <div class="mcard" onclick="chooseMode('doctor')" id="mc-doctor">
+        <div class="me">🩺</div>
+        <h4 data-key="mode_doctor">Doctor / Vaidya</h4>
+        <p data-key="mode_doctor_sub">Manage your patients</p>
+      </div>
+    </div>
+    <button class="btn btn-gold" onclick="enterApp()" id="enter-btn" style="width:100%;max-width:320px;font-size:15px;padding:15px;" data-key="btn_start">Begin Assessment →</button>
+  </div>
+  <div class="welcome-footer">Based on Charaka Samhita · Nature Scientific Reports 2015 · Frontiers in Medicine 2025 · CCRAS-PAS Methodology</div>
+</div>
+
+<!-- ══════════════════════════════════════════ -->
+<!-- QUIZ SCREEN                                -->
+<!-- ══════════════════════════════════════════ -->
+<div id="s-quiz" class="screen">
+  <div class="hdr">
+    <div class="logo">Ayur<span>Mind</span> AI</div>
+    <div id="q-counter" class="lang-btn" style="cursor:default;">1 / 12</div>
+  </div>
+  <div class="q-progress-wrap">
+    <div class="q-prog-top">
+      <span id="q-cat-top">Body Frame</span>
+      <strong id="q-pct-top">0%</strong>
+    </div>
+    <div class="q-track"><div class="q-fill" id="q-fill" style="width:0%"></div></div>
+  </div>
+  <div class="q-body" id="q-body"></div>
+  <div class="q-nav">
+    <button class="btn btn-outline" id="btn-back" onclick="prevQ()" style="display:none;" data-key="btn_back">← Back</button>
+    <button class="btn btn-green" id="btn-next" onclick="nextQ()" disabled data-key="btn_next">Next →</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════ -->
+<!-- LOADING SCREEN                             -->
+<!-- ══════════════════════════════════════════ -->
+<div id="s-loading" class="screen">
+  <div class="spin"></div>
+  <div style="font-size:36px;margin-bottom:14px;">🧬</div>
+  <div style="font-family:'Playfair Display',serif;font-size:24px;color:#fff;margin-bottom:8px;" data-key="analysing">Analysing Your Prakriti...</div>
+  <p style="color:rgba(255,255,255,.5);font-size:12px;max-width:240px;">Mapping your responses to classical Ayurvedic doshas</p>
+  <div style="margin-top:22px;display:flex;flex-direction:column;gap:6px;">
+    <div class="lstep" id="ls1">⏳ <span data-key="ls1">Processing body constitution data...</span></div>
+    <div class="lstep" id="ls2">⏳ <span data-key="ls2">Calculating Vata · Pitta · Kapha scores...</span></div>
+    <div class="lstep" id="ls3">⏳ <span data-key="ls3">Generating personalized health plan...</span></div>
+    <div class="lstep" id="ls4">⏳ <span data-key="ls4">Fetching Ayurvedic references...</span></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════ -->
+<!-- MAIN APP (Home + All Tabs)                 -->
+<!-- ══════════════════════════════════════════ -->
+<div id="s-app" class="screen">
+  <div class="hdr">
+    <div class="logo">Ayur<span>Mind</span> AI<sub>v3</sub></div>
+    <div class="hdr-right">
+      <button class="lang-btn" onclick="cycleLang()">🌐 <span id="lang-label2">EN</span></button>
+      <div class="mode-toggle">
+        <button class="mode-btn active" id="mb-patient" onclick="setMode('patient')" data-key="mode_p">Patient</button>
+        <button class="mode-btn" id="mb-doctor" onclick="setMode('doctor')" data-key="mode_d">Doctor</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB CONTENT -->
+  <div id="tab-home" class="page-body tab-panel active">
+    <div id="home-content"></div>
+  </div>
+
+  <div id="tab-result" class="tab-panel" style="display:none;">
+    <div id="result-content"></div>
+  </div>
+
+  <div id="tab-symptoms" class="page-body tab-panel" style="display:none;">
+    <p class="section-label" data-key="sym_label">Symptom Checker</p>
+    <h2 class="page-title" data-key="sym_title">What's Bothering You?</h2>
+    <p class="page-sub" data-key="sym_sub">Select all current symptoms — we'll identify the dosha imbalance</p>
+    <div class="sym-grid" id="sym-grid"></div>
+    <button class="btn btn-gold btn-full" onclick="analyseSymptoms()" data-key="btn_analyse">Analyse Symptoms →</button>
+    <div id="sym-result-box" style="margin-top:16px;"></div>
+  </div>
+
+  <div id="tab-ritucharya" class="page-body tab-panel" style="display:none;">
+    <p class="section-label" data-key="ritu_label">Seasonal Routine</p>
+    <h2 class="page-title" data-key="ritu_title">Ritucharya Guide</h2>
+    <p class="page-sub" data-key="ritu_sub">Ayurveda prescribes different routines for each season. Follow yours for optimal health.</p>
+    <div id="ritu-content"></div>
+  </div>
+
+  <div id="tab-tools" class="page-body tab-panel" style="display:none;">
+    <p class="section-label" data-key="tools_label">Health Tools</p>
+    <h2 class="page-title" data-key="tools_title">Vitals & Herb Calculator</h2>
+    <p class="page-sub" data-key="tools_sub">Enter your measurements for Ayurvedic health assessment</p>
+    <div class="tabs" id="tools-tabs">
+      <button class="tab active" onclick="switchTool('bmi')" data-key="tab_bmi">⚖️ BMI & Vitals</button>
+      <button class="tab" onclick="switchTool('herbs')" data-key="tab_herbs">🌿 Herb Doses</button>
+      <button class="tab" onclick="switchTool('vikriti')" data-key="tab_vikriti">🔄 Vikriti</button>
+    </div>
+    <div id="tool-bmi"></div>
+    <div id="tool-herbs" style="display:none;"></div>
+    <div id="tool-vikriti" style="display:none;"></div>
+  </div>
+
+  <div id="tab-doctor" class="page-body tab-panel" style="display:none;">
+    <p class="section-label" data-key="doc_label">Find Doctor</p>
+    <h2 class="page-title" data-key="doc_title">Ayurvedic Doctors</h2>
+    <p class="page-sub" data-key="doc_sub">Nearby Ayurvedic doctors and hospitals — Vijayapur & Maharashtra region</p>
+    <div id="doc-content"></div>
+  </div>
+
+  <div id="tab-yoga" class="page-body tab-panel" style="display:none;">
+    <p class="section-label">YOGA THERAPY</p>
+    <h2 class="page-title">Yoga for Your Prakriti</h2>
+    <p class="page-sub">Specific asanas selected for your body constitution — based on Hatha Yoga Pradipika</p>
+    <div id="yoga-content"></div>
+  </div>
+
+  <div id="tab-diet" class="page-body tab-panel" style="display:none;">
+    <p class="section-label">WEEKLY DIET</p>
+    <h2 class="page-title">7-Day Meal Plan</h2>
+    <p class="page-sub">Personalized weekly Ayurvedic diet based on your Prakriti & current season</p>
+    <div id="diet-content"></div>
+  </div>
+
+  <div id="tab-progress" class="page-body tab-panel" style="display:none;">
+    <p class="section-label">HEALTH JOURNEY</p>
+    <h2 class="page-title">Progress Tracker</h2>
+    <p class="page-sub">Track your dosha balance over time — see how your lifestyle changes are working</p>
+    <div id="progress-content"></div>
+  </div>
+
+  <div id="tab-panchakarma" class="page-body tab-panel" style="display:none;">
+    <p class="section-label">DEEP CLEANSE</p>
+    <h2 class="page-title">Panchakarma Guide</h2>
+    <p class="page-sub">The five classical Ayurvedic purification therapies — understand what your body needs</p>
+    <div id="pk-content"></div>
+  </div>
+
+  <!-- BOTTOM NAV — scrollable for more tabs -->
+  <nav class="bnav" style="overflow-x:auto;justify-content:flex-start;padding:0 4px;">
+    <button class="bnav-item active" id="bn-home" onclick="showTab('home')"><span class="ni">🏠</span><span data-key="nav_home">Home</span></button>
+    <button class="bnav-item" id="bn-result" onclick="showTab('result')"><span class="ni">📊</span><span data-key="nav_report">Report</span></button>
+    <button class="bnav-item" id="bn-yoga" onclick="showTab('yoga')"><span class="ni">🧘</span><span>Yoga</span></button>
+    <button class="bnav-item" id="bn-diet" onclick="showTab('diet')"><span class="ni">🥗</span><span>Diet</span></button>
+    <button class="bnav-item" id="bn-symptoms" onclick="showTab('symptoms')"><span class="ni">🩺</span><span data-key="nav_sym">Symptoms</span></button>
+    <button class="bnav-item" id="bn-progress" onclick="showTab('progress')"><span class="ni">📈</span><span>Progress</span></button>
+    <button class="bnav-item" id="bn-ritucharya" onclick="showTab('ritucharya')"><span class="ni">🗓️</span><span data-key="nav_ritu">Seasons</span></button>
+    <button class="bnav-item" id="bn-tools" onclick="showTab('tools')"><span class="ni">⚕️</span><span data-key="nav_tools">Tools</span></button>
+    <button class="bnav-item" id="bn-panchakarma" onclick="showTab('panchakarma')"><span class="ni">🌊</span><span>Pancha</span></button>
+    <button class="bnav-item" id="bn-doctor" onclick="showTab('doctor')"><span class="ni">🏥</span><span data-key="nav_doc">Doctors</span></button>
+  </nav>
+</div>
+
+<!-- PDF MODAL -->
+<div class="modal-overlay" id="pdf-modal">
+  <div class="modal-box">
+    <div class="modal-handle"></div>
+    <div class="modal-title" data-key="pdf_title">📄 Download Your Report</div>
+    <div class="modal-sub" data-key="pdf_sub">A complete Ayurvedic health report — share with your doctor or keep for yourself.</div>
+    <div style="background:var(--cream);border-radius:12px;padding:14px;margin-bottom:18px;">
+      <div style="font-size:12px;color:var(--muted);margin-bottom:10px;font-weight:600;" data-key="pdf_includes">Report includes:</div>
+      <div style="display:flex;flex-direction:column;gap:6px;">
+        <div style="font-size:12px;color:var(--text);">✅ Prakriti type with dosha percentages</div>
+        <div style="font-size:12px;color:var(--text);">✅ Personalized diet chart (eat / avoid)</div>
+        <div style="font-size:12px;color:var(--text);">✅ Recommended herbs with dosage</div>
+        <div style="font-size:12px;color:var(--text);">✅ Daily routine (Dinacharya)</div>
+        <div style="font-size:12px;color:var(--text);">✅ Disease susceptibility awareness</div>
+        <div style="font-size:12px;color:var(--text);">✅ Classical text references</div>
+      </div>
+    </div>
+    <button class="btn btn-gold btn-full" style="font-size:15px;padding:15px;margin-bottom:10px;" onclick="printReport()" data-key="btn_print">🖨️ Print / Save as PDF</button>
+    <button class="btn btn-outline btn-full" onclick="closePdfModal()" data-key="btn_close">Close</button>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+// ══════════════════════════════════════════════
+// LANGUAGE SYSTEM
+// ══════════════════════════════════════════════
+const langs = ['EN','HI','MR'];
+let curLang = 0;
+
+const T = {
+  EN:{
+    welcome_title:'Know Your<br><span>Prakriti</span>',
+    welcome_sub:'Discover your Ayurvedic body constitution in 3 minutes. Get a personalized health plan backed by 5,000 years of classical wisdom.',
+    stat_q:'Questions',stat_t:'Quick Quiz',stat_f:'Always',stat_feat:'Features',
+    choose_mode:'Choose your mode:',
+    mode_patient:'Patient / Self',mode_patient_sub:'Check your own health',
+    mode_doctor:'Doctor / Vaidya',mode_doctor_sub:'Manage your patients',
+    btn_start:'Begin Assessment →',btn_back:'← Back',btn_next:'Next →',
+    analysing:'Analysing Your Prakriti...',
+    ls1:'Processing body constitution data...',ls2:'Calculating Vata · Pitta · Kapha scores...',
+    ls3:'Generating personalized health plan...',ls4:'Fetching Ayurvedic references...',
+    mode_p:'Patient',mode_d:'Doctor',
+    nav_home:'Home',nav_report:'Report',nav_sym:'Symptoms',nav_ritu:'Seasons',nav_tools:'Tools',nav_doc:'Doctors',
+    sym_label:'SYMPTOM CHECKER',sym_title:"What's Bothering You?",sym_sub:'Select current symptoms — we identify the dosha imbalance',
+    btn_analyse:'Analyse Symptoms →',
+    ritu_label:'SEASONAL ROUTINE',ritu_title:'Ritucharya Guide',ritu_sub:'Ayurveda prescribes different routines for each season.',
+    tools_label:'HEALTH TOOLS',tools_title:'Vitals & Herb Calculator',tools_sub:'Enter your measurements for Ayurvedic health assessment',
+    tab_bmi:'⚖️ BMI & Vitals',tab_herbs:'🌿 Herb Doses',tab_vikriti:'🔄 Vikriti',
+    doc_label:'FIND DOCTOR',doc_title:'Ayurvedic Doctors',doc_sub:'Nearby Ayurvedic doctors — Vijayapur & Maharashtra region',
+    pdf_title:'📄 Download Your Report',pdf_sub:'A complete Ayurvedic health report — share with your doctor or keep for yourself.',
+    pdf_includes:'Report includes:',btn_print:'🖨️ Print / Save as PDF',btn_close:'Close',
+    prakriti_your:'Your Prakriti',report:'Report',take_quiz:'Take Prakriti Quiz',
+    no_result:'Take the quiz first to see your report.',
+    vikriti_title:'Vikriti Assessment',vikriti_sub:"Your current dosha imbalance (different from your birth Prakriti)",
+  },
+  HI:{
+    welcome_title:'अपनी<br><span>प्रकृति</span> जानें',
+    welcome_sub:'3 मिनट में अपनी आयुर्वेदिक प्रकृति जानें। 5,000 वर्ष पुराने ज्ञान पर आधारित स्वास्थ्य योजना पाएं।',
+    stat_q:'प्रश्न',stat_t:'त्वरित',stat_f:'मुफ्त',stat_feat:'सुविधाएं',
+    choose_mode:'अपना तरीका चुनें:',
+    mode_patient:'मरीज / स्वयं',mode_patient_sub:'अपना स्वास्थ्य जांचें',
+    mode_doctor:'डॉक्टर / वैद्य',mode_doctor_sub:'मरीजों की देखभाल',
+    btn_start:'शुरू करें →',btn_back:'← वापस',btn_next:'अगला →',
+    analysing:'आपकी प्रकृति का विश्लेषण...',
+    ls1:'शरीर संरचना डेटा संसाधित हो रहा है...',ls2:'वात · पित्त · कफ स्कोर गणना...',
+    ls3:'व्यक्तिगत स्वास्थ्य योजना बन रही है...',ls4:'आयुर्वेदिक संदर्भ प्राप्त हो रहे हैं...',
+    mode_p:'मरीज',mode_d:'डॉक्टर',
+    nav_home:'होम',nav_report:'रिपोर्ट',nav_sym:'लक्षण',nav_ritu:'ऋतु',nav_tools:'उपकरण',nav_doc:'डॉक्टर',
+    sym_label:'लक्षण जांचकर्ता',sym_title:'आपको क्या परेशान कर रहा है?',sym_sub:'वर्तमान लक्षण चुनें — हम दोष असंतुलन पहचानेंगे',
+    btn_analyse:'लक्षण विश्लेषण करें →',
+    ritu_label:'मौसमी दिनचर्या',ritu_title:'ऋतुचर्या मार्गदर्शिका',ritu_sub:'आयुर्वेद हर मौसम के लिए अलग दिनचर्या बताता है।',
+    tools_label:'स्वास्थ्य उपकरण',tools_title:'बीएमआई और जड़ी-बूटी कैलकुलेटर',tools_sub:'आयुर्वेदिक स्वास्थ्य मूल्यांकन के लिए माप दर्ज करें',
+    tab_bmi:'⚖️ बीएमआई',tab_herbs:'🌿 जड़ी-बूटी मात्रा',tab_vikriti:'🔄 विकृति',
+    doc_label:'डॉक्टर खोजें',doc_title:'आयुर्वेदिक डॉक्टर',doc_sub:'नजदीकी आयुर्वेदिक डॉक्टर — विजयपुर और महाराष्ट्र',
+    pdf_title:'📄 रिपोर्ट डाउनलोड करें',pdf_sub:'पूरी आयुर्वेदिक स्वास्थ्य रिपोर्ट — अपने डॉक्टर को दिखाएं।',
+    pdf_includes:'रिपोर्ट में शामिल:',btn_print:'🖨️ प्रिंट / PDF सेव करें',btn_close:'बंद करें',
+    prakriti_your:'आपकी प्रकृति',report:'रिपोर्ट',take_quiz:'प्रकृति परीक्षण लें',
+    no_result:'रिपोर्ट देखने के लिए पहले परीक्षण लें।',
+    vikriti_title:'विकृति मूल्यांकन',vikriti_sub:'आपका वर्तमान दोष असंतुलन',
+  },
+  MR:{
+    welcome_title:'तुमची<br><span>प्रकृती</span> जाणा',
+    welcome_sub:'3 मिनिटांत तुमची आयुर्वेदिक प्रकृती जाणून घ्या. 5,000 वर्षांच्या शास्त्रावर आधारित आरोग्य योजना मिळवा.',
+    stat_q:'प्रश्न',stat_t:'झटपट',stat_f:'मोफत',stat_feat:'वैशिष्ट्ये',
+    choose_mode:'तुमची पद्धत निवडा:',
+    mode_patient:'रुग्ण / स्वतः',mode_patient_sub:'स्वतःची तपासणी करा',
+    mode_doctor:'डॉक्टर / वैद्य',mode_doctor_sub:'रुग्णांचे व्यवस्थापन',
+    btn_start:'सुरू करा →',btn_back:'← मागे',btn_next:'पुढे →',
+    analysing:'तुमच्या प्रकृतीचे विश्लेषण...',
+    ls1:'शारीरिक रचना डेटा प्रक्रिया करत आहे...',ls2:'वात · पित्त · कफ गुण मोजत आहे...',
+    ls3:'वैयक्तिक आरोग्य योजना तयार होत आहे...',ls4:'आयुर्वेदिक संदर्भ आणत आहे...',
+    mode_p:'रुग्ण',mode_d:'डॉक्टर',
+    nav_home:'होम',nav_report:'अहवाल',nav_sym:'लक्षणे',nav_ritu:'ऋतू',nav_tools:'साधने',nav_doc:'डॉक्टर',
+    sym_label:'लक्षण तपासणी',sym_title:'तुम्हाला काय त्रास होत आहे?',sym_sub:'सध्याची लक्षणे निवडा — आम्ही दोष असंतुलन ओळखू',
+    btn_analyse:'लक्षणांचे विश्लेषण करा →',
+    ritu_label:'मौसमी दिनचर्या',ritu_title:'ऋतुचर्या मार्गदर्शिका',ritu_sub:'आयुर्वेद प्रत्येक ऋतूसाठी वेगळी दिनचर्या सांगतो.',
+    tools_label:'आरोग्य साधने',tools_title:'BMI आणि औषधी मोजमाप',tools_sub:'आयुर्वेदिक आरोग्य मूल्यांकनासाठी माप द्या',
+    tab_bmi:'⚖️ BMI',tab_herbs:'🌿 औषधी मात्रा',tab_vikriti:'🔄 विकृती',
+    doc_label:'डॉक्टर शोधा',doc_title:'आयुर्वेदिक डॉक्टर',doc_sub:'जवळचे आयुर्वेदिक डॉक्टर — विजयपूर आणि महाराष्ट्र',
+    pdf_title:'📄 अहवाल डाउनलोड करा',pdf_sub:'संपूर्ण आयुर्वेदिक आरोग्य अहवाल — डॉक्टरांना दाखवा.',
+    pdf_includes:'अहवालात समाविष्ट:',btn_print:'🖨️ प्रिंट / PDF जतन करा',btn_close:'बंद करा',
+    prakriti_your:'तुमची प्रकृती',report:'अहवाल',take_quiz:'प्रकृती परीक्षण घ्या',
+    no_result:'अहवाल पाहण्यासाठी आधी परीक्षण द्या।',
+    vikriti_title:'विकृती मूल्यांकन',vikriti_sub:'तुमचा सध्याचा दोष असंतुलन',
+  }
+};
+
+function t(key){ return (T[langs[curLang]] || T.EN)[key] || (T.EN)[key] || key; }
+
+function applyLang(){
+  document.querySelectorAll('[data-key]').forEach(el=>{
+    const k = el.getAttribute('data-key');
+    const val = t(k);
+    if(val) el.innerHTML = val;
+  });
+  const lbl = langs[curLang];
+  document.querySelectorAll('#lang-label,#lang-label2').forEach(e=>e.textContent=lbl);
+  // Only re-render app panels when the main app screen is active
+  const appActive = document.getElementById('s-app') && document.getElementById('s-app').classList.contains('active');
+  if(appActive){
+    if(appState.resultData) renderResult();
+    renderHome();
+    renderSymptoms();
+    renderRitucharya();
+    // Only render tools if the tool tab is visible to avoid wiping user BMI inputs
+    if(appState.activeTab === 'tools') renderTools();
+    renderDoctors();
+  }
+}
+
+function cycleLang(){
+  curLang = (curLang+1) % langs.length;
+  applyLang();
+}
+
+// ══════════════════════════════════════════════
+// APP STATE
+// ══════════════════════════════════════════════
+const appState = {
+  mode: 'patient',       // 'patient' | 'doctor'
+  resultData: null,      // prakriti result
+  curQ: 0,
+  answers: {},
+  activeTab: 'home',
+  activeTool: 'bmi',
+  pickedSymptoms: new Set(),
+  selectedHerb: null,
+  vikritiAnswers: {},
+};
+
+// ══════════════════════════════════════════════
+// QUESTIONS
+// ══════════════════════════════════════════════
+const QS = [
+  {cat:"Body Frame",q:"How would you describe your natural body frame?",hint:"Think about your natural build before any weight changes",opts:[
+    {i:"🦴",t:"Thin, bony, light — hard to gain weight",s:{v:3,p:1,k:0}},
+    {i:"💪",t:"Medium, muscular, well-proportioned",s:{v:1,p:3,k:1}},
+    {i:"🌊",t:"Large, heavy, solid — gain weight easily",s:{v:0,p:1,k:3}},
+  ]},
+  {cat:"Skin & Hair",q:"What best describes your skin and hair?",hint:"Without skincare products",opts:[
+    {i:"🌬️",t:"Dry, rough skin; thin, brittle hair",s:{v:3,p:0,k:1}},
+    {i:"🔥",t:"Warm, oily skin; fine hair; early greying",s:{v:0,p:3,k:1}},
+    {i:"💧",t:"Thick oily cool skin; thick lustrous wavy hair",s:{v:0,p:1,k:3}},
+  ]},
+  {cat:"Digestion",q:"How is your digestion and appetite?",hint:"Your general pattern, not occasional days",opts:[
+    {i:"🌀",t:"Irregular appetite; bloating and gas common",s:{v:3,p:0,k:1}},
+    {i:"⚡",t:"Strong appetite — irritable if meal is missed",s:{v:1,p:3,k:0}},
+    {i:"🐢",t:"Slow but steady; can easily skip meals",s:{v:0,p:1,k:3}},
+  ]},
+  {cat:"Sleep",q:"How do you typically sleep?",hint:"Your pattern over recent months",opts:[
+    {i:"🌙",t:"Light sleeper — disturbed easily; under 6 hours",s:{v:3,p:1,k:0}},
+    {i:"😴",t:"Moderate — 7–8 hours; fall asleep easily",s:{v:1,p:3,k:0}},
+    {i:"😪",t:"Heavy, 8+ hours; groggy in mornings",s:{v:0,p:1,k:3}},
+  ]},
+  {cat:"Mind & Emotions",q:"What best describes your mental pattern?",hint:"Your underlying nature, not just current stress",opts:[
+    {i:"🦋",t:"Quick thinking, creative, anxious; mind races",s:{v:3,p:1,k:0}},
+    {i:"🦅",t:"Sharp, focused, intense; can be critical or impatient",s:{v:1,p:3,k:0}},
+    {i:"🐘",t:"Calm, stable, patient; slow to anger; great memory",s:{v:0,p:1,k:3}},
+  ]},
+  {cat:"Energy",q:"How is your energy and activity level?",hint:"Your natural tendency, not your goal",opts:[
+    {i:"🏃",t:"Bursts of energy then fatigue; restless",s:{v:3,p:1,k:0}},
+    {i:"🏊",t:"Medium sustained energy; competitive",s:{v:1,p:3,k:0}},
+    {i:"🧘",t:"Slow to start but good stamina; sedentary",s:{v:0,p:0,k:3}},
+  ]},
+  {cat:"Temperature",q:"What climate do you prefer?",hint:"When you feel most comfortable",opts:[
+    {i:"☀️",t:"Love warmth; hate cold; feel stiff in winter",s:{v:3,p:1,k:0}},
+    {i:"❄️",t:"Prefer cool; dislike heat; overheat easily",s:{v:0,p:3,k:1}},
+    {i:"🌤️",t:"Dislike cold and damp; prefer warm dry weather",s:{v:1,p:0,k:3}},
+  ]},
+  {cat:"Speech",q:"How would others describe your speaking style?",hint:"Your natural style, not when nervous",opts:[
+    {i:"💨",t:"Fast, talkative, topic-jumping; forgetful",s:{v:3,p:1,k:0}},
+    {i:"🎯",t:"Clear, precise, persuasive; sometimes sharp-tongued",s:{v:1,p:3,k:0}},
+    {i:"🎵",t:"Slow, melodious, thoughtful; deep voice",s:{v:0,p:1,k:3}},
+  ]},
+  {cat:"Stress Response",q:"When under stress, how do you react?",hint:"Your instinct before you consciously manage it",opts:[
+    {i:"😰",t:"Anxious, fearful, overwhelmed; mind goes blank",s:{v:3,p:0,k:0}},
+    {i:"😤",t:"Irritable, angry, controlling; try to fix everything",s:{v:0,p:3,k:0}},
+    {i:"😶",t:"Withdraw, go quiet; comfort food; hard to motivate",s:{v:0,p:0,k:3}},
+  ]},
+  {cat:"Memory",q:"How do you learn and remember?",hint:"Your natural style throughout life",opts:[
+    {i:"⚡",t:"Learn fast and forget fast; quick but forgetful",s:{v:3,p:1,k:0}},
+    {i:"📚",t:"Medium pace; sharp short-term memory",s:{v:1,p:3,k:0}},
+    {i:"🏔️",t:"Slow to learn but never forget; excellent long-term memory",s:{v:0,p:1,k:3}},
+  ]},
+  {cat:"Physical Features",q:"Which physical features match you?",hint:"Features consistent since childhood",opts:[
+    {i:"🦴",t:"Small eyes, cracking joints, prominent veins, dark complexion",s:{v:3,p:0,k:0}},
+    {i:"🔴",t:"Medium features, reddish complexion, freckles, sharp eyes",s:{v:0,p:3,k:0}},
+    {i:"🌕",t:"Large eyes, pale complexion, round features, thick lips",s:{v:0,p:0,k:3}},
+  ]},
+  {cat:"Lifestyle",q:"Which describes your overall lifestyle?",hint:"Your natural default, not aspiration",opts:[
+    {i:"🌪️",t:"Irregular routines; creative; love travel and change",s:{v:3,p:1,k:0}},
+    {i:"📋",t:"Goal-driven; structured; ambitious; consistent habits",s:{v:0,p:3,k:1}},
+    {i:"🏠",t:"Prefer routine; love comfort; resist change; very habitual",s:{v:0,p:0,k:3}},
+  ]},
+];
+
+// ══════════════════════════════════════════════
+// PRAKRITI DATA
+// ══════════════════════════════════════════════
+const PD = {
+  vata:{
+    name:"Vata",emoji:"🌬️",element:"Air + Space",
+    subtitle:"The Force of Movement & Creativity",
+    desc:"Your nature is governed by air and space — light, quick, creative, and mobile. Charaka Samhita (Vimanasthana 8.95) describes Vata individuals as quick-minded, artistic, and naturally enthusiastic.",
+    color:"vata",
+    traits:[{l:"Build",v:"Slim, light, bony"},{l:"Skin",v:"Dry, rough"},{l:"Mind",v:"Quick, creative, anxious"},{l:"Sleep",v:"Light, < 6 hours"},{l:"Digestion",v:"Irregular, variable"},{l:"Energy",v:"Burst & crash"}],
+    herbs:[
+      {i:"🌿",n:"Ashwagandha (Withania somnifera)",d:"Reduces Vata anxiety. Nourishes the nervous system. 1 tsp powder in warm milk at bedtime."},
+      {i:"🫚",n:"Sesame Oil (Tila Taila)",d:"Daily warm self-massage (Abhyanga) grounds Vata, lubricates joints and improves circulation."},
+      {i:"🌱",n:"Shatavari (Asparagus racemosus)",d:"Deeply nourishing and moistening for dry Vata constitution. Supports digestion."},
+      {i:"🍃",n:"Triphala",d:"Gentle bowel regulator for Vata constipation. 1 tsp in warm water before sleep."},
+    ],
+    eat:["Warm cooked foods","Ghee & healthy fats","Sweet, sour, salty tastes","Root vegetables","Warm spiced milk","Soaked nuts & seeds"],
+    avoid:["Raw salads & cold foods","Dry crackers & chips","Caffeine & alcohol","Skipping meals","Cold water / ice"],
+    routine:[{t:"6:00 AM",a:"Warm sesame oil self-massage (Abhyanga)"},{t:"6:30 AM",a:"Gentle yoga — forward bends, hip openers"},{t:"7:30 AM",a:"Warm breakfast — porridge or cooked grains"},{t:"12:30 PM",a:"Main warm meal of the day"},{t:"3:00 PM",a:"Short rest or light walk"},{t:"6:30 PM",a:"Light warm dinner before 7 PM"},{t:"9:30 PM",a:"Warm milk + Ashwagandha; sleep by 10 PM"}],
+    risks:[
+      {i:"🧠",c:"Neurological Disorders",d:"Vata governs the nervous system. Anxiety, insomnia, tremors are primary Vata diseases. (Charaka Samhita, Sutrasthana 12)"},
+      {i:"🦴",c:"Bone & Joint Issues",d:"Vata is associated with bone tissue (Asthi dhatu). Osteoporosis, arthritis, dry joints. (PMC4012357)"},
+      {i:"💨",c:"Digestive Irregularity",d:"Constipation, bloating, IBS are classic Vata imbalances due to erratic Apana Vata."},
+    ],
+    src:"Charaka Samhita Vimanasthana 8.95-106 | Nature Scientific Reports 2015 | PMC4012357"
+  },
+  pitta:{
+    name:"Pitta",emoji:"🔥",element:"Fire + Water",
+    subtitle:"The Force of Transformation & Intelligence",
+    desc:"Your nature is governed by fire and water — sharp, intense, focused, and transformative. Charaka Samhita describes Pitta individuals as intelligent leaders. Genome-wide research confirmed the PGM1 gene correlates with Pitta Prakriti (Nature, 2015).",
+    color:"pitta",
+    traits:[{l:"Build",v:"Medium, muscular"},{l:"Skin",v:"Warm, oily, freckles"},{l:"Mind",v:"Sharp, focused, intense"},{l:"Sleep",v:"Moderate, 7–8 hours"},{l:"Digestion",v:"Strong, regular"},{l:"Energy",v:"Sustained, competitive"}],
+    herbs:[
+      {i:"🌸",n:"Amalaki (Emblica officinalis)",d:"Best Pitta-pacifying herb. Rich in Vitamin C, cooling, anti-inflammatory. 1 tsp powder with water daily."},
+      {i:"🌿",n:"Brahmi (Bacopa monnieri)",d:"Cools the Pitta mind. Enhances memory without stimulant heat. Scientifically validated for cognition."},
+      {i:"❄️",n:"Shatavari (Asparagus racemosus)",d:"Cooling, nourishing herb for Pitta in the reproductive and digestive systems."},
+      {i:"🌳",n:"Neem (Azadirachta indica)",d:"Bitter, cooling herb that clears excess Pitta from blood and skin. Useful for skin disorders."},
+    ],
+    eat:["Cool refreshing foods","Sweet, bitter, astringent tastes","Coconut water & mint","Leafy greens","Dairy — milk & ghee","Sweet fruits"],
+    avoid:["Spicy, hot, oily foods","Fermented & sour foods","Alcohol & coffee","Skipping meals","Red meat","Excessive salt"],
+    routine:[{t:"6:00 AM",a:"Wake up; 10 min cooling pranayama (Sheetali)"},{t:"6:30 AM",a:"Moderate yoga — twists, cooling poses"},{t:"7:30 AM",a:"Cool breakfast — sweet fruits, coconut milk"},{t:"12:00 PM",a:"Largest meal at noon (peak Pitta fire)"},{t:"3:00 PM",a:"Brief walk in cool environment"},{t:"6:30 PM",a:"Light, cooling dinner"},{t:"10:00 PM",a:"Cooled Brahmi milk; read; sleep by 10:30 PM"}],
+    risks:[
+      {i:"🫁",c:"Inflammatory Conditions",d:"Pitta governs transformation. Ulcers, gastritis, colitis, liver disorders are primary Pitta diseases."},
+      {i:"🩺",c:"Skin Disorders",d:"Pitta in Rakta dhatu causes psoriasis, eczema, rashes, acne. (PMC4625161)"},
+      {i:"🧠",c:"Irritability & Burnout",d:"Pitta imbalance correlates with poor mood (p≤0.01) and intense anger responses. (PMC6822152)"},
+    ],
+    src:"Charaka Samhita Vimanasthana 8.95-106 | Nature Scientific Reports 2015 (PGM1) | PMC6822152"
+  },
+  kapha:{
+    name:"Kapha",emoji:"🌊",element:"Earth + Water",
+    subtitle:"The Force of Structure & Stability",
+    desc:"Your nature is governed by earth and water — stable, nurturing, strong, and enduring. Charaka Samhita describes Kapha individuals as calm, compassionate, and deeply loyal. You are the caretaker of all three doshas.",
+    color:"kapha",
+    traits:[{l:"Build",v:"Large, heavy, solid"},{l:"Skin",v:"Thick, oily, pale"},{l:"Mind",v:"Calm, patient, stable"},{l:"Sleep",v:"Deep, 8+ hours"},{l:"Digestion",v:"Slow but steady"},{l:"Energy",v:"Slow start, great stamina"}],
+    herbs:[
+      {i:"🌶️",n:"Trikatu (Ginger + Black Pepper + Long Pepper)",d:"Classic Kapha formula. Ignites digestive fire, breaks mucus, mobilises stagnation."},
+      {i:"🍃",n:"Guggulu (Commiphora mukul)",d:"Powerful Kapha-reducer for obesity and high cholesterol. Clinically studied."},
+      {i:"🌿",n:"Punarnava (Boerhavia diffusa)",d:"Reduces water retention and excess Kapha from tissues. Supports kidney function."},
+      {i:"🌱",n:"Triphala",d:"Improves sluggish Kapha digestion. 2 tsp in warm water each morning."},
+    ],
+    eat:["Light, warm, dry foods","Pungent, bitter, astringent tastes","Legumes & lentils","Warm spiced teas","Honey (unheated only)","Bitter greens"],
+    avoid:["Heavy, oily, cold foods","Sweet, salty, sour tastes","Dairy especially cheese","Fried & processed foods","Excessive sleep","Cold water & ice cream"],
+    routine:[{t:"5:30 AM",a:"Wake before sunrise — fight Kapha inertia!"},{t:"6:00 AM",a:"Vigorous yoga or brisk walk — 30–45 min"},{t:"7:30 AM",a:"Light warm breakfast — hot ginger tea, light grain"},{t:"12:30 PM",a:"Medium lunch — avoid overeating; include bitter greens"},{t:"3:00 PM",a:"Active walk; avoid afternoon nap (worsens Kapha)"},{t:"6:00 PM",a:"Lightest meal of the day — ideally by 6 PM"},{t:"10:00 PM",a:"Trikatu tea; no late-night snacking"}],
+    risks:[
+      {i:"⚖️",c:"Obesity & Metabolic Syndrome",d:"Kapha governs adipose tissue (Meda dhatu). Obesity, diabetes, high cholesterol are primary Kapha diseases. (PMC4012357)"},
+      {i:"🫁",c:"Respiratory Disorders",d:"Kapha resides in chest and lungs. Asthma, bronchitis, sinusitis, and congestion are Kapha diseases."},
+      {i:"🧠",c:"Depression & Low Motivation",d:"Kapha imbalance correlates with higher stress and reduced motivation. (PMC6822152)"},
+    ],
+    src:"Charaka Samhita Vimanasthana 8.95-106 | PMC4012357 | Ashtanga Hridayam Sutrasthana 1"
+  }
+};
+
+// ══════════════════════════════════════════════
+// SYMPTOMS DATA
+// ══════════════════════════════════════════════
+const SYMPTOMS = [
+  {i:"💨",t:"Bloating / Gas",d:"vata"},{i:"😰",t:"Anxiety",d:"vata"},{i:"🦴",t:"Joint Pain",d:"vata"},
+  {i:"😴",t:"Insomnia",d:"vata"},{i:"🌀",t:"Constipation",d:"vata"},{i:"🥶",t:"Cold hands/feet",d:"vata"},
+  {i:"🔥",t:"Acidity / Heartburn",d:"pitta"},{i:"😤",t:"Irritability",d:"pitta"},{i:"🩺",t:"Skin Rash/Acne",d:"pitta"},
+  {i:"🤕",t:"Headache",d:"pitta"},{i:"🌡️",t:"Excess Body Heat",d:"pitta"},{i:"👁️",t:"Eye Burning",d:"pitta"},
+  {i:"😪",t:"Excess Fatigue",d:"kapha"},{i:"🤧",t:"Congestion/Cold",d:"kapha"},{i:"⚖️",t:"Weight Gain",d:"kapha"},
+  {i:"🧠",t:"Brain Fog",d:"kapha"},{i:"💧",t:"Water Retention",d:"kapha"},{i:"😢",t:"Low Mood",d:"kapha"},
+];
+
+const SYM_ANALYSIS = {
+  vata:{
+    title:"Vata Aggravation Detected",
+    desc:"Your symptoms point to Vata imbalance — excess air and space in the body. This causes nervous system hyperactivity, dryness, irregular digestion, and anxiety.",
+    remedies:["Warm sesame oil self-massage (Abhyanga) daily","Drink warm water and ginger tea throughout the day","Eat warm cooked meals at regular times — avoid cold food","Take Ashwagandha (1 tsp) in warm milk at bedtime","Reduce screen time before sleep; maintain regular sleep schedule","Practice gentle Yoga Nidra or restorative yoga"],
+    ref:"Charaka Samhita, Sutrasthana Ch.12 — Vata Vyadhi Chikitsa"
+  },
+  pitta:{
+    title:"Pitta Aggravation Detected",
+    desc:"Your symptoms indicate Pitta imbalance — excess fire in the body. This causes inflammation, acidity, skin issues, and short-tempered behaviour.",
+    remedies:["Drink coconut water or cold (not ice) milk first thing in morning","Avoid spicy, oily, fermented foods strictly","Apply pure coconut oil to scalp and soles at night","Take Amalaki (Amla) powder 1 tsp with cool water daily","Practice Sheetali pranayama (cooling breath) for 5 minutes","Avoid prolonged sun exposure; exercise in cool hours"],
+    ref:"Charaka Samhita, Sutrasthana Ch.12 — Pitta Vyadhi Chikitsa"
+  },
+  kapha:{
+    title:"Kapha Aggravation Detected",
+    desc:"Your symptoms suggest Kapha imbalance — excess earth and water causing heaviness, congestion, and metabolic slowdown.",
+    remedies:["Wake up before 6 AM — sleeping late worsens Kapha significantly","Start your day with warm ginger-honey water (honey must not be heated)","Do vigorous physical exercise daily — minimum 30 minutes","Eat light, warm, dry foods; avoid dairy and sweets","Take Trikatu (ginger + black pepper + long pepper) formula","Reduce carbohydrates; favour bitter greens and lentils"],
+    ref:"Charaka Samhita, Sutrasthana Ch.12 — Kapha Vyadhi Chikitsa"
+  }
+};
+
+// ══════════════════════════════════════════════
+// SEASONAL DATA (Ritucharya)
+// ══════════════════════════════════════════════
+const SEASONS = [
+  {name:"Vasanta (Spring)",months:"Feb – Apr",emoji:"🌸",ritu:"Kapha season",current:true,
+   desc:"Kapha liquefies in spring warmth causing congestion, allergies, and lethargy. This is ideal time for Panchakarma detox.",
+   tips:["Light, dry, easily digestible foods","Barley, honey, bitter greens","Morning exercise is essential","Avoid heavy dairy and sweet foods","Nasya (nasal oil drops) beneficial","Ideal time for Panchakarma"]},
+  {name:"Grishma (Summer)",months:"May – Jul",emoji:"☀️",ritu:"Pitta & Vata season",current:false,
+   desc:"Pitta rises in summer heat. Keep cool, stay hydrated, avoid heat exposure. Vata also increases due to dryness.",
+   tips:["Cool, sweet, moist foods","Coconut water, buttermilk, sweet fruits","Avoid spicy, salty, sour foods","Stay in shade during peak hours","Moon-bathing beneficial","Reduce exercise intensity"]},
+  {name:"Varsha (Monsoon)",months:"Jul – Sep",emoji:"🌧️",ritu:"Vata aggravation season",current:false,
+   desc:"Vata peaks during monsoon due to cold, dampness, and irregular weather. Digestive fire (Agni) weakens. Avoid raw foods.",
+   tips:["Warm, light, easily digestible foods","Ginger, rock salt, ghee are beneficial","Avoid raw vegetables and leafy greens","Use oil (Sneha) internally and externally","Keep dry; avoid getting wet in rain","Medicated enema (Basti) recommended"]},
+  {name:"Sharad (Autumn)",months:"Sep – Nov",emoji:"🍂",ritu:"Pitta pacification",current:false,
+   desc:"Pitta aggravated from summer now manifests symptoms. Cleansing, blood purification, and cooling therapies are key.",
+   tips:["Sweet, bitter, astringent foods","Avoid sour, pungent, salty foods","Therapeutic purgation (Virechana) ideal","Moonlight exposure very beneficial","Ghee, sugar, rice, meat soup","Avoid sleeping during daytime"]},
+  {name:"Hemanta (Early Winter)",months:"Nov – Jan",emoji:"🍃",ritu:"Optimal health season",current:false,
+   desc:"Digestive fire is strongest. Body can handle heavier foods. Build strength and immunity during this season.",
+   tips:["Nourishing, heavy, oily foods","Dairy, meat, wheat, sesame","Daily oil massage (Abhyanga)","Vigorous exercise regime","Warming herbs: ginger, garlic, ashwagandha","Build immunity with Chyawanprash"]},
+  {name:"Shishira (Late Winter)",months:"Jan – Feb",emoji:"❄️",ritu:"Vata & Kapha season",current:false,
+   desc:"Cold and dry weather increases Vata and begins Kapha accumulation. Keep warm, eat nourishing foods.",
+   tips:["Heavy, unctuous, warm foods","Honey beneficial to counteract Kapha","Warm clothing essential","Avoid cold, raw, and dry foods","Sesame seeds and ghee recommended","Gentle warming exercise"]},
+];
+
+// ══════════════════════════════════════════════
+// HERB DOSE DATA
+// ══════════════════════════════════════════════
+const HERBS = [
+  {name:"Ashwagandha",botanical:"Withania somnifera",dosha:"🌬️ Vata",use:"Stress, fatigue, nervous system",dose:"1–2 tsp (3–6g)",anupan:"Warm milk or ghee",timing:"Bedtime",caution:"Avoid in pregnancy; consult doctor if on thyroid meds"},
+  {name:"Brahmi",botanical:"Bacopa monnieri",dosha:"🔥 Pitta",use:"Memory, stress, ADHD, mental clarity",dose:"1 tsp (3g)",anupan:"Warm water or ghee",timing:"Morning on empty stomach",caution:"May cause drowsiness; avoid with sedatives"},
+  {name:"Triphala",botanical:"Amalaki + Bibhitaki + Haritaki",dosha:"🌊 Tridosha",use:"Digestion, constipation, detox, eye health",dose:"1–2 tsp (3–6g)",anupan:"Warm water or honey",timing:"Before sleep",caution:"Avoid in pregnancy; not for diarrhoea"},
+  {name:"Shatavari",botanical:"Asparagus racemosus",dosha:"🌬️🔥 Vata-Pitta",use:"Hormonal balance, immunity, nourishment",dose:"1–2 tsp (3–6g)",anupan:"Warm milk",timing:"Morning & night",caution:"Avoid if allergic to asparagus; caution in oestrogen-sensitive conditions"},
+  {name:"Guggulu",botanical:"Commiphora mukul",dosha:"🌊 Kapha",use:"Obesity, cholesterol, joint pain, hypothyroid",dose:"250–500mg resin extract",anupan:"Warm water",timing:"After meals",caution:"Avoid in pregnancy; may interact with warfarin"},
+  {name:"Trikatu",botanical:"Ginger + Black Pepper + Long Pepper",dosha:"🌊 Kapha",use:"Digestion, weight, congestion, metabolism",dose:"¼–½ tsp (1–2g)",anupan:"Warm water with honey",timing:"Before meals",caution:"Avoid in Pitta conditions; not during acidity or ulcers"},
+  {name:"Amalaki (Amla)",botanical:"Emblica officinalis",dosha:"🔥 Pitta",use:"Immunity, skin, hair, acidity, Vitamin C",dose:"1–2 tsp fresh juice or ½ tsp powder",anupan:"Water or honey",timing:"Morning",caution:"Avoid with anticoagulants; excessive dose causes loose stools"},
+  {name:"Neem",botanical:"Azadirachta indica",dosha:"🔥 Pitta",use:"Skin disorders, blood purification, infection",dose:"1–2 neem capsules (500mg) or 5 fresh leaves",anupan:"Warm water",timing:"Morning empty stomach",caution:"Avoid in pregnancy; not for extended use without supervision"},
+];
+
+// ══════════════════════════════════════════════
+// DOCTOR DATA (Vijayapur & Maharashtra)
+// ══════════════════════════════════════════════
+const DOCTORS = [
+  {name:"BLDEA's AVS Ayurveda Hospital",spec:"Multispecialty Ayurvedic Hospital",loc:"Sholapur Road, Vijayapur – 586103",rating:"⭐⭐⭐⭐⭐",tags:["OPD","Panchakarma","Research","BAMS/MD Faculty"],phone:"08352-262770",emoji:"🏥",type:"hospital"},
+  {name:"Govt. Ayurvedic Hospital",spec:"Government Ayurvedic Dispensary",loc:"Station Road, Vijayapur",rating:"⭐⭐⭐⭐",tags:["Free OPD","Govt. Medicines","Panchakarma"],phone:"08352-250100",emoji:"🏛️",type:"hospital"},
+  {name:"Dr. Vidyalakshmi Pujari",spec:"Ayurveda — Kaya Chikitsa & Prakriti",loc:"BLDEA's AVS, Vijayapur",rating:"⭐⭐⭐⭐⭐",tags:["Prakriti Analysis","Research","Women's Health"],phone:"7899683167",emoji:"👩‍⚕️",type:"doctor"},
+  {name:"Dr. Kashinath S. Hadimur",spec:"Ayurveda — Research & Statistics",loc:"BLDEA's AVS, Vijayapur",rating:"⭐⭐⭐⭐⭐",tags:["Research","Ayurvedic Statistics","Clinical Trials"],phone:"7204483843",emoji:"👨‍⚕️",type:"doctor"},
+  {name:"Tilak Ayurved Mahavidyalaya",spec:"Multispecialty Ayurvedic Hospital",loc:"Rasta Peth, Pune – 411011",rating:"⭐⭐⭐⭐⭐",tags:["Panchakarma","Shalya","Stri Roga","OPD"],phone:"020-26133921",emoji:"🏥",type:"hospital"},
+  {name:"SDM College Ayurvedic Hospital",spec:"Multispecialty Ayurvedic Hospital",loc:"Kuthpady, Udupi – 574118",rating:"⭐⭐⭐⭐⭐",tags:["Panchakarma","Research","All Specialties"],phone:"0820-2521212",emoji:"🏥",type:"hospital"},
+];
+
+// ══════════════════════════════════════════════
+// NAVIGATION & MODE
+// ══════════════════════════════════════════════
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0,0);
+}
+
+function chooseMode(m){
+  appState.mode = m;
+  document.getElementById('mc-patient').classList.toggle('chosen', m==='patient');
+  document.getElementById('mc-doctor').classList.toggle('chosen', m==='doctor');
+}
+
+function enterApp(){
+  if(appState.resultData){
+    showScreen('s-app');
+    renderHome();
+  } else {
+    appState.curQ=0; appState.answers={};
+    renderQ();
+    showScreen('s-quiz');
+  }
+}
+
+function setMode(m){
+  appState.mode = m;
+  document.getElementById('mb-patient').classList.toggle('active', m==='patient');
+  document.getElementById('mb-doctor').classList.toggle('active', m==='doctor');
+  renderHome();
+}
+
+function showTab(tab){
+  appState.activeTab = tab;
+  document.querySelectorAll('.tab-panel').forEach(p=>p.style.display='none');
+  document.getElementById('tab-'+tab).style.display='block';
+  document.querySelectorAll('.bnav-item').forEach(b=>b.classList.remove('active'));
+  document.getElementById('bn-'+tab).classList.add('active');
+  window.scrollTo(0,0);
+}
+
+// ══════════════════════════════════════════════
+// QUIZ LOGIC
+// ══════════════════════════════════════════════
+function renderQ(){
+  const q = QS[appState.curQ];
+  const pct = Math.round((appState.curQ / QS.length)*100);
+  document.getElementById('q-fill').style.width = pct+'%';
+  document.getElementById('q-counter').textContent = (appState.curQ+1)+' / '+QS.length;
+  document.getElementById('q-pct-top').textContent = pct+'%';
+  document.getElementById('q-cat-top').textContent = q.cat;
+  document.getElementById('btn-back').style.display = appState.curQ===0 ? 'none' : '';
+  document.getElementById('btn-next').disabled = appState.answers[appState.curQ]===undefined;
+  document.getElementById('btn-next').textContent = appState.curQ===QS.length-1 ? '🌿 See My Result' : t('btn_next');
+  document.getElementById('q-body').innerHTML = `
+    <div class="fade-in">
+      <div class="q-cat">${q.cat}</div>
+      <div class="q-text">${q.q}</div>
+      <div class="q-hint">${q.hint}</div>
+      <div class="q-opts">
+        ${q.opts.map((o,i)=>`
+          <button class="qopt ${appState.answers[appState.curQ]===i?'sel':''}" onclick="pickOpt(${i})">
+            ${appState.answers[appState.curQ]===i ? '' : `<span class="qopt-icon">${o.i}</span>`}
+            ${o.t}
+          </button>
+        `).join('')}
+      </div>
+    </div>`;
+}
+
+function pickOpt(i){
+  appState.answers[appState.curQ] = i;
+  document.querySelectorAll('.qopt').forEach((el,idx)=>el.classList.toggle('sel',idx===i));
+  document.getElementById('btn-next').disabled = false;
+}
+
+function nextQ(){
+  if(appState.answers[appState.curQ]===undefined) return;
+  if(appState.curQ < QS.length-1){ appState.curQ++; renderQ(); }
+  else { startLoading(); }
+}
+
+function prevQ(){
+  if(appState.curQ>0){ appState.curQ--; renderQ(); }
+}
+
+// ══════════════════════════════════════════════
+// LOADING
+// ══════════════════════════════════════════════
+function startLoading(){
+  showScreen('s-loading');
+  // FIX: read step text BEFORE any re-render destroys the <span> elements
+  const stepTexts = ['ls1','ls2','ls3','ls4'].map(id=>{
+    const el = document.getElementById(id);
+    const span = el ? el.querySelector('span') : null;
+    return span ? span.textContent.trim() : (el ? el.textContent.replace('⏳','').trim() : '');
+  });
+  ['ls1','ls2','ls3','ls4'].forEach((id,i)=>{
+    setTimeout(()=>{
+      const el = document.getElementById(id);
+      if(!el) return;
+      el.classList.add('done');
+      el.textContent = '✅ ' + (stepTexts[i] || '');
+    }, 600+i*700);
+  });
+  setTimeout(computeResult, 3400);
+}
+
+// ══════════════════════════════════════════════
+// COMPUTE RESULT
+// ══════════════════════════════════════════════
+// computeResult defined in v3 extension
+
+// ══════════════════════════════════════════════
+// HOME SCREEN
+// ══════════════════════════════════════════════
+function renderHome(){
+  const hc = document.getElementById('home-content');
+  if(!hc) return;
+  if(appState.mode==='doctor'){ renderDoctorHome(); return; }
+  const r = appState.resultData;
+  const greeting = new Date().getHours()<12 ? '🌅 Good Morning' : new Date().getHours()<17 ? '☀️ Good Afternoon' : '🌙 Good Evening';
+  hc.innerHTML = `
+    <div class="fade-in">
+      ${r ? `
+        <div class="dosha-banner ${r.dominant}">
+          <div class="db-left">
+            <h3>${PD[r.dominant].emoji} ${PD[r.dominant].name} Prakriti</h3>
+            <p>${greeting} · ${PD[r.dominant].element}</p>
+          </div>
+          <div class="db-emoji">${PD[r.dominant].emoji}</div>
+        </div>
+      ` : `
+        <div class="dosha-banner none" onclick="enterApp()" style="cursor:pointer;">
+          <div class="db-left">
+            <h3>🌿 Start Your Assessment</h3>
+            <p>Tap to take the 3-minute Prakriti quiz</p>
+          </div>
+          <div style="font-size:36px;">→</div>
+        </div>
+      `}
+      <div class="quick-grid" style="grid-template-columns:1fr 1fr 1fr;">
+        <div class="qcard" onclick="showTab('result')">
+          <div class="qe">📊</div>
+          <h4>${t('report')}</h4>
+          <p>Dosha chart & plan</p>
+        </div>
+        <div class="qcard" onclick="showTab('yoga')">
+          <div class="qe">🧘</div>
+          <h4>Yoga Therapy</h4>
+          <p>Asanas for your Prakriti</p>
+        </div>
+        <div class="qcard" onclick="showTab('diet')">
+          <div class="qe">🥗</div>
+          <h4>7-Day Diet</h4>
+          <p>Weekly meal plan</p>
+        </div>
+        <div class="qcard" onclick="showTab('symptoms')">
+          <div class="qe">🩺</div>
+          <h4>Symptoms</h4>
+          <p>Check dosha imbalance</p>
+        </div>
+        <div class="qcard" onclick="showTab('progress')">
+          <div class="qe">📈</div>
+          <h4>Progress</h4>
+          <p>Track your journey</p>
+        </div>
+        <div class="qcard" onclick="showTab('panchakarma')">
+          <div class="qe">🌊</div>
+          <h4>Panchakarma</h4>
+          <p>Detox therapies guide</p>
+        </div>
+        <div class="qcard" onclick="showTab('ritucharya')">
+          <div class="qe">🗓️</div>
+          <h4>Seasons</h4>
+          <p>Ritucharya guide</p>
+        </div>
+        <div class="qcard" onclick="showTab('tools')">
+          <div class="qe">⚕️</div>
+          <h4>Tools</h4>
+          <p>BMI, herbs, Vikriti</p>
+        </div>
+        <div class="qcard" onclick="showTab('doctor')">
+          <div class="qe">🏥</div>
+          <h4>Doctors</h4>
+          <p>Find Vaidya near you</p>
+        </div>
+      </div>
+      ${r ? `<button class="btn btn-outline btn-full" onclick="resetQuiz()" style="font-size:13px;padding:11px;">🔄 Retake Quiz</button>` : ''}
+    </div>`;
+}
+
+function renderDoctorHome(){
+  const hc = document.getElementById('home-content');
+  hc.innerHTML = `
+    <div class="fade-in">
+      <div class="dmode-banner">
+        <h3>🩺 Doctor / Vaidya Mode</h3>
+        <p>View recent patient assessments and manage consultations</p>
+      </div>
+      <p class="section-label">RECENT PATIENTS</p>
+      ${MOCK_PATIENTS.map(p=>`
+        <div class="patient-row">
+          <div class="pr-avatar pr-${p.prakriti}">${PD[p.prakriti].emoji}</div>
+          <div class="pr-info">
+            <h4>${p.name}</h4>
+            <p>${p.age} yrs · ${p.complaint}</p>
+          </div>
+          <div class="pr-right">
+            <span class="pill pill-${p.prakriti==='vata'?'blue':p.prakriti==='pitta'?'red':'green'}">${PD[p.prakriti].name}</span>
+            <div class="pr-time">${p.time}</div>
+          </div>
+        </div>
+      `).join('')}
+      <div class="card" style="margin-top:14px;">
+        <div class="card-title"><span class="ci">📋</span>Quick Actions</div>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          <button class="btn btn-gold btn-full" onclick="setMode('patient');enterApp()">➕ New Patient Assessment</button>
+          <button class="btn btn-green btn-full" onclick="showTab('doctor')">🏥 Nearby Ayurvedic Hospitals</button>
+        </div>
+      </div>
+    </div>`;
+}
+
+const MOCK_PATIENTS = [
+  {name:"Priya Kulkarni",age:34,prakriti:"pitta",complaint:"Acidity & skin rash",time:"Today, 10:30 AM"},
+  {name:"Ramesh Patil",age:52,prakriti:"kapha",complaint:"Weight gain & fatigue",time:"Today, 11:45 AM"},
+  {name:"Sunita Desai",age:28,prakriti:"vata",complaint:"Anxiety & insomnia",time:"Yesterday"},
+  {name:"Arun Joshi",age:45,prakriti:"pitta",complaint:"Hypertension & anger",time:"Yesterday"},
+  {name:"Meena Nair",age:61,prakriti:"kapha",complaint:"Joint pain & congestion",time:"2 days ago"},
+];
+
+// ══════════════════════════════════════════════
+// RESULT SCREEN
+// ══════════════════════════════════════════════
+// renderResult replaced by v3 version
+
+// ══════════════════════════════════════════════
+// SYMPTOM CHECKER
+// ══════════════════════════════════════════════
+function renderSymptoms(){
+  const sg = document.getElementById('sym-grid');
+  if(!sg) return;
+  sg.innerHTML = SYMPTOMS.map((s,i)=>`
+    <button class="sym-chip ${appState.pickedSymptoms.has(i)?'picked':''}" onclick="toggleSym(${i})">
+      <span>${s.i}</span> ${s.t}
+    </button>`).join('');
+}
+
+function toggleSym(i){
+  appState.pickedSymptoms.has(i) ? appState.pickedSymptoms.delete(i) : appState.pickedSymptoms.add(i);
+  renderSymptoms();
+}
+
+function analyseSymptoms(){
+  const picked = [...appState.pickedSymptoms];
+  if(picked.length===0){ alert('Please select at least one symptom.'); return; }
+  const cnt = {vata:0,pitta:0,kapha:0};
+  picked.forEach(i=>{ cnt[SYMPTOMS[i].d]++; });
+  let dom = 'vata';
+  if(cnt.pitta>=cnt.vata && cnt.pitta>=cnt.kapha) dom='pitta';
+  else if(cnt.kapha>=cnt.vata && cnt.kapha>=cnt.pitta) dom='kapha';
+  const a = SYM_ANALYSIS[dom];
+  const symBox = document.getElementById('sym-result-box');
+  if(!symBox) return;
+  symBox.innerHTML = `
+    <div class="sym-result fade-in">
+      <h4>⚕️ ${a.title}</h4>
+      <p>${a.desc}</p>
+      <p style="font-size:11px;font-weight:700;color:rgba(255,255,255,.55);margin-bottom:6px;">IMMEDIATE REMEDIES:</p>
+      <ul class="remedy-list">${a.remedies.map(r=>`<li>${r}</li>`).join('')}</ul>
+      <p style="font-size:10px;color:rgba(255,255,255,.35);margin-top:10px;font-style:italic;">📚 ${a.ref}</p>
+    </div>`;
+  symBox.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+// ══════════════════════════════════════════════
+// RITUCHARYA
+// ══════════════════════════════════════════════
+function renderRitucharya(){
+  const rc = document.getElementById('ritu-content');
+  if(!rc) return;
+  rc.innerHTML = SEASONS.map(s=>`
+    <div class="season-card ${s.current?'current':''}">
+      <h4>${s.emoji} ${s.name} ${s.current?'<span class="pill pill-gold" style="font-size:9px;">CURRENT</span>':''}</h4>
+      <p style="font-size:11px;color:var(--muted);margin-bottom:4px;">${s.months} · ${s.ritu}</p>
+      <p style="font-size:12px;color:var(--text);margin-bottom:10px;line-height:1.6;">${s.desc}</p>
+      <div class="season-tips">${s.tips.map(tip=>`<span class="stip">✓ ${tip}</span>`).join('')}</div>
+    </div>`).join('');
+}
+
+// ══════════════════════════════════════════════
+// TOOLS — BMI + HERBS + VIKRITI
+// ══════════════════════════════════════════════
+function switchTool(tool){
+  appState.activeTool = tool;
+  ['bmi','herbs','vikriti'].forEach(toolId=>{
+    const el = document.getElementById('tool-'+toolId);
+    if(el) el.style.display = toolId===tool ? 'block' : 'none';
+  });
+  document.querySelectorAll('#tools-tabs .tab').forEach((el,i)=>{
+    el.classList.toggle('active', ['bmi','herbs','vikriti'][i]===tool);
+  });
+}
+
+function renderTools(){
+  // Only render BMI form if it hasn't been built yet (preserves user input)
+  const bmiEl = document.getElementById('tool-bmi');
+  if(bmiEl && !bmiEl.querySelector('input')) renderBMI();
+  renderHerbs();
+  renderVikriti();
+  // Enforce correct display state for active tool
+  switchTool(appState.activeTool);
+}
+
+function renderBMI(){
+  const el = document.getElementById('tool-bmi');
+  if(!el) return;
+  el.innerHTML = `
+    <div class="vitals-form">
+      <div class="vfield"><label>Weight (kg)</label><input type="number" id="inp-wt" placeholder="e.g. 68" min="20" max="250" oninput="calcBMI()"></div>
+      <div class="vfield"><label>Height (cm)</label><input type="number" id="inp-ht" placeholder="e.g. 170" min="100" max="250" oninput="calcBMI()"></div>
+      <div class="vfield"><label>Age (years)</label><input type="number" id="inp-age" placeholder="e.g. 28" min="5" max="100" oninput="calcBMI()"></div>
+      <div class="vfield"><label>Gender</label><select id="inp-gender" onchange="calcBMI()"><option value="">Select</option><option>Male</option><option>Female</option></select></div>
+    </div>
+    <div id="bmi-result"></div>`;
+}
+
+function calcBMI(){
+  const wtEl = document.getElementById('inp-wt');
+  const htEl = document.getElementById('inp-ht');
+  const genderEl = document.getElementById('inp-gender');
+  if(!wtEl || !htEl) return;
+  const wt = parseFloat(wtEl.value);
+  const ht = parseFloat(htEl.value);
+  const gender = genderEl ? genderEl.value : '';
+  if(!wt||!ht) return;
+  const bmi = wt/((ht/100)**2);
+  let cat, col, ayurveda, advice;
+  if(bmi<18.5){cat="Underweight";col="var(--vata)";ayurveda="Indicates Vata excess or Kapha deficiency — body lacks bulk (Mamsa/Meda dhatu)";advice="Increase nourishing foods: ghee, dairy, root vegetables, soaked nuts. Take Ashwagandha + Shatavari.";}
+  else if(bmi<25){cat="Normal";col="var(--green)";ayurveda="Ideal body constitution — balanced doshas and healthy dhatu (tissue) formation";advice="Maintain with balanced seasonal diet (Ritucharya). Regular Yoga and Pranayama.";}
+  else if(bmi<30){cat="Overweight";col="var(--orange)";ayurveda="Suggests Kapha excess and Meda dhatu (fat tissue) accumulation. Weak Agni (digestive fire)";advice="Reduce sweet, heavy, cold foods. Take Trikatu + Guggulu. Daily vigorous exercise.";}
+  else{cat="Obese";col="var(--red)";ayurveda="Significant Kapha imbalance. Medo Roga (obesity) as defined in Charaka Samhita. Panchakarma recommended.";advice="Consult an Ayurvedic physician for Panchakarma. Strict Kapha diet. Triphala + Guggulu daily.";}
+  const ibw = gender==='Male' ? 50 + 0.91*(ht-152.4) : 45.5 + 0.91*(ht-152.4);
+  const bmiResultEl = document.getElementById('bmi-result');
+  if(!bmiResultEl) return;
+  bmiResultEl.innerHTML = `
+    <div class="vitals-result card fade-in">
+      <div class="bmi-circle" style="border-color:${col}">
+        <div class="bmi-num" style="color:${col}">${bmi.toFixed(1)}</div>
+        <div class="bmi-cat">${cat}</div>
+      </div>
+      <div class="vitals-grid" style="margin-bottom:14px;">
+        <div class="vstat"><div class="vstat-val">${wt} kg</div><div class="vstat-lbl">Weight</div></div>
+        <div class="vstat"><div class="vstat-val">${ht} cm</div><div class="vstat-lbl">Height</div></div>
+        <div class="vstat"><div class="vstat-val">${ibw.toFixed(1)} kg</div><div class="vstat-lbl">Ideal Weight</div></div>
+        <div class="vstat"><div class="vstat-val">${Math.abs(wt-ibw).toFixed(1)} kg</div><div class="vstat-lbl">${wt>ibw?'To Lose':'To Gain'}</div></div>
+      </div>
+      <div style="background:var(--light);border-radius:10px;padding:12px;margin-bottom:10px;">
+        <p style="font-size:11px;font-weight:700;color:var(--mg);margin-bottom:4px;">🌿 Ayurvedic Interpretation</p>
+        <p style="font-size:12px;color:var(--text);line-height:1.6;">${ayurveda}</p>
+      </div>
+      <div style="background:var(--pale);border-radius:10px;padding:12px;border:1px solid var(--gl);">
+        <p style="font-size:11px;font-weight:700;color:var(--gold);margin-bottom:4px;">💊 Ayurvedic Advice</p>
+        <p style="font-size:12px;color:var(--text);line-height:1.6;">${advice}</p>
+      </div>
+    </div>`;
+}
+
+function renderHerbs(){
+  const el = document.getElementById('tool-herbs');
+  if(!el) return;
+  el.innerHTML = `
+    <p style="font-size:12px;color:var(--muted);margin-bottom:12px;">Select an herb to see classical Ayurvedic dosage guidelines</p>
+    <div class="herb-select-list">
+      ${HERBS.map((h,i)=>`
+        <div class="hsel ${appState.selectedHerb===i?'chosen':''}" onclick="selectHerb(${i})">
+          <div class="hsel-info"><h4>${h.name}</h4><p>${h.botanical}</p></div>
+          <div class="hsel-dosha">${h.dosha.split(' ')[0]}</div>
+        </div>`).join('')}
+    </div>
+    <div id="herb-dose-result"></div>`;
+  if(appState.selectedHerb!==null) showHerbDose(appState.selectedHerb);
+}
+
+function selectHerb(i){
+  appState.selectedHerb = i;
+  // Re-render herb list to show chosen state, then show dose
+  const el = document.getElementById('tool-herbs');
+  if(!el) return;
+  renderHerbs();
+}
+
+function showHerbDose(i){
+  const h = HERBS[i];
+  const resultEl = document.getElementById('herb-dose-result');
+  if(!resultEl || !h) return;
+  resultEl.innerHTML = `
+    <div class="dose-result fade-in">
+      <h4>🌿 ${h.name} — Dose Guide</h4>
+      <div class="dose-row"><span>Botanical Name</span><span>${h.botanical}</span></div>
+      <div class="dose-row"><span>Balances Dosha</span><span>${h.dosha}</span></div>
+      <div class="dose-row"><span>Primary Use</span><span>${h.use}</span></div>
+      <div class="dose-row"><span>Standard Dose</span><span>${h.dose}</span></div>
+      <div class="dose-row"><span>Anupana (Vehicle)</span><span>${h.anupan}</span></div>
+      <div class="dose-row"><span>Best Timing</span><span>${h.timing}</span></div>
+      <div class="dose-row"><span>⚠️ Caution</span><span style="color:#F0A070;">${h.caution}</span></div>
+    </div>
+    <p style="font-size:10px;color:var(--muted);font-style:italic;margin-top:8px;">Dosage based on Ashtanga Hridayam Uttarasthana & Dravyaguna Vijnana (P.V. Sharma). Always consult a qualified Vaidya before use.</p>`;
+}
+
+// ══════════════════════════════════════════════
+// VIKRITI ASSESSMENT
+// ══════════════════════════════════════════════
+const VQ = [
+  {q:"How have you been feeling physically in the last 2–4 weeks?",opts:[
+    {t:"Restless, dry skin, irregular digestion, gas",s:{v:3,p:0,k:0}},
+    {t:"Acidity, skin rash, irritability, excess heat",s:{v:0,p:3,k:0}},
+    {t:"Heavy, congested, slow, foggy mind",s:{v:0,p:0,k:3}},
+  ]},
+  {q:"What is your primary complaint right now?",opts:[
+    {t:"Anxiety, insomnia, constipation, joint pain",s:{v:3,p:0,k:0}},
+    {t:"Headache, acidity, anger, skin issues",s:{v:0,p:3,k:0}},
+    {t:"Fatigue, weight gain, congestion, depression",s:{v:0,p:0,k:3}},
+  ]},
+  {q:"How has your appetite been recently?",opts:[
+    {t:"Very irregular — sometimes not hungry at all",s:{v:3,p:0,k:0}},
+    {t:"Very strong — headache if I skip a meal",s:{v:0,p:3,k:0}},
+    {t:"Very low — no desire to eat",s:{v:0,p:0,k:3}},
+  ]},
+  {q:"How is your sleep currently?",opts:[
+    {t:"Very disturbed, waking multiple times",s:{v:3,p:0,k:0}},
+    {t:"Waking up hot or with racing thoughts",s:{v:0,p:3,k:0}},
+    {t:"Sleeping too much, hard to wake up",s:{v:0,p:0,k:3}},
+  ]},
+];
+
+function renderVikriti(){
+  const el = document.getElementById('tool-vikriti');
+  if(!el) return;
+  if(!appState.resultData){ el.innerHTML=`<div class="card"><p style="color:var(--muted);font-size:13px;text-align:center;padding:20px 0;">${t('no_result')}</p><button class="btn btn-gold btn-full" onclick="resetQuiz()">${t('take_quiz')}</button></div>`; return; }
+  const done = Object.keys(appState.vikritiAnswers).length >= VQ.length;
+  if(done){ renderVikritiResult(); return; }
+  const qi = Object.keys(appState.vikritiAnswers).length;
+  el.innerHTML = `
+    <div class="card">
+      <p style="font-size:11px;font-weight:700;color:var(--sg);letter-spacing:2px;margin-bottom:6px;">${t('vikriti_title').toUpperCase()} · Q${qi+1}/${VQ.length}</p>
+      <p style="font-size:15px;font-weight:700;color:var(--dg);font-family:'Playfair Display',serif;margin-bottom:18px;">${VQ[qi].q}</p>
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        ${VQ[qi].opts.map((o,i)=>`<button class="qopt" onclick="pickVikriti(${i})">${o.t}</button>`).join('')}
+      </div>
+    </div>`;
+}
+
+function pickVikriti(i){
+  const qi = Object.keys(appState.vikritiAnswers).length;
+  appState.vikritiAnswers[qi] = i;
+  if(qi < VQ.length-1){ renderVikriti(); }
+  else { renderVikritiResult(); }
+}
+
+function renderVikritiResult(){
+  const el = document.getElementById('tool-vikriti');
+  const sc = {v:0,p:0,k:0};
+  for(let i=0;i<VQ.length;i++){
+    if(appState.vikritiAnswers[i]!==undefined){
+      const s = VQ[i].opts[appState.vikritiAnswers[i]].s;
+      sc.v+=s.v; sc.p+=s.p; sc.k+=s.k;
+    }
+  }
+  const tot = sc.v+sc.p+sc.k||1;
+  const vP=Math.round(sc.v/tot*100), pP=Math.round(sc.p/tot*100), kP=100-vP-pP;
+  let viDom='vata';
+  if(sc.p>=sc.v&&sc.p>=sc.k) viDom='pitta';
+  else if(sc.k>=sc.v&&sc.k>=sc.p) viDom='kapha';
+  const r = appState.resultData;
+  const imbalanced = viDom !== r.dominant;
+  el.innerHTML = `
+    <div class="fade-in">
+      <div class="vikriti-compare">
+        <div class="vc-card prakriti">
+          <h4>PRAKRITI (Birth)</h4>
+          <div class="vc-dosha">${PD[r.dominant].emoji} ${PD[r.dominant].name}</div>
+          <div class="vc-pct">${r.vata}V · ${r.pitta}P · ${r.kapha}K</div>
+        </div>
+        <div class="vc-card vikriti">
+          <h4>VIKRITI (Now)</h4>
+          <div class="vc-dosha">${PD[viDom].emoji} ${PD[viDom].name}</div>
+          <div class="vc-pct">${vP}V · ${pP}P · ${kP}K</div>
+        </div>
+      </div>
+      ${imbalanced ? `
+        <div class="imbalance-alert">
+          <h4>⚠️ Imbalance Detected</h4>
+          <p>Your current state (${PD[viDom].name}) differs from your birth constitution (${PD[r.dominant].name}). This means ${PD[viDom].name} is currently aggravated. Follow ${PD[viDom].name}-pacifying remedies immediately.</p>
+        </div>
+        <div class="card">
+          <div class="card-title"><span class="ci">💊</span>Immediate ${PD[viDom].name} Pacification</div>
+          ${SYM_ANALYSIS[viDom].remedies.map(rem=>`<div style="display:flex;gap:8px;padding:7px 0;border-bottom:1px solid var(--border);font-size:12px;"><span>🌿</span><span>${rem}</span></div>`).join('')}
+        </div>
+      ` : `
+        <div class="card" style="background:var(--light);border:2px solid var(--sage);">
+          <div style="text-align:center;padding:10px 0;">
+            <div style="font-size:36px;margin-bottom:8px;">✅</div>
+            <p style="font-weight:700;color:var(--mg);margin-bottom:4px;">Your doshas are balanced!</p>
+            <p style="font-size:12px;color:var(--muted);">Your current state matches your Prakriti — continue your current lifestyle.</p>
+          </div>
+        </div>
+      `}
+      <button class="btn btn-outline btn-full" onclick="appState.vikritiAnswers={};renderVikriti();" style="margin-top:10px;font-size:13px;">🔄 Retake Vikriti Assessment</button>
+    </div>`;
+}
+
+// ══════════════════════════════════════════════
+// DOCTOR FINDER
+// ══════════════════════════════════════════════
+function renderDoctors(){
+  const el = document.getElementById('doc-content');
+  if(!el) return;
+  el.innerHTML = DOCTORS.map(d=>`
+    <div class="doc-card">
+      <div class="doc-avatar">${d.emoji}</div>
+      <div class="doc-info" style="flex:1;">
+        <h4>${d.name}</h4>
+        <p>${d.spec}</p>
+        <p style="font-size:10px;color:var(--muted);">📍 ${d.loc}</p>
+        <div class="doc-tags">${d.tags.map(tag=>`<span class="pill pill-green">${tag}</span>`).join('')}</div>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:-8px;margin-bottom:10px;">
+      <a href="tel:${d.phone}" style="flex:1;"><button class="btn btn-gold btn-full btn-sm">📞 Call</button></a>
+      <a href="https://maps.google.com?q=${encodeURIComponent(d.name+' '+d.loc)}" target="_blank" style="flex:1;"><button class="btn btn-green btn-full btn-sm">🗺️ Map</button></a>
+    </div>`).join('');
+}
+
+// ══════════════════════════════════════════════
+// SHARE + PDF
+// ══════════════════════════════════════════════
+function shareResult(){
+  const r = appState.resultData;
+  if(!r) return;
+  const text = `🌿 My AyurMind AI Result: I am ${PD[r.dominant].name} Prakriti (${PD[r.dominant].element})!\nVata: ${r.vata}% | Pitta: ${r.pitta}% | Kapha: ${r.kapha}%\n\nGet your free Ayurvedic assessment at AyurMind AI 🌿`;
+  if(navigator.share){ navigator.share({title:'My AyurMind AI Prakriti Report',text}); }
+  else { navigator.clipboard.writeText(text).then(()=>alert('Result copied to clipboard! Share it with friends.')); }
+}
+
+function openPdfModal(){ document.getElementById('pdf-modal').classList.add('open'); }
+function closePdfModal(){ document.getElementById('pdf-modal').classList.remove('open'); }
+function printReport(){
+  closePdfModal();
+  showTab('result');
+  setTimeout(()=>window.print(), 400);
+}
+
+function resetQuiz(){
+  appState.resultData=null; appState.curQ=0; appState.answers={}; appState.vikritiAnswers={};
+  showScreen('s-welcome');
+}
+
+
+// ══════════════════════════════════════════════
+// YOGA DATA
+// ══════════════════════════════════════════════
+const YOGA_DATA = {
+  vata:{
+    intro:"Vata types need grounding, stabilizing, slow and gentle yoga. Vigorous or fast-paced yoga worsens Vata. Focus on held poses that connect you to the earth.",
+    asanas:[
+      {icon:"🏔️",name:"Mountain Pose",sanskrit:"Tadasana",desc:"Stand tall with feet grounded. Engages all muscles gently. Grounds Vata energy into the earth. Hold for 10 deep breaths — feel your feet rooted.",tags:["Grounding","Balance","Beginner"],dur:"3–5 min"},
+      {icon:"🌳",name:"Tree Pose",sanskrit:"Vrksasana",desc:"Balance on one foot, other foot on inner thigh. Develops focus and stability. Excellent for Vata's tendency toward mental scatter and anxiety.",tags:["Balance","Focus","Calming"],dur:"1 min each side"},
+      {icon:"🐄",name:"Cat-Cow",sanskrit:"Marjaryasana-Bitilasana",desc:"Gentle spinal flexion and extension on hands and knees. Warms the spine, relieves Vata-related joint stiffness and lower back tension.",tags:["Spine","Gentle","Joint health"],dur:"5–10 rounds"},
+      {icon:"🌙",name:"Child's Pose",sanskrit:"Balasana",desc:"Deeply restorative kneeling forward fold. Calms the nervous system and quiets Vata's racing mind. Best pose for anxiety and overwhelm.",tags:["Restorative","Anxiety relief","Surrender"],dur:"3–5 min"},
+      {icon:"🦢",name:"Legs Up the Wall",sanskrit:"Viparita Karani",desc:"Lie on back, legs resting against wall. Reverses blood flow, deeply calming for Vata. Perfect before bedtime to counter insomnia.",tags:["Sleep","Nervous system","Evening"],dur:"5–10 min"},
+    ]
+  },
+  pitta:{
+    intro:"Pitta types need cooling, surrendering, moon-salutation style yoga. Avoid hot yoga, competitive classes, or poses that generate intense body heat. Focus on releasing, not achieving.",
+    asanas:[
+      {icon:"🌊",name:"Moon Salutation",sanskrit:"Chandra Namaskar",desc:"Cooling alternative to Sun Salutation. Flow through lunar poses at a slow, meditative pace. Dramatically reduces body heat and Pitta-driven intensity.",tags:["Cooling","Flow","Calming"],dur:"5–7 rounds"},
+      {icon:"🐊",name:"Crocodile Pose",sanskrit:"Makarasana",desc:"Lie face down, forehead on folded arms. Complete surrender pose. Cools the body, releases chest tension, and calms Pitta's competitive drive.",tags:["Restorative","Cooling","Surrender"],dur:"5 min"},
+      {icon:"🌿",name:"Seated Forward Fold",sanskrit:"Paschimottanasana",desc:"Seated stretch reaching forward toward feet. Releases Pitta heat through the back body. Stimulates digestion and soothes Pitta-type anger and frustration.",tags:["Cooling","Digestion","Calming"],dur:"3–5 min"},
+      {icon:"🦁",name:"Fish Pose",sanskrit:"Matsyasana",desc:"Reclined heart-opening backbend. Opens Pitta's often-tight chest and shoulders. Encourages vulnerability and softness — antidote to Pitta's rigidity.",tags:["Heart opening","Cooling","Anti-anger"],dur:"2–3 min"},
+      {icon:"💎",name:"Corpse Pose",sanskrit:"Savasana",desc:"Complete stillness lying on back. The most important pose for Pitta — practicing non-doing. Add cooling breath (Sheetali) in this pose.",tags:["Complete rest","Non-doing","Cooling"],dur:"10–15 min"},
+    ]
+  },
+  kapha:{
+    intro:"Kapha types need vigorous, stimulating, warming yoga. Light Kapha inertia with dynamic movement. Morning practice is essential — never skip! Sun Salutations are ideal.",
+    asanas:[
+      {icon:"☀️",name:"Sun Salutation",sanskrit:"Surya Namaskar",desc:"12-pose dynamic flowing sequence. The ideal morning routine for Kapha — generates heat, improves circulation, clears mucus, and breaks through heaviness and lethargy.",tags:["Energizing","Full body","Morning essential"],dur:"8–12 rounds"},
+      {icon:"💪",name:"Warrior II",sanskrit:"Virabhadrasana II",desc:"Wide-legged lunge with arms extended. Builds heat and strength. Counters Kapha's tendency toward passivity and motivates action and confidence.",tags:["Strength","Heat","Motivation"],dur:"1 min each side"},
+      {icon:"🦅",name:"Boat Pose",sanskrit:"Navasana",desc:"Seated balance with legs and torso lifted in V-shape. Intensely fires up the core and digestive system. Excellent for Kapha weight management.",tags:["Core","Digestion","Weight"],dur:"3–5 rounds × 30 sec"},
+      {icon:"🔥",name:"Camel Pose",sanskrit:"Ustrasana",desc:"Kneeling backbend reaching hands to heels. Opens the chest and stimulates thyroid. Counters Kapha depression and heaviness with an energizing heart opener.",tags:["Energizing","Thyroid","Anti-depression"],dur:"3 rounds × 30 sec"},
+      {icon:"🌪️",name:"Twisted Chair",sanskrit:"Parivrtta Utkatasana",desc:"Twisting squat with arms in prayer. Wrings out toxins from Kapha's accumulation in organs. Powerful digestive stimulant. Hold and breathe fire.",tags:["Detox","Digestion","Intense"],dur:"1 min each side"},
+    ]
+  }
+};
+
+// ══════════════════════════════════════════════
+// WEEKLY DIET DATA
+// ══════════════════════════════════════════════
+const WEEKLY_DIET = {
+  vata:{
+    season:"Vasanta (Spring) — Kapha season: Vata types eat warm, moist, nourishing foods",
+    days:[
+      {day:"Mon",meals:{b:{name:"Warm Breakfast",items:["Cooked oatmeal with ghee & dates","Warm spiced milk (cardamom+ginger)","Soaked almonds (5–7)"],note:"Eat warm, never skip breakfast"},l:{name:"Nourishing Lunch",items:["Kitchari (rice+moong dal+ghee)","Steamed root vegetables","Ghee chapati","Warm cumin water"],note:"Largest meal of the day"},d:{name:"Light Dinner",items:["Vegetable soup with ginger","Soft rice or khichdi","Warm herbal tea"],note:"Eat before 7 PM"}}},
+      {day:"Tue",meals:{b:{name:"Warm Breakfast",items:["Upma with vegetables & ghee","Warm sesame milk","1 banana"],note:"Warm, oily foods reduce Vata"},l:{name:"Nourishing Lunch",items:["Dal with rice","Sweet potato sabzi","Ghee roti","Takra (buttermilk with cumin)"],note:"Include good fats at every meal"},d:{name:"Light Dinner",items:["Warm lentil soup","Soft bread or rice","Ashwagandha milk"],note:"Ashwagandha in milk before bed"}}},
+      {day:"Wed",meals:{b:{name:"Warm Breakfast",items:["Semolina halwa with ghee","Stewed apple with cinnamon","Warm ginger tea"],note:"Spiced foods are ideal for Vata"},l:{name:"Nourishing Lunch",items:["Avial (mixed vegetables in coconut)","Rice","Papad","Warm water"],note:"Avoid cold water — always warm"},d:{name:"Light Dinner",items:["Moong dal soup","Soft chapati","Warm turmeric milk"],note:"Turmeric milk for anti-inflammatory"}}},
+      {day:"Thu",meals:{b:{name:"Warm Breakfast",items:["Poha (flattened rice) with ghee","Warm coriander tea","Soaked cashews"],note:"Light but warm and sustaining"},l:{name:"Nourishing Lunch",items:["Rajma (kidney beans) with rice","Cucumber raita","Ghee","Mulethi (licorice) tea"],note:"Legumes must be well-cooked for Vata"},d:{name:"Light Dinner",items:["Carrot ginger soup","Soft bread","Chamomile tea"],note:"Chamomile helps Vata sleep"}}},
+      {day:"Fri",meals:{b:{name:"Warm Breakfast",items:["Sabudana khichdi with ghee","Warm milk with saffron","Dates (3)"],note:"Saffron milk is deeply nourishing"},l:{name:"Nourishing Lunch",items:["Palak paneer","Jeera rice","Roti with ghee","Warm lassi"],note:"Dairy is beneficial for Vata"},d:{name:"Light Dinner",items:["Pumpkin soup","Steamed rice","Shatavari milk"],note:"Shatavari nourishes Vata tissues"}}},
+      {day:"Sat",meals:{b:{name:"Warm Breakfast",items:["Sheera (semolina sweet)","Warm almond milk","Soaked walnuts"],note:"Weekend — make nourishing breakfast"},l:{name:"Nourishing Lunch",items:["Chole with rice","Baingan bharta","Roti","Sweet lassi"],note:"Slightly heavier lunch on weekends"},d:{name:"Light Dinner",items:["Mixed vegetable khichdi","Warm cumin water","Saffron milk"],note:"Khichdi is the ideal Vata food"}}},
+      {day:"Sun",meals:{b:{name:"Warm Breakfast",items:["Pancakes with honey & ghee","Stewed pears","Warm ginger tea"],note:"Honey (unheated) is good for Vata"},l:{name:"Nourishing Lunch",items:["Lamb/chicken curry (non-veg option)","Pulao","Raita","Warm water"],note:"Non-veg is acceptable for Vata"},d:{name:"Light Dinner",items:["Tomato soup","Soft rice","Warm herbal milk"],note:"End week with a cleansing dinner"}}},
+    ]
+  },
+  pitta:{
+    season:"Vasanta (Spring) — Kapha season: Pitta types avoid heating foods, embrace cooling",
+    days:[
+      {day:"Mon",meals:{b:{name:"Cool Breakfast",items:["Coconut milk porridge","Sweet mango (in season)","Rose water drink"],note:"Start the day with cooling foods"},l:{name:"Balanced Lunch",items:["Coriander-mint rice","Moong dal","Cucumber salad","Coconut water"],note:"Avoid spicy food — triggers Pitta anger"},d:{name:"Light Dinner",items:["Zucchini soup (cooled)","Chapati","Brahmi milk"],note:"Brahmi cools the Pitta mind"}}},
+      {day:"Tue",meals:{b:{name:"Cool Breakfast",items:["Overnight oats with cardamom","Pomegranate seeds","Cool barley water"],note:"Barley water reduces Pitta heat"},l:{name:"Balanced Lunch",items:["Steamed vegetables with ghee","Basmati rice","Mint chutney","Lassi (sweet)"],note:"Sweet lassi soothes Pitta"},d:{name:"Light Dinner",items:["Bottle gourd (lauki) sabzi","Roti","Cool fennel tea"],note:"Fennel tea is best for Pitta digestion"}}},
+      {day:"Wed",meals:{b:{name:"Cool Breakfast",items:["Banana smoothie with coconut milk","Soaked raisins","Cool rose sherbet"],note:"Rose is the most cooling herb for Pitta"},l:{name:"Balanced Lunch",items:["Palak khichdi","Coconut chutney","Salted buttermilk","Amla chyawanprash"],note:"Amla (Amalaki) is #1 Pitta herb"},d:{name:"Light Dinner",items:["Ash gourd curry","Soft rice","Warm (not hot) milk"],note:"Cool the milk before drinking"}}},
+      {day:"Thu",meals:{b:{name:"Cool Breakfast",items:["Poha with coconut","Sweet lime juice","Cool coriander tea"],note:"Coriander seeds cool Pitta excellently"},l:{name:"Balanced Lunch",items:["Dal (mild, no chili)","Rice","Pumpkin sabzi","Neem leaves (2–3)"],note:"Neem clears Pitta from blood"},d:{name:"Light Dinner",items:["Moong soup (thin)","Roti","Shatavari rose milk"],note:"Shatavari+rose milk = ultimate Pitta drink"}}},
+      {day:"Fri",meals:{b:{name:"Cool Breakfast",items:["Avocado toast (whole wheat)","Coconut water","Cool mint tea"],note:"Mint is powerfully cooling"},l:{name:"Balanced Lunch",items:["Vegetable biryani (mild)","Raita with cucumber","Sweet lassi","Pomegranate seeds"],note:"Always have sweet lassi with Pitta lunch"},d:{name:"Light Dinner",items:["Zucchini+potato soup","Chapati","Amalaki juice + water"],note:"Amalaki juice at night reduces overnight Pitta"}}},
+      {day:"Sat",meals:{b:{name:"Cool Breakfast",items:["Chilled chia pudding","Fresh fruit bowl","Rose lemonade"],note:"Weekend cooling treat"},l:{name:"Balanced Lunch",items:["Fish curry (not spicy)","Basmati rice","Coconut dal","Fennel water"],note:"Fish is OK for Pitta — not spicy"},d:{name:"Light Dinner",items:["Pumpkin soup","Soft bread","Brahmi+coconut milk"],note:"Brahmi milk before bed for Pitta brain"}}},
+      {day:"Sun",meals:{b:{name:"Cool Breakfast",items:["Idli with coconut chutney","Cool hibiscus tea","Papaya"],note:"Hibiscus cools Pitta beautifully"},l:{name:"Balanced Lunch",items:["Sambar with vegetables","Basmati rice","Coconut chutney","Buttermilk"],note:"South Indian food is naturally Pitta-friendly"},d:{name:"Light Dinner",items:["Mixed dal soup","Rice","Sandalwood milk (sandalwood+milk+sugar)"],note:"Sandalwood milk — deeply cooling tonic"}}},
+    ]
+  },
+  kapha:{
+    season:"Vasanta (Spring) — This is Kapha season! Extra caution — avoid all heavy, cold, sweet foods",
+    days:[
+      {day:"Mon",meals:{b:{name:"Light Breakfast",items:["Dry toasted murmura (puffed rice)","Warm ginger-honey tea","1 apple"],note:"Ginger tea is ESSENTIAL for Kapha morning"},l:{name:"Stimulating Lunch",items:["Toor dal (thin, spiced)","Millet roti","Bitter melon (karela) sabzi","Warm water with lemon"],note:"Bitter and pungent tastes reduce Kapha"},d:{name:"Very Light Dinner",items:["Warm pepper-cumin broth","1 roti","Trikatu tea"],note:"Trikatu after dinner fights Kapha sluggishness"}}},
+      {day:"Tue",meals:{b:{name:"Light Breakfast",items:["Moong sprout salad (warm)","Black pepper tea","Half grapefruit"],note:"Sprouts are light and stimulating"},l:{name:"Stimulating Lunch",items:["Rajma (well-spiced)","Jowar roti","Radish salad","Ginger lemon water"],note:"Radish reduces Kapha — eat often"},d:{name:"Very Light Dinner",items:["Lentil soup (thin)","Steamed vegetables","Honey ginger tea"],note:"Only unheated honey — heating honey creates toxins"}}},
+      {day:"Wed",meals:{b:{name:"Light Breakfast",items:["Poha (dry, less oil)","Warm tulsi tea","Amla (1 fresh)"],note:"Tulsi is warming and anti-Kapha"},l:{name:"Stimulating Lunch",items:["Chana dal (dry preparation)","Bajra roti","Mustard greens sabzi","Buttermilk (thin)"],note:"Mustard greens cut through Kapha mucus"},d:{name:"Very Light Dinner",items:["Vegetable soup","1 roti","Warm water with Trikatu"],note:"Lightest possible dinner for Kapha"}}},
+      {day:"Thu",meals:{b:{name:"Light Breakfast",items:["Ragi porridge (minimal milk)","Pepper-ginger decoction","Pomelo or orange"],note:"Citrus fruits stimulate Kapha digestion"},l:{name:"Stimulating Lunch",items:["Mixed sprout bhel (warm)","Jowar chapati","Fenugreek sabzi","Warm jeera water"],note:"Fenugreek is the single best Kapha-reducing vegetable"},d:{name:"Very Light Dinner",items:["Moong water soup","Half roti or skip","Triphala in warm water"],note:"Triphala at night cleanses Kapha from channels"}}},
+      {day:"Fri",meals:{b:{name:"Light Breakfast",items:["Dry cornflakes (no milk)","Ginger tea with black pepper","1 pear"],note:"Avoid milk for Kapha — it increases it"},l:{name:"Stimulating Lunch",items:["Fish curry (spiced)","Brown rice (small portion)","Neem leaves sauté","Cumin water"],note:"Kapha can eat more pungent spices than other doshas"},d:{name:"Very Light Dinner",items:["Palak soup","1 small roti","Guggulu decoction if prescribed"],note:"Guggulu tea is powerful Kapha reducer"}}},
+      {day:"Sat",meals:{b:{name:"Light Breakfast",items:["Upma (dry, less oil)","Moringa tea","1 amla"],note:"Moringa (drumstick) is ideal for Kapha"},l:{name:"Stimulating Lunch",items:["Chickpea curry","Millet roti","Bitter greens salad","Ginger pickle"],note:"Weekend — spice it up more for Kapha"},d:{name:"Very Light Dinner",items:["Thin dal soup","1 roti","Pepper-ginger honey water"],note:"This drink burns excess Kapha fat"}}},
+      {day:"Sun",meals:{b:{name:"Light Breakfast",items:["Roasted chana","Ginger-tulsi tea","Orange"],note:"Roasted foods are better than fried for Kapha"},l:{name:"Stimulating Lunch",items:["Egg bhurji or tofu","Jowar roti","Drumstick sabzi","Thin rasam"],note:"Rasam (South Indian pepper soup) is perfect Kapha food"},d:{name:"Very Light Dinner",items:["Drumstick leaves soup","Bajra roti","Trikatu+honey drink"],note:"End week with a strong Kapha-clearing drink"}}},
+    ]
+  }
+};
+
+// ══════════════════════════════════════════════
+// PANCHAKARMA DATA
+// ══════════════════════════════════════════════
+const PK_DATA = [
+  {num:1, name:"Vamana", sanskrit:"वमन", desc:"Therapeutic emesis (controlled vomiting) to eliminate excess Kapha from the upper body and lungs. The most important therapy for Kapha-dominant individuals. Performed in spring (Vasanta Ritu) when Kapha is naturally liquefied.",best:["Kapha dominant","Chronic asthma","Bronchitis","Sinusitis","Obesity","Skin disorders"],chips:["Best in Spring","Kapha therapy","2–3 days prep"],ref:"Charaka Samhita Kalpa 1.3"},
+  {num:2, name:"Virechana", sanskrit:"विरेचन", desc:"Therapeutic purgation using medicated laxatives to cleanse Pitta from the liver, gallbladder, and small intestine. The primary therapy for Pitta disorders. Performed in autumn (Sharad Ritu).",best:["Pitta dominant","Skin diseases","Liver disorders","Chronic acidity","Inflammatory conditions","Jaundice"],chips:["Best in Autumn","Pitta therapy","3–5 days prep"],ref:"Ashtanga Hridayam Sutrasthana 14.5"},
+  {num:3, name:"Basti", sanskrit:"बस्ति", desc:"Medicated enema using herbal oils and decoctions to cleanse the colon and balance Vata. Considered the 'king of Panchakarma' as it directly treats the seat of Vata. Most versatile therapy — used for all three doshas.",best:["Vata dominant","Joint disorders","Constipation","Neurological issues","Lower back pain","All three doshas"],chips:["Year-round use","King of Panchakarma","Vata specialty"],ref:"Charaka Samhita Siddhi 1.8"},
+  {num:4, name:"Nasya", sanskrit:"नस्य", desc:"Nasal administration of medicated oils or herbal preparations. Cleanses the head, sinuses, and mind. Very effective for all Kapha accumulation in the head region and Vata-related neurological conditions.",best:["Sinus congestion","Headaches","Hair fall","Memory issues","Anxiety & stress","All three doshas (head)"],chips:["Daily practice possible","Head & neck specialist","5–7 days"],ref:"Ashtanga Hridayam Sutrasthana 20.1"},
+  {num:5, name:"Raktamokshana", sanskrit:"रक्तमोक्षण", desc:"Blood purification therapy — including leech therapy and controlled bloodletting. Directly removes Pitta from the blood (Rakta dhatu). Used for blood-borne skin diseases, chronic inflammatory conditions.",best:["Severe Pitta disorders","Eczema/psoriasis","Gout","Varicose veins","Blood disorders","Severe skin conditions"],chips:["Under doctor supervision","Pitta blood therapy","Specialist required"],ref:"Sushruta Samhita Sutrasthana 14"},
+];
+
+// ══════════════════════════════════════════════
+// RENDER: RESULT WITH DOSHA CHART
+// ══════════════════════════════════════════════
+function renderResult(){
+  const rc = document.getElementById('result-content');
+  if(!rc) return;
+  const r = appState.resultData;
+  if(!r){ rc.innerHTML=`<div class="page-body"><p style="color:var(--muted);text-align:center;padding:40px 0;">${t('no_result')}</p><button class="btn btn-gold btn-full" onclick="resetQuiz()">${t('take_quiz')}</button></div>`; return; }
+  const d = PD[r.dominant];
+  const ws = calcWellnessScore(r);
+  rc.innerHTML = `
+    <div class="result-hero ${d.color} fade-in">
+      <div class="rd-label">${t('prakriti_your')}</div>
+      <div class="rd-name ${d.color}">${d.emoji} ${d.name} Prakriti</div>
+      <div class="rd-sub">${d.element} · ${d.subtitle}</div>
+      <div class="dosha-bars">
+        <div class="dbar-item"><div class="dbar-label">VATA</div><div class="dbar-track"><div class="dbar-fill vf" style="width:${r.vata}%"></div></div><div class="dbar-pct">${r.vata}%</div></div>
+        <div class="dbar-item"><div class="dbar-label">PITTA</div><div class="dbar-track"><div class="dbar-fill pf" style="width:${r.pitta}%"></div></div><div class="dbar-pct">${r.pitta}%</div></div>
+        <div class="dbar-item"><div class="dbar-label">KAPHA</div><div class="dbar-track"><div class="dbar-fill kf" style="width:${r.kapha}%"></div></div><div class="dbar-pct">${r.kapha}%</div></div>
+      </div>
+    </div>
+    <div class="res-actions no-print">
+      <button class="share-btn" onclick="shareResult()">📤 Share</button>
+      <button class="pdf-btn" onclick="openPdfModal()">📄 PDF Report</button>
+      <button class="share-btn" onclick="resetQuiz()" style="background:rgba(0,0,0,.1);color:var(--dg);">🔄 Retake</button>
+    </div>
+    <div class="res-body">
+      <!-- WELLNESS SCORE -->
+      <div class="wellness-banner">
+        <div class="ws-label">WELLNESS SCORE</div>
+        <div><span class="ws-score">${ws.score}</span><span class="ws-max">/100</span></div>
+        <div class="ws-status">${ws.status}</div>
+        <div class="ws-bar-wrap"><div class="ws-bar-track"><div class="ws-bar-fill" style="width:${ws.score}%"></div></div></div>
+        <div class="ws-factors">
+          <div class="wsf"><div class="wsf-val">${ws.balance}</div><div class="wsf-lbl">Balance</div></div>
+          <div class="wsf"><div class="wsf-val">${ws.clarity}</div><div class="wsf-lbl">Clarity</div></div>
+          <div class="wsf"><div class="wsf-val">${ws.vitality}</div><div class="wsf-lbl">Vitality</div></div>
+        </div>
+      </div>
+      <!-- DOSHA CHART -->
+      <div class="chart-wrap">
+        <div class="chart-title"><span>📊</span>Your Dosha Profile</div>
+        <div style="position:relative;height:200px;"><canvas id="dosha-chart"></canvas></div>
+        <div class="dosha-score-row">
+          <div class="ds-chip vata-chip"><div class="ds-num">${r.vata}%</div><div class="ds-label">VATA</div></div>
+          <div class="ds-chip pitta-chip"><div class="ds-num">${r.pitta}%</div><div class="ds-label">PITTA</div></div>
+          <div class="ds-chip kapha-chip"><div class="ds-num">${r.kapha}%</div><div class="ds-label">KAPHA</div></div>
+        </div>
+      </div>
+      <div class="card"><div class="card-title"><span class="ci">📖</span>About Your Prakriti</div><p style="font-size:13px;color:var(--muted);line-height:1.75;">${d.desc}</p></div>
+      <div class="card"><div class="card-title"><span class="ci">🧬</span>Your Constitution Traits</div><div class="trait-grid">${d.traits.map(tr=>`<div class="trait-chip"><strong>${tr.l}</strong><span>${tr.v}</span></div>`).join('')}</div></div>
+      <div class="card"><div class="card-title"><span class="ci">🥗</span>Personalized Diet</div><div class="diet-grid"><div class="diet-col eat"><h4>✅ Eat More</h4><ul>${d.eat.map(f=>`<li>${f}</li>`).join('')}</ul></div><div class="diet-col avoid"><h4>❌ Reduce</h4><ul>${d.avoid.map(f=>`<li>${f}</li>`).join('')}</ul></div></div><div style="margin-top:10px;text-align:center;"><button class="btn btn-green" onclick="showTab('diet')" style="font-size:12px;padding:8px 18px;">🥗 View Full 7-Day Meal Plan →</button></div></div>
+      <div class="card"><div class="card-title"><span class="ci">🌿</span>Recommended Herbs</div>${d.herbs.map(h=>`<div class="herb-item"><div class="herb-icon">${h.i}</div><div class="herb-info"><h4>${h.n}</h4><p>${h.d}</p></div></div>`).join('')}</div>
+      <div class="card"><div class="card-title"><span class="ci">🧘</span>Yoga Therapy</div><p style="font-size:12px;color:var(--muted);margin-bottom:10px;">Based on your ${d.name} constitution — specific asanas to restore balance</p><button class="btn btn-green btn-full" onclick="showTab('yoga')" style="font-size:12px;padding:10px;">🧘 View Your Yoga Plan →</button></div>
+      <div class="card"><div class="card-title"><span class="ci">🌅</span>Daily Routine (Dinacharya)</div>${d.routine.map(row=>`<div class="routine-row"><span class="rt">${row.t}</span><span class="ra">${row.a}</span></div>`).join('')}</div>
+      <div class="card"><div class="card-title"><span class="ci">⚠️</span>Disease Susceptibility</div>${d.risks.map(risk=>`<div class="risk-item"><div class="risk-icon">${risk.i}</div><div class="risk-info"><strong>${risk.c}</strong><span>${risk.d}</span></div></div>`).join('')}</div>
+      <div style="font-size:10px;color:var(--muted);font-style:italic;text-align:center;padding:8px 0 4px;">📚 ${d.src}</div>
+    </div>`;
+  // Draw chart after DOM is ready
+  setTimeout(()=>drawDoshaChart(r), 100);
+  // Save to progress
+  saveProgress(r);
+}
+
+function calcWellnessScore(r){
+  const dom = r.dominant;
+  // Balance score: how close are the doshas to ideal ratio (50:30:20)
+  const ideal = {vata:40,pitta:35,kapha:25};
+  const diff = Math.abs(r.vata-ideal.vata)+Math.abs(r.pitta-ideal.pitta)+Math.abs(r.kapha-ideal.kapha);
+  const balance = Math.max(40, Math.round(100 - diff*0.8));
+  const clarity = Math.round(60 + Math.random()*20);
+  const vitality = Math.round(55 + Math.random()*25);
+  const score = Math.round((balance+clarity+vitality)/3);
+  const status = score>=80 ? "Excellent Dosha Balance 🌟" : score>=65 ? "Good Balance — Minor Adjustments Needed" : "Imbalance Detected — Follow Your Plan";
+  return {score, balance, clarity:Math.round(clarity), vitality:Math.round(vitality), status};
+}
+
+function drawDoshaChart(r){
+  const canvas = document.getElementById('dosha-chart');
+  if(!canvas || !window.Chart) return;
+  // Destroy existing chart if any
+  if(window._doshaChart) { window._doshaChart.destroy(); }
+  window._doshaChart = new Chart(canvas, {
+    type:'doughnut',
+    data:{
+      labels:['Vata','Pitta','Kapha'],
+      datasets:[{
+        data:[r.vata, r.pitta, r.kapha],
+        backgroundColor:['#5B8FA8','#D4693A','#4A7C5E'],
+        borderColor:['#4A7896','#C05828','#3A6C4E'],
+        borderWidth:2,
+        hoverOffset:8
+      }]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:(ctx)=>ctx.label+': '+ctx.parsed+'%'}}},
+      cutout:'65%',
+      animation:{animateRotate:true,duration:1000}
+    }
+  });
+}
+
+// ══════════════════════════════════════════════
+// RENDER: YOGA
+// ══════════════════════════════════════════════
+function renderYoga(){
+  const el = document.getElementById('yoga-content');
+  if(!el) return;
+  const r = appState.resultData;
+  if(!r){ el.innerHTML=`<div class="card"><p style="color:var(--muted);text-align:center;padding:20px;">${t('no_result')}</p><button class="btn btn-gold btn-full" onclick="resetQuiz()">${t('take_quiz')}</button></div>`; return; }
+  const yoga = YOGA_DATA[r.dominant];
+  const d = PD[r.dominant];
+  el.innerHTML = `
+    <div style="background:var(--dg);border-radius:14px;padding:16px;margin-bottom:16px;">
+      <p style="font-size:13px;color:rgba(255,255,255,.8);line-height:1.7;">${d.emoji} <strong style="color:var(--gl);">${d.name} Yoga Approach:</strong> ${yoga.intro}</p>
+    </div>
+    ${yoga.asanas.map((a,i)=>`
+      <div class="yoga-card fade-in" style="animation-delay:${i*0.08}s">
+        <div class="yoga-icon">${a.icon}</div>
+        <div class="yoga-info">
+          <h4>${a.name}</h4>
+          <div class="yoga-sanskrit">${a.sanskrit}</div>
+          <p>${a.desc}</p>
+          <div class="yoga-duration">⏱ ${a.dur}</div>
+          <div class="yoga-tags">${a.tags.map(tag=>`<span class="yt">${tag}</span>`).join('')}</div>
+        </div>
+      </div>`).join('')}
+    <div style="font-size:10px;color:var(--muted);text-align:center;padding:8px 0;font-style:italic;">📚 Based on Hatha Yoga Pradipika · Yoga Sutras of Patanjali · Ayurvedic Yoga Therapy (Dr. David Frawley)</div>`;
+}
+
+// ══════════════════════════════════════════════
+// RENDER: WEEKLY DIET
+// ══════════════════════════════════════════════
+let activeDietDay = 0;
+function renderWeeklyDiet(){
+  const el = document.getElementById('diet-content');
+  if(!el) return;
+  const r = appState.resultData;
+  if(!r){ el.innerHTML=`<div class="card"><p style="color:var(--muted);text-align:center;padding:20px;">${t('no_result')}</p><button class="btn btn-gold btn-full" onclick="resetQuiz()">${t('take_quiz')}</button></div>`; return; }
+  const plan = WEEKLY_DIET[r.dominant];
+  const day = plan.days[activeDietDay];
+  el.innerHTML = `
+    <div class="season-tag">🍂 ${plan.season}</div>
+    <div class="week-tabs">${plan.days.map((d,i)=>`<button class="wtab ${i===activeDietDay?'active':''}" onclick="switchDietDay(${i})">${d.day}</button>`).join('')}</div>
+    <div id="day-meals" class="fade-in">
+      ${renderDayMeals(day)}
+    </div>
+    <div style="font-size:10px;color:var(--muted);text-align:center;padding:8px 0;font-style:italic;margin-top:8px;">📚 Based on Charaka Samhita Sutrasthana 5 (Matrashitiya) · Ashtanga Hridayam Ch.7 · Dr. Vasant Lad Textbook of Ayurveda Vol.1</div>`;
+}
+function renderDayMeals(day){
+  return ['b','l','d'].map((key,i)=>{
+    const m = day.meals[key];
+    const cls = ['breakfast','lunch','dinner'][i];
+    const icons = ['🌅','☀️','🌙'][i];
+    return `<div class="meal-card">
+      <div class="meal-header ${cls}"><span style="font-size:18px">${icons}</span><h4>${m.name}</h4></div>
+      <div class="meal-body">
+        <ul class="meal-items">${m.items.map(item=>`<li><span>${item}</span></li>`).join('')}</ul>
+        <p class="meal-note">💡 ${m.note}</p>
+      </div>
+    </div>`;
+  }).join('');
+}
+function switchDietDay(i){
+  activeDietDay = i;
+  renderWeeklyDiet();
+}
+
+// ══════════════════════════════════════════════
+// PROGRESS TRACKER
+// ══════════════════════════════════════════════
+function saveProgress(r){
+  try{
+    const key='ayurmind_progress';
+    const existing = JSON.parse(localStorage.getItem(key)||'[]');
+    const entry = {
+      date: new Date().toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}),
+      ts: Date.now(),
+      dominant: r.dominant,
+      vata: r.vata, pitta: r.pitta, kapha: r.kapha
+    };
+    // Avoid duplicate on same day
+    if(existing.length===0 || existing[existing.length-1].date !== entry.date){
+      existing.push(entry);
+      if(existing.length>12) existing.shift(); // keep last 12 entries
+      localStorage.setItem(key, JSON.stringify(existing));
+    }
+  }catch(e){}
+}
+
+function loadProgress(){
+  try{ return JSON.parse(localStorage.getItem('ayurmind_progress')||'[]'); }
+  catch(e){ return []; }
+}
+
+function renderProgress(){
+  const el = document.getElementById('progress-content');
+  if(!el) return;
+  const history = loadProgress();
+  if(!appState.resultData && history.length===0){
+    el.innerHTML=`<div class="prog-empty"><div class="pe-icon">📈</div><p style="font-size:15px;font-weight:700;color:var(--dg);margin-bottom:8px;">No data yet</p><p style="font-size:13px;color:var(--muted);margin-bottom:20px;">Take the Prakriti quiz to start tracking your health journey</p><button class="btn btn-gold btn-full" onclick="resetQuiz()">Begin Assessment →</button></div>`;
+    return;
+  }
+  let chartHtml = '';
+  if(history.length >= 2){
+    chartHtml = `<div class="trend-card"><div class="card-title"><span class="ci">📉</span>Dosha Trend Over Time</div><div style="position:relative;height:160px;"><canvas id="progress-chart"></canvas></div></div>`;
+  }
+  el.innerHTML = `
+    ${chartHtml}
+    <div class="card-title" style="margin-bottom:12px;"><span class="ci">📅</span>Assessment History</div>
+    ${history.slice().reverse().map(entry=>`
+      <div class="prog-entry fade-in">
+        <div class="prog-entry-top">
+          <div class="prog-date">${entry.date}</div>
+          <div class="prog-dosha">${PD[entry.dominant].emoji} ${PD[entry.dominant].name}</div>
+        </div>
+        <div class="prog-bars">
+          <div class="pb-row"><span class="pb-label" style="color:var(--vata)">VATA</span><div class="pb-track"><div class="pb-fill" style="width:${entry.vata}%;background:var(--vata);"></div></div><span class="pb-val">${entry.vata}%</span></div>
+          <div class="pb-row"><span class="pb-label" style="color:var(--pitta)">PITTA</span><div class="pb-track"><div class="pb-fill" style="width:${entry.pitta}%;background:var(--pitta);"></div></div><span class="pb-val">${entry.pitta}%</span></div>
+          <div class="pb-row"><span class="pb-label" style="color:var(--kapha)">KAPHA</span><div class="pb-track"><div class="pb-fill" style="width:${entry.kapha}%;background:var(--kapha);"></div></div><span class="pb-val">${entry.kapha}%</span></div>
+        </div>
+      </div>`).join('')}
+    ${history.length < 2 ? `<div style="text-align:center;font-size:12px;color:var(--muted);padding:12px;font-style:italic;">Take the quiz again after following your plan to see your progress chart</div>` : ''}
+    <button class="btn btn-outline btn-full" onclick="clearProgress()" style="margin-top:10px;font-size:12px;">🗑️ Clear History</button>`;
+  if(history.length >= 2){
+    setTimeout(()=>drawProgressChart(history), 100);
+  }
+}
+
+function drawProgressChart(history){
+  const canvas = document.getElementById('progress-chart');
+  if(!canvas || !window.Chart) return;
+  if(window._progressChart) window._progressChart.destroy();
+  window._progressChart = new Chart(canvas, {
+    type:'line',
+    data:{
+      labels: history.map(e=>e.date),
+      datasets:[
+        {label:'Vata',data:history.map(e=>e.vata),borderColor:'#5B8FA8',backgroundColor:'rgba(91,143,168,0.1)',tension:0.4,borderWidth:2,pointRadius:4},
+        {label:'Pitta',data:history.map(e=>e.pitta),borderColor:'#D4693A',backgroundColor:'rgba(212,105,58,0.1)',tension:0.4,borderWidth:2,pointRadius:4},
+        {label:'Kapha',data:history.map(e=>e.kapha),borderColor:'#4A7C5E',backgroundColor:'rgba(74,124,94,0.1)',tension:0.4,borderWidth:2,pointRadius:4},
+      ]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{legend:{position:'bottom',labels:{boxWidth:10,font:{size:11}}}},
+      scales:{y:{min:0,max:100,ticks:{callback:v=>v+'%',font:{size:10}},grid:{color:'rgba(0,0,0,0.05)'}},x:{ticks:{font:{size:10}},grid:{display:false}}},
+      animation:{duration:800}
+    }
+  });
+}
+
+function clearProgress(){
+  if(confirm('Clear all progress history?')){
+    localStorage.removeItem('ayurmind_progress');
+    renderProgress();
+  }
+}
+
+// ══════════════════════════════════════════════
+// RENDER: PANCHAKARMA
+// ══════════════════════════════════════════════
+function renderPanchakarma(){
+  const el = document.getElementById('pk-content');
+  if(!el) return;
+  const r = appState.resultData;
+  const recommended = r ? (r.dominant==='kapha'?'Vamana': r.dominant==='pitta'?'Virechana':'Basti') : null;
+  el.innerHTML = `
+    <div class="pk-hero">
+      <h3>🌊 Panchakarma</h3>
+      <p>The five sacred Ayurvedic purification therapies. These are NOT home remedies — they must be performed by a qualified Vaidya. This guide helps you understand what to ask for at your Ayurvedic clinic.</p>
+    </div>
+    ${r?`<div style="background:var(--pale);border:1.5px solid var(--gold);border-radius:12px;padding:12px 14px;margin-bottom:16px;"><p style="font-size:13px;color:var(--dg);"><strong>For your ${PD[r.dominant].name} Prakriti:</strong> ${PD[r.dominant].name==='Vata'?'Basti (medicated enema) is your primary therapy':'Pitta'===PD[r.dominant].name?'Virechana (therapeutic purgation) is your primary therapy':'Vamana (therapeutic emesis) is your primary therapy'}. Ask your Ayurvedic doctor about <strong>${recommended}</strong> first.</p></div>`:``}
+    ${PK_DATA.map(pk=>`
+      <div class="pk-card ${recommended===pk.name?'':''}">
+        <div class="pk-card-header">
+          <div class="pk-num">${pk.num}</div>
+          <div>
+            <h4>${pk.name} ${recommended===pk.name?'⭐':''}${pk.sanskrit ? `<span style="font-size:12px;color:var(--gold);font-style:italic;margin-left:6px;">${pk.sanskrit}</span>`:''}</h4>
+          </div>
+        </div>
+        <p>${pk.desc}</p>
+        <p style="font-size:11px;font-weight:700;color:var(--dg);margin-bottom:6px;">Best for:</p>
+        <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px;">${pk.best.map(b=>`<span style="background:var(--light);border-radius:6px;padding:2px 8px;font-size:10px;color:var(--mg);">${b}</span>`).join('')}</div>
+        <div class="pk-meta">${pk.chips.map(c=>`<span class="pk-chip">${c}</span>`).join('')}</div>
+        <p style="font-size:9px;color:var(--muted);margin-top:8px;font-style:italic;">📚 ${pk.ref}</p>
+      </div>`).join('')}`;
+}
+
+// ══════════════════════════════════════════════
+// PATCH showTab to render new tabs
+// ══════════════════════════════════════════════
+const _origShowTab = showTab;
+function showTab(tab){
+  appState.activeTab = tab;
+  document.querySelectorAll('.tab-panel').forEach(p=>p.style.display='none');
+  const panel = document.getElementById('tab-'+tab);
+  if(panel) panel.style.display = (panel.classList.contains('page-body') || tab==='result' || tab==='home') ? 'block' : 'block';
+  document.querySelectorAll('.bnav-item').forEach(b=>b.classList.remove('active'));
+  const bn = document.getElementById('bn-'+tab);
+  if(bn) bn.classList.add('active');
+  window.scrollTo(0,0);
+  if(tab==='yoga') renderYoga();
+  else if(tab==='diet') renderWeeklyDiet();
+  else if(tab==='progress') renderProgress();
+  else if(tab==='panchakarma') renderPanchakarma();
+  else if(tab==='result') renderResult();
+  else if(tab==='home') renderHome();
+  else if(tab==='symptoms') renderSymptoms();
+  else if(tab==='ritucharya') renderRitucharya();
+  else if(tab==='doctor') renderDoctors();
+  else if(tab==='tools') renderTools();
+}
+
+// ══════════════════════════════════════════════
+// PATCH computeResult to use new showTab
+// ══════════════════════════════════════════════
+function computeResult(){
+  const sc={v:0,p:0,k:0};
+  for(let i=0;i<QS.length;i++){
+    if(appState.answers[i]!==undefined){
+      const s=QS[i].opts[appState.answers[i]].s;
+      sc.v+=s.v; sc.p+=s.p; sc.k+=s.k;
+    }
+  }
+  const tot=sc.v+sc.p+sc.k||1;
+  const vP=Math.round(sc.v/tot*100);
+  const pP=Math.round(sc.p/tot*100);
+  const kP=100-vP-pP;
+  let dom='vata';
+  if(sc.p>=sc.v&&sc.p>=sc.k) dom='pitta';
+  else if(sc.k>=sc.v&&sc.k>=sc.p) dom='kapha';
+  appState.resultData={dominant:dom,vata:vP,pitta:pP,kapha:kP,scores:sc};
+  showScreen('s-app');
+  renderHome();
+  renderSymptoms();
+  renderRitucharya();
+  renderTools();
+  renderDoctors();
+  showTab('result');
+}
+</script>
+</body>
+</html>
