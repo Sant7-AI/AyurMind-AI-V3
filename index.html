@@ -4696,91 +4696,74 @@ window.addEventListener('load',function(){
 function renderJihva(){
   var el=document.getElementById('tool-jihva');
   if(!el)return;
-  var r=appState.resultData;
-  var dom=r?r.dominant:null;
   el.innerHTML='';
   var wrap=document.createElement('div');
   wrap.className='tool-section';
-
   var title=document.createElement('div');
   title.className='tool-section-title';
   title.textContent='📸 Jihva Pariksha — AI Tongue Analysis';
   wrap.appendChild(title);
-
   var auth=document.createElement('div');
   auth.style.cssText='background:#1a3a2a;border-radius:12px;padding:11px 14px;margin-bottom:12px;color:#fff;';
-  auth.innerHTML='<div style="font-size:10px;color:#c9973a;font-weight:700;letter-spacing:1.5px;margin-bottom:4px;">CS INDRIYASTHANA CH.1 | AH SUTRASTHANA 12 | CS VIMANASTHANA 8.102</div>'
-    +'<p style="font-size:11px;color:rgba(255,255,255,.85);line-height:1.65;margin:0;">Tongue is the mirror of your digestive system and Dosha state. Check <strong>first thing in the morning</strong> before eating or brushing. Natural daylight is best.</p>';
+  auth.innerHTML='<div style="font-size:10px;color:#c9973a;font-weight:700;letter-spacing:1.5px;margin-bottom:4px;">CS INDRIYASTHANA CH.1 | AH SUTRASTHANA 12 | CS VIMANASTHANA 8.102</div>'+
+    '<p style="font-size:11px;color:rgba(255,255,255,.85);line-height:1.65;margin:0;">Tongue is the mirror of digestion and Agni. Morning examination (before food/brushing) reveals Ama, Agni state, and Vikriti — distinct from constitutional Prakriti.</p>';
   wrap.appendChild(auth);
-
-  // Instructions card
-  var inst=document.createElement('div');
-  inst.style.cssText='background:var(--pale);border:1px solid var(--gold);border-radius:10px;padding:10px 14px;margin-bottom:14px;';
-  inst.innerHTML='<div style="font-size:11px;font-weight:700;color:var(--dg);margin-bottom:5px;">How to get best results:</div>'
-    +'<div style="font-size:11px;color:var(--muted);line-height:1.7;">1. Stick tongue out fully in <strong>natural light</strong> or bright room light<br>'
-    +'2. Take photo from <strong>straight ahead</strong>, not at angle<br>'
-    +'3. Do not clean tongue before photo<br>'
-    +'4. AI will analyze: color, coating, moisture, shape, cracks, teeth marks</div>';
-  wrap.appendChild(inst);
-
-  // Camera capture section
-  var camCard=document.createElement('div');
-  camCard.style.cssText='background:var(--cream);border-radius:14px;padding:14px;margin-bottom:12px;';
-
-  // Camera button
-  var captureBtn=document.createElement('button');
-  captureBtn.className='ai-btn';
-  captureBtn.style.cssText='width:100%;margin-bottom:10px;';
-  captureBtn.innerHTML='📷 Take Tongue Photo (Camera)';
-  captureBtn.onclick=function(){
-    var input=document.createElement('input');
-    input.type='file';
-    input.accept='image/*';
-    // No forced capture - user can use camera or rear
-    input.style.display='none';
-    input.onchange=function(e){
-      var file=e.target.files[0];
-      if(!file)return;
-      analyzeJihvaImage(file);
-    };
-    document.body.appendChild(input);
-    input.click();
-    document.body.removeChild(input);
+  var guide=document.createElement('div');
+  guide.style.cssText='background:var(--pale);border:1.5px solid var(--gold);border-radius:12px;padding:12px 14px;margin-bottom:14px;';
+  guide.innerHTML='<div style="font-size:12px;font-weight:700;color:var(--dg);margin-bottom:7px;">Best results:</div>'+
+    '<div style="font-size:11px;color:var(--muted);line-height:1.9;">'+
+    '1. <strong>Morning only</strong> — before food, water, brushing<br>'+
+    '2. <strong>Stick tongue OUT fully</strong> — fill the frame<br>'+
+    '3. <strong>Bright natural light</strong> — face a window or lamp<br>'+
+    '4. <strong>Rear camera preferred</strong> — hold 12-18cm from tongue<br>'+
+    '<em style="color:var(--sg);">AI analyzes: Color, Coating, Moisture, Surface texture zones</em></div>';
+  wrap.appendChild(guide);
+  var camRow=document.createElement('div');
+  camRow.style.cssText='display:flex;gap:10px;margin-bottom:10px;flex-wrap:wrap;';
+  var rearBtn=document.createElement('button');
+  rearBtn.className='ai-btn';
+  rearBtn.style.cssText='flex:1;min-width:130px;';
+  rearBtn.innerHTML='📷 Rear Camera';
+  rearBtn.onclick=function(){
+    var inp=document.createElement('input');
+    inp.type='file';inp.accept='image/*';inp.capture='environment';
+    inp.style.display='none';
+    inp.onchange=function(e){var f=e.target.files[0];if(f)analyzeJihvaImage(f);};
+    document.body.appendChild(inp);inp.click();
+    setTimeout(function(){try{document.body.removeChild(inp);}catch(ex){}},8000);
   };
-  camCard.appendChild(captureBtn);
-
-  // Upload button
+  camRow.appendChild(rearBtn);
+  var frontBtn=document.createElement('button');
+  frontBtn.style.cssText='flex:1;min-width:130px;padding:12px;background:rgba(201,151,58,.12);border:1.5px solid var(--gold);border-radius:12px;color:var(--dg);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;';
+  frontBtn.innerHTML='🤳 Selfie Camera';
+  frontBtn.onclick=function(){
+    var inp=document.createElement('input');
+    inp.type='file';inp.accept='image/*';inp.capture='user';
+    inp.style.display='none';
+    inp.onchange=function(e){var f=e.target.files[0];if(f)analyzeJihvaImage(f);};
+    document.body.appendChild(inp);inp.click();
+    setTimeout(function(){try{document.body.removeChild(inp);}catch(ex){}},8000);
+  };
+  camRow.appendChild(frontBtn);
+  wrap.appendChild(camRow);
   var uploadBtn=document.createElement('button');
-  uploadBtn.style.cssText='width:100%;padding:10px;background:var(--white);border:1.5px solid var(--border);border-radius:12px;color:var(--dg);font-size:12px;cursor:pointer;font-family:inherit;';
-  uploadBtn.innerHTML='📁 Upload Tongue Photo from Gallery';
+  uploadBtn.style.cssText='width:100%;padding:10px;background:var(--white);border:1.5px solid var(--border);border-radius:12px;color:var(--muted);font-size:12px;cursor:pointer;font-family:inherit;';
+  uploadBtn.innerHTML='📁 Upload from Gallery';
   uploadBtn.onclick=function(){
-    var input=document.createElement('input');
-    input.type='file';
-    input.accept='image/*';
-    input.style.display='none';
-    input.onchange=function(e){
-      var file=e.target.files[0];
-      if(!file)return;
-      analyzeJihvaImage(file);
-    };
-    document.body.appendChild(input);
-    input.click();
-    document.body.removeChild(input);
+    var inp=document.createElement('input');
+    inp.type='file';inp.accept='image/*';inp.style.display='none';
+    inp.onchange=function(e){var f=e.target.files[0];if(f)analyzeJihvaImage(f);};
+    document.body.appendChild(inp);inp.click();
+    setTimeout(function(){try{document.body.removeChild(inp);}catch(ex){}},8000);
   };
-  camCard.appendChild(uploadBtn);
-  wrap.appendChild(camCard);
-
-  // Result area
+  wrap.appendChild(uploadBtn);
   var resultDiv=document.createElement('div');
-  resultDiv.id='jihva-result';
+  resultDiv.id='jihva-result';resultDiv.style.cssText='margin-top:12px;';
   wrap.appendChild(resultDiv);
-
-  // Classical reference
   var foot=document.createElement('p');
-  foot.style.cssText='font-size:10px;color:var(--muted);margin-top:8px;font-style:italic;';
-  foot.textContent='Source: CS Indriyasthana Ch.1 (Varna-Bala) | AH Sutrasthana 12 | CS Vimanasthana 8.94-106 | Ashtavidha Pariksha — 4th method';
+  foot.style.cssText='font-size:10px;color:var(--muted);margin-top:10px;font-style:italic;line-height:1.5;';
+  foot.textContent='Source: CS Indriyasthana Ch.1 | CS Vimanasthana 8.102 | AH Sutrasthana 12 | Ashtavidha Pariksha — 4th method (Jihva)';
   wrap.appendChild(foot);
-
   el.appendChild(wrap);
 }
 
@@ -4790,146 +4773,128 @@ function renderDrika(){
   el.innerHTML='';
   var wrap=document.createElement('div');
   wrap.className='tool-section';
-
   var title=document.createElement('div');
   title.className='tool-section-title';
   title.textContent='👁️ Drika Pariksha — AI Eye Analysis';
   wrap.appendChild(title);
-
   var auth=document.createElement('div');
   auth.style.cssText='background:#1a3a2a;border-radius:12px;padding:11px 14px;margin-bottom:12px;color:#fff;';
-  auth.innerHTML='<div style="font-size:10px;color:#c9973a;font-weight:700;letter-spacing:1.5px;margin-bottom:4px;">CS VIMANASTHANA 8.94-106 | AH SUTRASTHANA 12 | ASHTAVIDHA PARIKSHA — 7TH METHOD</div>'
-    +'<p style="font-size:11px;color:rgba(255,255,255,.85);line-height:1.65;margin:0;">Eyes reflect Alochaka Pitta — vision, clarity, and systemic health. Sclera color, conjunctiva, moisture, and contrast indicate Dosha state. CS Vimanasthana 8.102 documents eye characteristics per Prakriti.</p>';
+  auth.innerHTML='<div style="font-size:10px;color:#c9973a;font-weight:700;letter-spacing:1.5px;margin-bottom:4px;">CS VIMANASTHANA 8.94-106 | AH SUTRASTHANA 12 | ASHTAVIDHA PARIKSHA — 7TH METHOD</div>'+
+    '<p style="font-size:11px;color:rgba(255,255,255,.85);line-height:1.65;margin:0;">Alochaka Pitta governs vision and eye clarity. Sclera color, conjunctiva state, moisture, and iris clarity reflect systemic Dosha state. CS Vimanasthana 8.102 documents eye characteristics per Prakriti.</p>';
   wrap.appendChild(auth);
-
-  var inst=document.createElement('div');
-  inst.style.cssText='background:var(--pale);border:1px solid var(--gold);border-radius:10px;padding:10px 14px;margin-bottom:14px;';
-  inst.innerHTML='<div style="font-size:11px;font-weight:700;color:var(--dg);margin-bottom:5px;">📍 How to take eye photo:</div>'
-    +'<div style="font-size:11px;color:var(--muted);line-height:1.8;">'
-    +'1. <strong>Bright natural light</strong> — face a window or lamp<br>'
-    +'2. Eyes <strong>WIDE open</strong> — white sclera must be clearly visible<br>'
-    +'3. Hold phone <strong>20-25cm</strong> from face<br>'
-    +'4. Look <strong>straight ahead</strong> — both eyes in frame<br>'
-    +'5. AI analyzes: sclera color, conjunctiva, moisture, iris contrast</div>';
-  wrap.appendChild(inst);
-
-  var camCard=document.createElement('div');
-  camCard.style.cssText='background:var(--cream);border-radius:14px;padding:14px;margin-bottom:12px;';
-
-  var captureBtn=document.createElement('button');
-  captureBtn.className='ai-btn';
-  captureBtn.style.cssText='width:100%;margin-bottom:10px;';
-  captureBtn.innerHTML='📷 Take Eye Photo (Camera)';
-  captureBtn.onclick=function(){
-    var input=document.createElement('input');
-    input.type='file';input.accept='image/*';input.capture='user';
-    input.style.display='none';
-    input.onchange=function(e){var f=e.target.files[0];if(f)analyzeDrikaImage(f);};
-    document.body.appendChild(input);input.click();document.body.removeChild(input);
+  var guide=document.createElement('div');
+  guide.style.cssText='background:var(--pale);border:1.5px solid var(--gold);border-radius:12px;padding:12px 14px;margin-bottom:14px;';
+  guide.innerHTML='<div style="font-size:12px;font-weight:700;color:var(--dg);margin-bottom:7px;">Best technique:</div>'+
+    '<div style="font-size:11px;color:var(--muted);line-height:1.9;">'+
+    '1. Use <strong>front (selfie) camera</strong> — face bright window<br>'+
+    '2. Eyes <strong>WIDE open</strong> — white sclera clearly visible<br>'+
+    '3. Hold <strong>20-25cm</strong> from face, look straight ahead<br>'+
+    '4. Both eyes in frame<br>'+
+    '<em style="color:var(--sg);">AI analyzes: Sclera color, Redness, Moisture, Conjunctiva</em></div>';
+  wrap.appendChild(guide);
+  var camRow=document.createElement('div');
+  camRow.style.cssText='display:flex;gap:10px;margin-bottom:10px;flex-wrap:wrap;';
+  var frontBtn=document.createElement('button');
+  frontBtn.className='ai-btn';
+  frontBtn.style.cssText='flex:1;min-width:130px;';
+  frontBtn.innerHTML='🤳 Front Camera (Eyes)';
+  frontBtn.onclick=function(){
+    var inp=document.createElement('input');
+    inp.type='file';inp.accept='image/*';inp.capture='user';
+    inp.style.display='none';
+    inp.onchange=function(e){var f=e.target.files[0];if(f)analyzeDrikaImage(f);};
+    document.body.appendChild(inp);inp.click();
+    setTimeout(function(){try{document.body.removeChild(inp);}catch(ex){}},8000);
   };
-  camCard.appendChild(captureBtn);
-
+  camRow.appendChild(frontBtn);
   var uploadBtn=document.createElement('button');
-  uploadBtn.style.cssText='width:100%;padding:10px;background:var(--white);border:1.5px solid var(--border);border-radius:12px;color:var(--dg);font-size:12px;cursor:pointer;font-family:inherit;';
-  uploadBtn.innerHTML='📁 Upload Eye Photo from Gallery';
+  uploadBtn.style.cssText='flex:1;min-width:130px;padding:12px;background:var(--white);border:1.5px solid var(--border);border-radius:12px;color:var(--muted);font-size:12px;cursor:pointer;font-family:inherit;';
+  uploadBtn.innerHTML='📁 Upload Eye Photo';
   uploadBtn.onclick=function(){
-    var input=document.createElement('input');
-    input.type='file';input.accept='image/*';input.style.display='none';
-    input.onchange=function(e){var f=e.target.files[0];if(f)analyzeDrikaImage(f);};
-    document.body.appendChild(input);input.click();document.body.removeChild(input);
+    var inp=document.createElement('input');
+    inp.type='file';inp.accept='image/*';inp.style.display='none';
+    inp.onchange=function(e){var f=e.target.files[0];if(f)analyzeDrikaImage(f);};
+    document.body.appendChild(inp);inp.click();
+    setTimeout(function(){try{document.body.removeChild(inp);}catch(ex){}},8000);
   };
-  camCard.appendChild(uploadBtn);
-  wrap.appendChild(camCard);
-
+  camRow.appendChild(uploadBtn);
+  wrap.appendChild(camRow);
   var resultDiv=document.createElement('div');
-  resultDiv.id='drika-result';
+  resultDiv.id='drika-result';resultDiv.style.cssText='margin-top:12px;';
   wrap.appendChild(resultDiv);
-
   var foot=document.createElement('p');
-  foot.style.cssText='font-size:10px;color:var(--muted);margin-top:8px;font-style:italic;';
+  foot.style.cssText='font-size:10px;color:var(--muted);margin-top:10px;font-style:italic;line-height:1.5;';
   foot.textContent='Source: CS Vimanasthana 8.94-106 | AH Sutrasthana 12 | Ashtavidha Pariksha — 7th method (Drika)';
   wrap.appendChild(foot);
   el.appendChild(wrap);
 }
-
 
 function analyzeJihvaImage(file){
   var resultDiv=document.getElementById('jihva-result');
   if(!resultDiv)return;
   var r=appState.resultData;
   var dom=r?r.dominant:'unknown';
-
   var reader=new FileReader();
   reader.onload=function(e){
     var imgData=e.target.result;
     resultDiv.innerHTML='';
-
-    // Preview
     var previewWrap=document.createElement('div');
     previewWrap.style.cssText='text-align:center;margin-bottom:12px;';
     var imgEl=document.createElement('img');
     imgEl.src=imgData;
-    imgEl.style.cssText='max-width:220px;max-height:160px;border-radius:12px;object-fit:cover;border:2px solid var(--gold);box-shadow:0 4px 16px rgba(0,0,0,.2);';
+    imgEl.style.cssText='max-width:240px;max-height:170px;border-radius:12px;object-fit:cover;border:2px solid var(--gold);box-shadow:0 4px 20px rgba(0,0,0,.25);';
     previewWrap.appendChild(imgEl);
     resultDiv.appendChild(previewWrap);
-
     var loading=document.createElement('div');
     loading.className='ai-loading';
-    loading.innerHTML='<div class="ai-dots"><div class="ai-dot"></div><div class="ai-dot"></div><div class="ai-dot"></div></div><span>Validating image... scanning for tongue tissue...</span>';
+    loading.innerHTML='<div class="ai-dots"><div class="ai-dot"></div><div class="ai-dot"></div><div class="ai-dot"></div></div><span>Scanning tongue zones: color, coating, moisture...</span>';
     resultDiv.appendChild(loading);
-
     var canvas=document.createElement('canvas');
     var ctx=canvas.getContext('2d');
-    var analyzeImg=new Image();
-    analyzeImg.onload=function(){
-      canvas.width=analyzeImg.width;
-      canvas.height=analyzeImg.height;
-      ctx.drawImage(analyzeImg,0,0);
-
-      var W=canvas.width, H=canvas.height;
-      // Full image stats for validation
-      var fullData=ctx.getImageData(0,0,W,H).data;
-      var fullStats=calcFullStats(fullData);
-
-      // Center region (tongue body)
-      var cx=Math.floor(W/2), cy=Math.floor(H/2);
-      var sw=Math.floor(W*0.5), sh=Math.floor(H*0.5);
-      var centerData=ctx.getImageData(cx-sw/2,cy-sh/2,sw,sh).data;
-      var centerStats=calcFullStats(centerData);
-
-      // Edge region (coating)
-      var edgeData=ctx.getImageData(0,Math.floor(H*0.3),Math.floor(W*0.12),Math.floor(H*0.4)).data;
-      var edgeStats=calcColorStats(edgeData);
-
-      // Validate image IS a tongue
+    var img=new Image();
+    img.onload=function(){
+      canvas.width=img.width;canvas.height=img.height;
+      ctx.drawImage(img,0,0);
+      var W=canvas.width,H=canvas.height;
+      var fullStats=calcFullStats(ctx.getImageData(0,0,W,H).data);
+      var cW=Math.floor(W*0.5),cH=Math.floor(H*0.5);
+      var centerStats=calcFullStats(ctx.getImageData(Math.floor(W*0.25),Math.floor(H*0.25),cW,cH).data);
+      var tipStats=calcColorStats(ctx.getImageData(Math.floor(W*0.3),Math.floor(H*0.65),Math.floor(W*0.4),Math.floor(H*0.2)).data);
+      var leftEdge=calcColorStats(ctx.getImageData(Math.floor(W*0.05),Math.floor(H*0.3),Math.floor(W*0.18),Math.floor(H*0.4)).data);
+      var rightEdge=calcColorStats(ctx.getImageData(Math.floor(W*0.77),Math.floor(H*0.3),Math.floor(W*0.18),Math.floor(H*0.4)).data);
+      var backStats=calcColorStats(ctx.getImageData(Math.floor(W*0.3),Math.floor(H*0.1),Math.floor(W*0.4),Math.floor(H*0.25)).data);
       var validation=validateTongueImage(centerStats,fullStats);
-
-      var coatingDiff=Math.abs(centerStats.brightness-edgeStats.brightness);
-      var hasCoating=coatingDiff>18||centerStats.whiteness>155;
-      var coatingColor=centerStats.yellowness>35?'yellow':centerStats.whiteness>165?'white':'none';
-
-      loading.remove();
-
       if(!validation.valid){
-        // Show rejection with reason
+        loading.remove();
         var errWrap=document.createElement('div');
         errWrap.style.cssText='background:#2A0A0A;border:1.5px solid #C84030;border-radius:12px;padding:16px;margin-top:4px;';
         errWrap.className='fade-in';
-        errWrap.innerHTML='<div style="font-size:13px;font-weight:700;color:#FF6B6B;margin-bottom:8px;">❌ Tongue Not Detected</div>'
-          +'<div style="font-size:12px;color:rgba(255,255,255,.8);line-height:1.7;margin-bottom:10px;">'+validation.reason+'</div>'
-          +'<div style="font-size:11px;color:rgba(255,255,255,.5);">Tips for better photo:<br>'
-          +'• Stick tongue OUT fully<br>• Bright natural light or lamp<br>• Camera 15-20cm away<br>• Tongue centered in frame<br>• Morning before eating</div>'
-          +'<button onclick="document.getElementById(\'jihva-result\').innerHTML=\'\';renderJihva();" style="margin-top:10px;width:100%;padding:9px;background:var(--gold);border:none;border-radius:8px;color:#1A1A1A;font-weight:700;font-size:12px;cursor:pointer;font-family:inherit;">📷 Try Again</button>';
+        errWrap.innerHTML='<div style="font-size:13px;font-weight:700;color:#FF6B6B;margin-bottom:8px;">❌ Tongue Not Detected</div>'+
+          '<div style="font-size:12px;color:rgba(255,255,255,.8);line-height:1.7;margin-bottom:12px;">'+validation.reason+'</div>'+
+          '<div style="font-size:11px;color:rgba(255,255,255,.5);margin-bottom:10px;">• Stick tongue OUT fully<br>• Bright natural light<br>• Camera 12-18cm away<br>• Tongue fills most of frame<br>• Morning before eating/brushing</div>'+
+          '<button onclick="document.getElementById(\'jihva-result\').innerHTML=\'\';renderJihva();" style="width:100%;padding:10px;background:var(--gold);border:none;border-radius:8px;color:#1A1A1A;font-weight:700;font-size:12px;cursor:pointer;font-family:inherit;">📷 Try Again</button>';
         resultDiv.innerHTML='';
         resultDiv.appendChild(previewWrap.cloneNode(true));
         resultDiv.appendChild(errWrap);
         return;
       }
-
-      var text=interpretJihva(centerStats,edgeStats,coatingColor,hasCoating,dom,validation);
+      var edgeAvgBright=(leftEdge.brightness+rightEdge.brightness)/2;
+      var edgeLift=edgeAvgBright-centerStats.brightness;
+      var hasCoating=edgeLift>12||centerStats.whiteness>155||backStats.whiteness>162;
+      var coatingThick=edgeLift>28||backStats.whiteness>172;
+      var coatingColor='none';
+      if(hasCoating) coatingColor=(centerStats.yellowness>33||backStats.yellowness>36)?'yellow':'white';
+      var avgSat=(centerStats.saturation+tipStats.saturation)/2;
+      var isDry=avgSat<18&&centerStats.brightness>138;
+      var isWet=avgSat>52&&centerStats.brightness<182;
+      var hasCracks=centerStats.variance>2500;
+      var hasTeethMarks=Math.abs(leftEdge.brightness-rightEdge.brightness)>18;
+      loading.remove();
+      var extras={isDry:isDry,isWet:isWet,coatingThick:coatingThick,hasTeethMarks:hasTeethMarks,hasCracks:hasCracks,tipStats:tipStats};
+      var text=interpretJihva(centerStats,{brightness:edgeAvgBright,whiteness:Math.max(leftEdge.whiteness,rightEdge.whiteness),redness:leftEdge.redness,yellowness:leftEdge.yellowness,blueness:leftEdge.blueness},coatingColor,hasCoating,dom,validation,extras);
       showJihvaResult(text,imgData,dom);
     };
-    analyzeImg.src=imgData;
+    img.src=imgData;
   };
   reader.readAsDataURL(file);
 }
@@ -5009,123 +4974,135 @@ function calcFullStats(data){
 }
 
 
-function interpretJihva(stats, edgeStats, coatingColor, hasCoating, dom, valid){
+function interpretJihva(stats,edgeStats,coatingColor,hasCoating,dom,valid,extras){
   if(!valid.valid){
-    return '❌ INVALID IMAGE\n\n'+valid.reason+'\n\nPlease try again with:\n• Bright natural or room light\n• Tongue extended clearly in frame\n• Camera 15-20cm from face\n• Tongue centered in photo';
+    return '\u274c INVALID\n\n'+valid.reason+'\n\nTry again:\n- Stick tongue OUT fully\n- Bright light\n- Camera 12-18cm away\n- Tongue fills frame\n- Morning before eating';
   }
-
-  var lines=[];
-  var vataSigns=[], pittaSigns=[], kaphaSigns=[];
+  var isDry=extras&&extras.isDry||false;
+  var isWet=extras&&extras.isWet||false;
+  var coatingThick=extras&&extras.coatingThick||false;
+  var hasTeethMarks=extras&&extras.hasTeethMarks||false;
+  var hasCracks=extras&&extras.hasCracks||false;
+  var lines=[],vataSigns=[],pittaSigns=[],kaphaSigns=[];
   var urgency='Routine self-care';
+  var r=stats.r,g=stats.g,b=stats.b,brightness=stats.brightness;
+  var rOverG=r-g,rOverB=r-b;
 
-  lines.push('TONGUE COLOR ANALYSIS');
-  lines.push('─────────────────────────────────');
-
-  var r=stats.r,g=stats.g,b=stats.b;
-  var brightness=stats.brightness;
-
-  if(brightness>190&&stats.saturation<20){
-    lines.push('Color: Very Pale / Almost White');
-    vataSigns.push('Pale tongue — Vata/Ama sign, possible anemia (CS Indriyasthana Ch.1)');
-    kaphaSigns.push('Pallor indicates Kapha congestion in channels');
-  } else if(stats.redness>45&&brightness<160){
+  lines.push('TONGUE COLOR  (CS Vimanasthana 8.102)');
+  lines.push('----------------------------------');
+  if(brightness>188&&stats.saturation<22){
+    lines.push('Color: Pale / Whitish');
+    vataSigns.push('Pale tongue - Vata/Ama, possible anemia (Pandu)');
+    kaphaSigns.push('White pallor - Kapha congestion, Manda Agni');
+  } else if(rOverG>60&&brightness<158){
     lines.push('Color: Deep Red / Inflamed');
-    pittaSigns.push('Red/inflamed tongue — Pitta excess in Rakta dhatu (CS Vimanasthana 8.102)');
-    urgency='See Vaidya within 2 weeks';
-  } else if(stats.redness>20&&brightness>130&&brightness<200){
-    lines.push('Color: Healthy Pink-Red');
-    lines.push('✅ Good base color — normal Prakriti range');
-  } else if(stats.yellowness>40){
+    pittaSigns.push('Deep red - Pitta excess in Rakta dhatu, Tikshna Agni (CS 8.102)');
+    urgency='See Vaidya within 1 week';
+  } else if(rOverG>33&&rOverB>33&&brightness>108&&brightness<198){
+    lines.push('Color: Healthy Pink-Red (✅ Normal)');
+    lines.push('Normal range - Sama Agni indicator');
+  } else if(stats.yellowness>38){
     lines.push('Color: Yellowish tinge');
-    pittaSigns.push('Yellow — Pitta in liver/bile pathway (Ranjaka Pitta)');
-    urgency='See doctor — persistent yellow tongue needs evaluation';
-  } else if(stats.blueness>20){
-    lines.push('Color: Bluish/Purple tinge');
-    vataSigns.push('Blue/purple — Vata circulation issue or cold constitution');
+    pittaSigns.push('Yellow - Ranjaka Pitta, liver/bile imbalance');
+    urgency='See Vaidya - persistent yellow tongue needs evaluation';
+  } else if(stats.blueness>16){
+    lines.push('Color: Bluish/Purple');
+    vataSigns.push('Blue/purple - Vata circulation issue, poor blood flow');
     urgency='See Vaidya soon';
   } else {
-    lines.push('Color: Within normal range (brightness '+Math.round(brightness)+')');
+    lines.push('Color: brightness='+Math.round(brightness)+' redness='+Math.round(rOverG));
   }
 
   lines.push('');
-  lines.push('TONGUE COATING');
-  lines.push('─────────────────────────────────');
+  lines.push('TONGUE COATING  (CS Sutrasthana 5.71)');
+  lines.push('----------------------------------');
   if(!hasCoating){
-    lines.push('Coating: Minimal / Clean ✅');
+    lines.push('Coating: None / Clean (✅ Good Agni)');
     lines.push('Clean tongue = good Agni, minimal Ama');
-  } else if(coatingColor==='white'){
-    lines.push('Coating: White coating present');
-    kaphaSigns.push('White coat = Ama (CS Sutrasthana 5 — Manda Agni indicator)');
-    lines.push('Action: Light fast or khichdi + tongue scraping daily');
   } else if(coatingColor==='yellow'){
-    lines.push('Coating: Yellow coating present');
+    lines.push('Coating: YELLOW'+(coatingThick?' (thick)':' (thin)'));
     pittaSigns.push('Yellow coat = Pitta Ama, liver/bile excess');
-    urgency='See Vaidya within 2 weeks';
-    lines.push('Action: Amalaki 1 tsp cool water morning, avoid spicy food');
+    urgency='See Vaidya within 1 week';
+    lines.push('Action: Amalaki morning + avoid spicy/fermented');
+  } else {
+    lines.push('Coating: WHITE'+(coatingThick?' (THICK - significant Ama)':' (thin - mild Ama)'));
+    kaphaSigns.push('White coat = Kapha Ama, Manda Agni (CS Sutrasthana 5.71)');
+    if(coatingThick) vataSigns.push('Thick back coating - Vishama Agni or chronic Ama');
+    lines.push('Action: Tongue scraping + Trikatu before meals');
   }
 
   lines.push('');
   lines.push('MOISTURE / TEXTURE');
-  lines.push('─────────────────────────────────');
-  if(stats.saturation<15&&brightness>160){
-    lines.push('Appearance: Dry (low saturation)');
-    vataSigns.push('Dry tongue — Vata excess, dehydration. AH: Shushka = Vata.');
-  } else if(stats.saturation>50){
-    lines.push('Appearance: Moist / Well hydrated ✅');
+  lines.push('----------------------------------');
+  if(isDry){
+    lines.push('Moisture: DRY tongue detected');
+    vataSigns.push('Dry tongue - Vata excess, dehydration (AH: Shushka = Vata)');
+  } else if(isWet){
+    lines.push('Moisture: EXCESS moisture');
+    kaphaSigns.push('Wet/slippery - Kapha excess, Shleshma accumulation');
   } else {
-    lines.push('Appearance: Normal moisture');
+    lines.push('Moisture: Normal (✅)');
+  }
+
+  if(hasCracks||hasTeethMarks){
+    lines.push('');
+    lines.push('SURFACE FEATURES  (AH Sutrasthana 12)');
+    lines.push('----------------------------------');
+    if(hasCracks){ lines.push('Surface: Texture variation / possible cracks'); vataSigns.push('Cracks - Vata dryness in Rasa dhatu (AH Sutrasthana 12)'); }
+    if(hasTeethMarks){ lines.push('Edges: Asymmetry detected (possible scalloping)'); kaphaSigns.push('Scalloped edges - Kapha enlargement (CS: Sthula jihva)'); }
   }
 
   lines.push('');
   lines.push('DOSHA INDICATORS');
-  lines.push('─────────────────────────────────');
-  lines.push(vataSigns.length?'🌬️ VATA:\n  • '+vataSigns.join('\n  • '):'🌬️ Vata: No significant signs');
-  lines.push(pittaSigns.length?'🔥 PITTA:\n  • '+pittaSigns.join('\n  • '):'🔥 Pitta: No significant signs');
-  lines.push(kaphaSigns.length?'🌊 KAPHA:\n  • '+kaphaSigns.join('\n  • '):'🌊 Kapha: No significant signs');
+  lines.push('----------------------------------');
+  lines.push(vataSigns.length?'Vata: '+vataSigns.join(' | '):'Vata: No significant signs');
+  lines.push(pittaSigns.length?'Pitta: '+pittaSigns.join(' | '):'Pitta: No significant signs');
+  lines.push(kaphaSigns.length?'Kapha: '+kaphaSigns.join(' | '):'Kapha: No significant signs');
 
   var vS=vataSigns.length,pS=pittaSigns.length,kS=kaphaSigns.length;
-  var dominant=pS>vS&&pS>kS?'Pitta Vikriti':vS>pS&&vS>kS?'Vata Vikriti':kS>pS&&kS>vS?'Kapha Vikriti':'Balanced';
+  var dV=pS>vS&&pS>kS?'Pitta Vikriti':vS>pS&&vS>kS?'Vata Vikriti':kS>pS&&kS>vS?'Kapha Vikriti':'Balanced (no significant Vikriti)';
 
   lines.push('');
-  lines.push('CURRENT IMBALANCE (Vikriti)');
-  lines.push('─────────────────────────────────');
-  lines.push(dominant);
+  lines.push('CURRENT VIKRITI (Today\'s Imbalance)');
+  lines.push('----------------------------------');
+  lines.push(dV);
   if(dom&&dom!=='unknown'){
-    lines.push('Your Prakriti: '+dom.charAt(0).toUpperCase()+dom.slice(1));
-    if(dominant.toLowerCase().includes(dom)) lines.push('→ Constitution reinforcing current state — address soon');
-    else if(dominant==='Balanced') lines.push('→ Good balance ✅');
-    else lines.push('→ Temporary Vikriti (differs from Prakriti)');
+    var dc=dom.charAt(0).toUpperCase()+dom.slice(1);
+    lines.push('Your Prakriti: '+dc+' | Tongue shows: '+dV);
+    if(dV.toLowerCase().includes(dom)) lines.push('⚠️ Constitution + current imbalance align - address promptly');
+    else if(dV.indexOf('Balanced')>=0) lines.push('✅ Tongue balanced today');
+    else lines.push('ℹ️ Temporary Vikriti (differs from Prakriti)');
   }
 
   lines.push('');
-  lines.push('RECOMMENDED ACTION (CS Indriyasthana Ch.1)');
-  lines.push('─────────────────────────────────');
+  lines.push('RECOMMENDED ACTIONS (CS Sutrasthana 5)');
+  lines.push('----------------------------------');
   if(pS>0){
-    lines.push('1. Amalaki 1 tsp cool water morning');
-    lines.push('2. Avoid spicy, sour, hot foods 3-5 days');
-    lines.push('3. Coconut oil Gandusha (oil pulling) 5 min morning');
+    lines.push('1. Amalaki 1 tsp + cool water morning fasting');
+    lines.push('2. Triphala 1 tsp warm water at bedtime');
+    lines.push('3. Coconut oil Gandusha 5 min (CS Sutrasthana 5)');
+    lines.push('4. Avoid: spicy, sour, fermented foods 5 days');
   } else if(kS>0||hasCoating){
-    lines.push('1. Daily tongue scraping (Jihva Nirlekhana) with copper scraper');
-    lines.push('2. Trikatu ¼ tsp warm water before meals');
-    lines.push('3. Light fast or mung soup 1 day to clear Ama');
+    lines.push('1. Jihva Nirlekhana (tongue scraping) daily - copper scraper');
+    lines.push('2. Trikatu churna 1/4 tsp warm water before meals');
+    lines.push('3. Light fast (mung soup/khichdi) 1 day');
+    lines.push('4. Warm ginger + lemon + honey water morning');
   } else if(vS>0){
-    lines.push('1. Sesame oil pulling (Gandusha) 5-10 min morning');
-    lines.push('2. Yashtimadhu in warm water — AH: supreme throat/tongue herb');
-    lines.push('3. Warm, oily, nourishing foods — reduce dry/raw food');
+    lines.push('1. Sesame oil Gandusha 5-10 min morning (CS Sutrasthana 5)');
+    lines.push('2. Yashtimadhu in warm milk (AH: supreme throat/tongue herb)');
+    lines.push('3. Warm, oily, nourishing diet - reduce raw/dry/cold');
+    lines.push('4. Daily Abhyanga (oil massage) - reduces Vata dryness');
   } else {
-    lines.push('1. Daily tongue scraping (Jihva Nirlekhana) — maintain health');
-    lines.push('2. Warm water with ginger morning');
-    lines.push('3. Continue current routine ✅');
+    lines.push('1. Jihva Nirlekhana daily - maintain Agni');
+    lines.push('2. Warm ginger water morning - supports Jatharagni');
+    lines.push('3. Balance maintained - continue Ritucharya ✅');
   }
-
   lines.push('');
   lines.push('URGENCY: '+urgency);
   lines.push('');
-  lines.push('Source: CS Indriyasthana Ch.1 | AH Sutrasthana 12 | CS Vimanasthana 8.94-106');
-
+  lines.push('Source: CS Indriyasthana Ch.1 | CS Sutrasthana 5.71 | AH Sutrasthana 12 | CS Vimanasthana 8.102');
   return lines.join('\n');
 }
-
 
 function analyzeDrikaImage(file){
   var resultDiv=document.getElementById('drika-result');
@@ -5706,106 +5683,82 @@ function renderNadiPPG(){
   el.innerHTML='';
   var wrap=document.createElement('div');
   wrap.className='tool-section';
-
   var title=document.createElement('div');
   title.className='tool-section-title';
   title.textContent='🫀 Nadi PPG — Pulse Rhythm Analysis';
   wrap.appendChild(title);
-
-  // Authority card
   var auth=document.createElement('div');
-  auth.style.cssText='background:#1a3a2a;border-radius:12px;padding:11px 14px;margin-bottom:12px;color:#fff;';
-  auth.innerHTML='<div style="font-size:10px;color:#c9973a;font-weight:700;letter-spacing:1.5px;margin-bottom:4px;">CS VIMANASTHANA 8.94-106 | FINGER-LOCK PPG TECHNOLOGY</div>'
-    +'<p style="font-size:11px;color:rgba(255,255,255,.85);line-height:1.65;margin:0;">Your phone\'s rear camera detects blood pulsation through your fingertip using Photoplethysmography (PPG). '
-    +'The <strong style="color:#E8C070;">FINGER LOCK</strong> system ensures measurement only happens when your finger is correctly placed — torch light passes through finger tissue and camera detects heartbeat as brightness changes.</p>';
+  auth.style.cssText='background:#1a3a2a;border-radius:12px;padding:12px 14px;margin-bottom:12px;color:#fff;';
+  auth.innerHTML=
+    '<div style="font-size:10px;color:#c9973a;font-weight:700;letter-spacing:1.5px;margin-bottom:5px;">CS VIMANASTHANA 8.94-106 | PPG: PMC4321461, PMC5595574, PMC8474463</div>'+
+    '<p style="font-size:11px;color:rgba(255,255,255,.85);line-height:1.7;margin:0 0 5px;">'+
+    '<strong style="color:#E8C070;">How Camera PPG works:</strong> Phone torch shines light through your fingertip. Blood absorbs torch light with each heartbeat — camera detects brightness change (Photoplethysmography). Validated in 50+ peer-reviewed studies (±5 BPM accuracy).</p>'+
+    '<p style="font-size:10px;color:rgba(255,255,255,.4);margin:0;">Note: Fingerprint sensor is NOT accessible via any browser/WebAPI — it is hardware-locked. Camera PPG is the only validated scientific method available in HTML apps (PMC-verified).</p>';
   wrap.appendChild(auth);
-
-  // Lock indicator
   var lockBar=document.createElement('div');
   lockBar.id='ppg-lock';
-  lockBar.style.cssText='text-align:center;padding:10px;border-radius:10px;font-weight:700;font-size:13px;'
-    +'background:rgba(255,100,50,.15);color:#FF6B6B;margin-bottom:10px;letter-spacing:1px;transition:.3s;';
-  lockBar.textContent='⚪ NO FINGER — Place fingertip on rear camera';
+  lockBar.style.cssText='text-align:center;padding:11px 16px;border-radius:12px;font-weight:700;font-size:13px;background:rgba(100,100,100,.1);color:rgba(255,255,255,.35);margin-bottom:12px;transition:all .3s;border:1.5px solid rgba(255,255,255,.08);letter-spacing:.5px;';
+  lockBar.textContent='⚪ Ready — Press Start to begin';
   wrap.appendChild(lockBar);
-
-  // Instructions
-  var inst=document.createElement('div');
-  inst.style.cssText='background:var(--pale);border:1px solid var(--gold);border-radius:10px;padding:10px 14px;margin-bottom:14px;';
-  inst.innerHTML='<div style="font-size:11px;font-weight:700;color:var(--dg);margin-bottom:6px;">📍 How to use Finger Lock PPG:</div>'
-    +'<div style="font-size:11px;color:var(--muted);line-height:1.8;">'
-    +'<strong>1.</strong> Press <strong>Start</strong> — camera and torch turn ON<br>'
-    +'<strong>2.</strong> Place your <strong>index fingertip firmly</strong> over the REAR camera lens<br>'
-    +'<strong>3.</strong> Wait for <strong style="color:#2E7A48;">🔒 LOCKED</strong> status — finger confirmed<br>'
-    +'<strong>4.</strong> Hold <strong>perfectly still</strong> for 30 seconds — do not talk<br>'
-    +'<strong>5.</strong> If you see <strong style="color:#C84030;">⚠️ NO FINGER</strong> — reposition fingertip<br>'
-    +'<em>Result only given after 15+ seconds of locked signal</em></div>';
-  wrap.appendChild(inst);
-
-  // Camera card
+  var steps=document.createElement('div');
+  steps.style.cssText='background:var(--pale);border:1.5px solid var(--gold);border-radius:12px;padding:12px 14px;margin-bottom:14px;';
+  steps.innerHTML='<div style="font-size:12px;font-weight:700;color:var(--dg);margin-bottom:8px;">How to measure:</div>'+
+    '<div style="font-size:11px;color:var(--muted);line-height:2.0;">'+
+    '<strong>1.</strong> Press <strong>Start</strong> — camera + torch turn ON<br>'+
+    '<strong>2.</strong> Wait 3 sec — <em>do NOT place finger (calibrating)</em><br>'+
+    '<strong>3.</strong> When prompted: Place <strong>index fingertip firmly</strong> over REAR camera lens<br>'+
+    '<strong>4.</strong> Wait until <span style="color:#22A855;font-weight:700;">🔒 LOCKED</span> appears<br>'+
+    '<strong>5.</strong> Hold still, breathe normally — 30 seconds<br>'+
+    '<span style="color:#c9973a;font-size:10.5px;">⚠️ Torch light passes through fingertip — press firmly, do not move</span></div>';
+  wrap.appendChild(steps);
   var camCard=document.createElement('div');
   camCard.style.cssText='background:var(--dg);border-radius:14px;padding:14px;margin-bottom:12px;';
-
-  // Heart + BPM display
-  var heartRow=document.createElement('div');
-  heartRow.style.cssText='display:flex;align-items:center;justify-content:center;gap:16px;margin-bottom:10px;';
+  var hrRow=document.createElement('div');
+  hrRow.style.cssText='display:flex;align-items:center;justify-content:center;gap:20px;margin-bottom:12px;';
   var heartEl=document.createElement('div');
   heartEl.id='ppg-heart';
-  heartEl.style.cssText='font-size:38px;transition:transform .15s ease;';
+  heartEl.style.cssText='font-size:44px;transition:transform .15s ease;';
   heartEl.textContent='🫀';
-  var bpmWrap=document.createElement('div');
-  bpmWrap.style.cssText='text-align:center;';
-  bpmWrap.innerHTML='<div id="ppg-bpm" style="font-family:Georgia,serif;font-size:44px;font-weight:700;color:#E8C070;line-height:1;">--</div>'
-    +'<div style="font-size:11px;color:rgba(255,255,255,.45);margin-top:2px;">BPM</div>';
-  heartRow.appendChild(heartEl);
-  heartRow.appendChild(bpmWrap);
-  camCard.appendChild(heartRow);
-
-  // Waveform canvas
+  var bpmBox=document.createElement('div');
+  bpmBox.style.cssText='text-align:center;';
+  bpmBox.innerHTML='<div id="ppg-bpm" style="font-family:Georgia,serif;font-size:52px;font-weight:700;color:#E8C070;line-height:1;">--</div><div style="font-size:11px;color:rgba(255,255,255,.4);margin-top:2px;letter-spacing:1px;">BPM</div>';
+  hrRow.appendChild(heartEl);hrRow.appendChild(bpmBox);
+  camCard.appendChild(hrRow);
   var canvas=document.createElement('canvas');
-  canvas.id='ppg-canvas';
-  canvas.width=400;canvas.height=80;
-  canvas.style.cssText='width:100%;height:80px;border-radius:8px;background:#050E07;display:block;margin-bottom:8px;';
+  canvas.id='ppg-canvas';canvas.width=400;canvas.height=72;
+  canvas.style.cssText='width:100%;height:72px;border-radius:8px;background:#060F08;display:block;margin-bottom:8px;';
   camCard.appendChild(canvas);
-
-  // Status text
   var statusEl=document.createElement('div');
   statusEl.id='ppg-status';
-  statusEl.style.cssText='font-size:11px;color:rgba(255,255,255,.65);text-align:center;min-height:32px;line-height:1.5;';
-  statusEl.textContent='Press Start, then place fingertip over rear camera lens';
+  statusEl.style.cssText='font-size:11px;color:rgba(255,255,255,.6);text-align:center;min-height:36px;line-height:1.6;padding:0 8px;';
+  statusEl.textContent='Press Start → wait for calibration → place fingertip over rear camera lens';
   camCard.appendChild(statusEl);
   wrap.appendChild(camCard);
-
-  // Buttons
   var btnRow=document.createElement('div');
   btnRow.style.cssText='display:flex;gap:10px;margin-bottom:12px;';
   var startBtn=document.createElement('button');
-  startBtn.id='ppg-start';
-  startBtn.className='ai-btn';
-  startBtn.style.cssText='flex:1;';
+  startBtn.id='ppg-start';startBtn.className='ai-btn';
+  startBtn.style.cssText='flex:2;font-size:14px;font-weight:700;';
   startBtn.innerHTML='▶ Start Measurement';
   startBtn.onclick=startNadiPPG;
   btnRow.appendChild(startBtn);
   var stopBtn=document.createElement('button');
   stopBtn.id='ppg-stop';
-  stopBtn.style.cssText='flex:1;padding:12px;background:rgba(200,60,40,.8);border:none;border-radius:12px;color:#fff;font-size:13px;cursor:pointer;font-family:inherit;font-weight:600;display:none;';
+  stopBtn.style.cssText='flex:1;padding:12px;background:rgba(200,50,40,.8);border:none;border-radius:12px;color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;display:none;';
   stopBtn.innerHTML='⏹ Stop';
   stopBtn.onclick=stopNadiPPG;
   btnRow.appendChild(stopBtn);
   wrap.appendChild(btnRow);
-
-  // Result area
   var resultDiv=document.createElement('div');
   resultDiv.id='nadi-ppg-result';
   wrap.appendChild(resultDiv);
-
   var foot=document.createElement('p');
-  foot.style.cssText='font-size:10px;color:var(--muted);margin-top:8px;font-style:italic;';
-  foot.textContent='Source: CS Vimanasthana 8.94-106 (Nadi Pariksha) | PPG validated in peer-reviewed clinical studies';
+  foot.style.cssText='font-size:10px;color:var(--muted);margin-top:8px;font-style:italic;line-height:1.5;';
+  foot.textContent='Basis: CS Vimanasthana 8.94-106 | PMC4321461, PMC5595574, PMC8474463 | Nadi types: Sarpa (Vata), Manduka (Pitta), Hamsa (Kapha)';
   wrap.appendChild(foot);
   el.appendChild(wrap);
 }
 
-// ── showNadiPPGResult ────────────────────────────────────────────
 function showNadiPPGResult(bpm){
   var resultDiv=document.getElementById('nadi-ppg-result');
   if(!resultDiv)return;
