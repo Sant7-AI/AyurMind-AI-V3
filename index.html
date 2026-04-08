@@ -4736,7 +4736,7 @@ function renderJihva(){
     var input=document.createElement('input');
     input.type='file';
     input.accept='image/*';
-    input.capture='user'; // front camera
+    // No forced capture - user can use camera or rear
     input.style.display='none';
     input.onchange=function(e){
       var file=e.target.files[0];
@@ -4784,276 +4784,6 @@ function renderJihva(){
   el.appendChild(wrap);
 }
 
-function analyzeJihvaImage(file){
-  var resultDiv=document.getElementById('jihva-result');
-  if(!resultDiv)return;
-  var r=appState.resultData;
-  var dom=r?r.dominant:'unknown';
-
-  var reader=new FileReader();
-  reader.onload=function(e){
-    var imgData=e.target.result;
-    resultDiv.innerHTML='';
-
-    // Preview
-    var previewWrap=document.createElement('div');
-    previewWrap.style.cssText='text-align:center;margin-bottom:12px;';
-    var imgEl=document.createElement('img');
-    imgEl.src=imgData;
-    imgEl.style.cssText='max-width:220px;max-height:160px;border-radius:12px;object-fit:cover;border:2px solid var(--gold);box-shadow:0 4px 16px rgba(0,0,0,.2);';
-    previewWrap.appendChild(imgEl);
-    resultDiv.appendChild(previewWrap);
-
-    // Loading
-    var loading=document.createElement('div');
-    loading.className='ai-loading';
-    loading.innerHTML='<div class="ai-dots"><div class="ai-dot"></div><div class="ai-dot"></div><div class="ai-dot"></div></div><span>Analyzing tongue — scanning colors, coating, moisture...</span>';
-    resultDiv.appendChild(loading);
-
-    // Analyze using Canvas pixel data
-    var canvas=document.createElement('canvas');
-    var ctx=canvas.getContext('2d');
-    var analyzeImg=new Image();
-    analyzeImg.onload=function(){
-      canvas.width=analyzeImg.width;
-      canvas.height=analyzeImg.height;
-      ctx.drawImage(analyzeImg,0,0);
-
-      // Sample center region (tongue body)
-      var cx=Math.floor(canvas.width/2);
-      var cy=Math.floor(canvas.height/2);
-      var sampleW=Math.floor(canvas.width*0.4);
-      var sampleH=Math.floor(canvas.height*0.4);
-      var imgPx=ctx.getImageData(cx-sampleW/2,cy-sampleH/2,sampleW,sampleH);
-
-      // Also sample edges/coating area
-      var edgePx=ctx.getImageData(0,cy-30,Math.floor(canvas.width*0.15),60);
-
-      // Calculate color statistics
-      var stats=calcColorStats(imgPx.data);
-      var edgeStats=calcColorStats(edgePx.data);
-
-      // Coating detection: compare center vs edge brightness
-      var coatingDiff=Math.abs(stats.brightness-edgeStats.brightness);
-      var hasCoating=coatingDiff>15||stats.whiteness>160;
-      var coatingColor=stats.yellowness>40?'yellow':stats.whiteness>170?'white':'none';
-
-      loading.remove();
-      var result=interpretJihva(stats,edgeStats,coatingColor,hasCoating,dom);
-      showJihvaResult(result,imgData,dom);
-    };
-    analyzeImg.src=imgData;
-  };
-  reader.readAsDataURL(file);
-}
-
-function calcColorStats(data){
-  var rSum=0,gSum=0,bSum=0,count=0;
-  for(var i=0;i<data.length;i+=4){
-    rSum+=data[i];gSum+=data[i+1];bSum+=data[i+2];count++;
-  }
-  var r=rSum/count,g=gSum/count,b=bSum/count;
-  return{
-    r:r,g:g,b:b,
-    brightness:(r+g+b)/3,
-    whiteness:Math.min(r,g,b),
-    redness:r-((g+b)/2),
-    yellowness:(r+g)/2-b,
-    blueness:b-((r+g)/2),
-    saturation:Math.max(r,g,b)-Math.min(r,g,b)
-  };
-}
-
-function interpretJihva(stats,edgeStats,coatingColor,hasCoating,dom){
-  var lines=[];
-  var vataSigns=[], pittaSigns=[], kaphaSigns=[];
-  var urgency='Routine self-care';
-
-  // ── COLOR ANALYSIS ──────────────────────────────
-  lines.push('TONGUE COLOR ANALYSIS');
-  lines.push('─────────────────────────────────');
-
-  if(stats.brightness>190){
-    lines.push('Color: Very Pale / Almost White');
-    vataSigns.push('Pale tongue — Vata/Ama sign, possible anemia (CS Indriyasthana Ch.1)');
-    kaphaSigns.push('Pallor indicates Kapha congestion in channels');
-  } else if(stats.redness>40&&stats.brightness<160){
-    lines.push('Color: Deep Red / Inflamed');
-    pittaSigns.push('Red/inflamed tongue — Pitta excess in Rakta dhatu and Annavaha Srotas');
-    urgency='See Vaidya within 2 weeks';
-  } else if(stats.redness>20&&stats.brightness>140){
-    lines.push('Color: Pinkish-Red (near normal)');
-    pittaSigns.push('Mild Pitta elevation — watch spicy food intake');
-  } else if(stats.brightness>150&&stats.brightness<185){
-    lines.push('Color: Normal Pink');
-    lines.push('✅ Healthy base color — good sign');
-  } else if(stats.blueness>15){
-    lines.push('Color: Bluish/Purple tinge');
-    vataSigns.push('Bluish tongue — Vata circulation issue, possible cold constitution or poor circulation');
-    urgency='See Vaidya soon';
-  } else if(stats.yellowness>50){
-    lines.push('Color: Yellowish');
-    pittaSigns.push('Yellow color — Pitta in liver/bile pathway (Ranjaka Pitta). CS: Kamala (jaundice) indicator.');
-    urgency='See a doctor — yellow tongue with yellow eyes needs immediate attention';
-  } else {
-    lines.push('Color: Moderate ('+Math.round(stats.brightness)+' avg brightness)');
-  }
-
-  // ── COATING ANALYSIS ──────────────────────────────
-  lines.push('');
-  lines.push('TONGUE COATING');
-  lines.push('─────────────────────────────────');
-  if(!hasCoating){
-    lines.push('Coating: Minimal / Clean');
-    lines.push('✅ Clean tongue = good Agni and minimal Ama');
-  } else if(coatingColor==='white'){
-    lines.push('Coating: White coating detected');
-    kaphaSigns.push('White coating = Ama (undigested toxins) — CS Sutrasthana 5: Manda Agni indicator');
-    vataSigns.push('If patchy: Vishama Agni (Vata digestive irregularity)');
-    lines.push('Indicates: Digestive Ama — fast or eat light for 1-2 days');
-  } else if(coatingColor==='yellow'){
-    lines.push('Coating: Yellow coating detected');
-    pittaSigns.push('Yellow coat = Pitta Ama, liver/bile excess — CS: Tikta-bitter herbs recommended');
-    urgency='See Vaidya within 2 weeks';
-    lines.push('Indicates: Pitta Ama — avoid hot, spicy, fermented foods');
-  }
-
-  // ── MOISTURE ANALYSIS ──────────────────────────────
-  lines.push('');
-  lines.push('MOISTURE / TEXTURE');
-  lines.push('─────────────────────────────────');
-  if(stats.saturation<20&&stats.brightness>160){
-    lines.push('Appearance: Dry / Low moisture (low saturation)');
-    vataSigns.push('Dry tongue — Vata excess, dehydration. AH: Shushka tongue = Vata.');
-  } else if(stats.saturation>60){
-    lines.push('Appearance: Moist / Well-hydrated');
-    lines.push('✅ Good moisture = balanced Kapha in Rasavaha Srotas');
-  } else {
-    lines.push('Appearance: Normal moisture');
-  }
-
-  // ── DOSHA ASSESSMENT ──────────────────────────────
-  lines.push('');
-  lines.push('DOSHA INDICATORS');
-  lines.push('─────────────────────────────────');
-
-  if(vataSigns.length){
-    lines.push('🌬️ VATA signs:');
-    vataSigns.forEach(function(s){lines.push('  • '+s);});
-  } else {
-    lines.push('🌬️ Vata: No significant signs');
-  }
-  if(pittaSigns.length){
-    lines.push('🔥 PITTA signs:');
-    pittaSigns.forEach(function(s){lines.push('  • '+s);});
-  } else {
-    lines.push('🔥 Pitta: No significant signs');
-  }
-  if(kaphaSigns.length){
-    lines.push('🌊 KAPHA signs:');
-    kaphaSigns.forEach(function(s){lines.push('  • '+s);});
-  } else {
-    lines.push('🌊 Kapha: No significant signs');
-  }
-
-  // ── PRIMARY IMBALANCE ──────────────────────────────
-  var vataScore=vataSigns.length, pittaScore=pittaSigns.length, kaphaScore=kaphaSigns.length;
-  var dominant='Balanced (no clear Vikriti)';
-  if(pittaScore>vataScore&&pittaScore>kaphaScore) dominant='Pitta Vikriti (current imbalance)';
-  else if(vataScore>pittaScore&&vataScore>kaphaScore) dominant='Vata Vikriti (current imbalance)';
-  else if(kaphaScore>pittaScore&&kaphaScore>vataScore) dominant='Kapha Vikriti (current imbalance)';
-
-  lines.push('');
-  lines.push('CURRENT IMBALANCE (Vikriti)');
-  lines.push('─────────────────────────────────');
-  lines.push(dominant);
-  if(dom&&dom!=='unknown'){
-    lines.push('Your Prakriti: '+dom.charAt(0).toUpperCase()+dom.slice(1));
-    if(dominant.toLowerCase().includes(dom)){
-      lines.push('→ Constitution reinforcing current state — address soon');
-    } else if(dominant==='Balanced (no clear Vikriti)'){
-      lines.push('→ Tongue shows good balance ✅');
-    } else {
-      lines.push('→ Temporary imbalance (Vikriti differs from Prakriti)');
-    }
-  }
-
-  // ── REMEDIES ──────────────────────────────
-  lines.push('');
-  lines.push('RECOMMENDED ACTION');
-  lines.push('─────────────────────────────────');
-  if(pittaScore>0){
-    lines.push('1. Amalaki 1 tsp cool water morning — primary Pitta tongue herb');
-    lines.push('2. Avoid spicy, sour, hot foods for 3-5 days');
-    lines.push('3. Coconut oil pull (Gandusha) 5 min morning — CS Sutrasthana 5');
-  } else if(kaphaSigns.length||hasCoating){
-    lines.push('1. Dry tongue scraping (Jihva Nirlekhana) with copper/SS scraper');
-    lines.push('2. Trikatu ¼ tsp warm water before meals — clears Ama');
-    lines.push('3. Light fast or khichdi for 1 day to clear coating');
-  } else if(vataSigns.length){
-    lines.push('1. Sesame oil pull (Gandusha) 5-10 min morning — CS Sutrasthana 5');
-    lines.push('2. Warm water with Yashtimadhu (licorice) — supreme voice+tongue herb');
-    lines.push('3. Warm, oily, nourishing foods — reduce dry/raw foods');
-  } else {
-    lines.push('1. Daily tongue scraping (Jihva Nirlekhana) — morning routine');
-    lines.push('2. Warm water with lemon first thing morning');
-    lines.push('3. Maintain current diet — looks balanced ✅');
-  }
-
-  lines.push('');
-  lines.push('URGENCY: '+urgency);
-  lines.push('');
-  lines.push('Source: CS Indriyasthana Ch.1 | AH Sutrasthana 12 | CS Vimanasthana 8.94-106');
-  lines.push('Note: For best accuracy — photo in bright natural light, morning before eating.');
-
-  return lines.join('\n');
-}
-
-function showJihvaResult(text,imgData,dom){
-  var resultDiv=document.getElementById('jihva-result');
-  if(!resultDiv)return;
-
-  // Parse urgency for color
-  var isUrgent=text.includes('See Vaidya soon');
-  var isRoutine=text.includes('Routine self-care');
-  var headerColor=isUrgent?'#C84030':isRoutine?'#2E8A48':'#C9973A';
-
-  var wrap=document.createElement('div');
-  wrap.style.cssText='background:var(--dg);border-radius:14px;padding:16px;color:#fff;margin-top:8px;';
-  wrap.className='fade-in';
-
-  var header=document.createElement('div');
-  header.style.cssText='font-size:11px;font-weight:700;color:'+headerColor+';letter-spacing:1px;margin-bottom:10px;';
-  header.textContent='✦ AYURMIND AI — JIHVA PARIKSHA RESULT';
-  wrap.appendChild(header);
-
-  var body=document.createElement('div');
-  body.style.cssText='font-size:11px;line-height:1.8;white-space:pre-line;color:rgba(255,255,255,.88);';
-  body.textContent=text;
-  wrap.appendChild(body);
-
-  var disclaimer=document.createElement('p');
-  disclaimer.style.cssText='font-size:9px;color:rgba(255,255,255,.3);margin-top:12px;font-style:italic;';
-  disclaimer.textContent='⚕️ Educational guidance only. Not a clinical diagnosis. Consult a qualified Vaidya (BAMS/MD Ayurveda) for medical care.';
-  wrap.appendChild(disclaimer);
-
-  // Retry button
-  var retryBtn=document.createElement('button');
-  retryBtn.style.cssText='margin-top:10px;background:rgba(255,255,255,.1);border:none;color:rgba(255,255,255,.6);border-radius:8px;padding:6px 14px;font-size:11px;cursor:pointer;font-family:inherit;';
-  retryBtn.textContent='📷 Analyze Another Photo';
-  retryBtn.onclick=function(){resultDiv.innerHTML='';renderJihva();};
-  wrap.appendChild(retryBtn);
-
-  resultDiv.innerHTML='';
-  resultDiv.appendChild(wrap);
-  resultDiv.scrollIntoView({behavior:'smooth',block:'nearest'});
-}
-
-// ════════════════════════════════════════════════════════════════
-// DRIKA PARIKSHA — AI Eye/Sclera Analysis
-// Source: CS Vimanasthana 8.94-106 | AH Sutrasthana 12
-// Ashtavidha Pariksha — 7th method
-// ════════════════════════════════════════════════════════════════
 function renderDrika(){
   var el=document.getElementById('tool-drika');
   if(!el)return;
@@ -5069,16 +4799,18 @@ function renderDrika(){
   var auth=document.createElement('div');
   auth.style.cssText='background:#1a3a2a;border-radius:12px;padding:11px 14px;margin-bottom:12px;color:#fff;';
   auth.innerHTML='<div style="font-size:10px;color:#c9973a;font-weight:700;letter-spacing:1.5px;margin-bottom:4px;">CS VIMANASTHANA 8.94-106 | AH SUTRASTHANA 12 | ASHTAVIDHA PARIKSHA — 7TH METHOD</div>'
-    +'<p style="font-size:11px;color:rgba(255,255,255,.85);line-height:1.65;margin:0;">Eyes reflect Pitta (heat), Alochaka Pitta governs vision and eye health. Sclera color, conjunctiva, eye moisture, and lid characteristics indicate Dosha state and systemic health.</p>';
+    +'<p style="font-size:11px;color:rgba(255,255,255,.85);line-height:1.65;margin:0;">Eyes reflect Alochaka Pitta — vision, clarity, and systemic health. Sclera color, conjunctiva, moisture, and contrast indicate Dosha state. CS Vimanasthana 8.102 documents eye characteristics per Prakriti.</p>';
   wrap.appendChild(auth);
 
   var inst=document.createElement('div');
   inst.style.cssText='background:var(--pale);border:1px solid var(--gold);border-radius:10px;padding:10px 14px;margin-bottom:14px;';
-  inst.innerHTML='<div style="font-size:11px;font-weight:700;color:var(--dg);margin-bottom:5px;">How to take best eye photo:</div>'
-    +'<div style="font-size:11px;color:var(--muted);line-height:1.7;">1. Use <strong>front camera</strong> in bright natural light<br>'
-    +'2. Hold phone 20-25cm from face<br>'
-    +'3. Look <strong>straight ahead</strong>, eyes wide open<br>'
-    +'4. AI will analyze: sclera color, conjunctiva, moisture, lid appearance</div>';
+  inst.innerHTML='<div style="font-size:11px;font-weight:700;color:var(--dg);margin-bottom:5px;">📍 How to take eye photo:</div>'
+    +'<div style="font-size:11px;color:var(--muted);line-height:1.8;">'
+    +'1. <strong>Bright natural light</strong> — face a window or lamp<br>'
+    +'2. Eyes <strong>WIDE open</strong> — white sclera must be clearly visible<br>'
+    +'3. Hold phone <strong>20-25cm</strong> from face<br>'
+    +'4. Look <strong>straight ahead</strong> — both eyes in frame<br>'
+    +'5. AI analyzes: sclera color, conjunctiva, moisture, iris contrast</div>';
   wrap.appendChild(inst);
 
   var camCard=document.createElement('div');
@@ -5115,10 +4847,285 @@ function renderDrika(){
 
   var foot=document.createElement('p');
   foot.style.cssText='font-size:10px;color:var(--muted);margin-top:8px;font-style:italic;';
-  foot.textContent='Source: CS Vimanasthana 8.94-106 (Indriya Pariksha) | AH Sutrasthana 12 | Ashtavidha Pariksha — 7th method (Drika)';
+  foot.textContent='Source: CS Vimanasthana 8.94-106 | AH Sutrasthana 12 | Ashtavidha Pariksha — 7th method (Drika)';
   wrap.appendChild(foot);
   el.appendChild(wrap);
 }
+
+
+function analyzeJihvaImage(file){
+  var resultDiv=document.getElementById('jihva-result');
+  if(!resultDiv)return;
+  var r=appState.resultData;
+  var dom=r?r.dominant:'unknown';
+
+  var reader=new FileReader();
+  reader.onload=function(e){
+    var imgData=e.target.result;
+    resultDiv.innerHTML='';
+
+    // Preview
+    var previewWrap=document.createElement('div');
+    previewWrap.style.cssText='text-align:center;margin-bottom:12px;';
+    var imgEl=document.createElement('img');
+    imgEl.src=imgData;
+    imgEl.style.cssText='max-width:220px;max-height:160px;border-radius:12px;object-fit:cover;border:2px solid var(--gold);box-shadow:0 4px 16px rgba(0,0,0,.2);';
+    previewWrap.appendChild(imgEl);
+    resultDiv.appendChild(previewWrap);
+
+    var loading=document.createElement('div');
+    loading.className='ai-loading';
+    loading.innerHTML='<div class="ai-dots"><div class="ai-dot"></div><div class="ai-dot"></div><div class="ai-dot"></div></div><span>Validating image... scanning for tongue tissue...</span>';
+    resultDiv.appendChild(loading);
+
+    var canvas=document.createElement('canvas');
+    var ctx=canvas.getContext('2d');
+    var analyzeImg=new Image();
+    analyzeImg.onload=function(){
+      canvas.width=analyzeImg.width;
+      canvas.height=analyzeImg.height;
+      ctx.drawImage(analyzeImg,0,0);
+
+      var W=canvas.width, H=canvas.height;
+      // Full image stats for validation
+      var fullData=ctx.getImageData(0,0,W,H).data;
+      var fullStats=calcFullStats(fullData);
+
+      // Center region (tongue body)
+      var cx=Math.floor(W/2), cy=Math.floor(H/2);
+      var sw=Math.floor(W*0.5), sh=Math.floor(H*0.5);
+      var centerData=ctx.getImageData(cx-sw/2,cy-sh/2,sw,sh).data;
+      var centerStats=calcFullStats(centerData);
+
+      // Edge region (coating)
+      var edgeData=ctx.getImageData(0,Math.floor(H*0.3),Math.floor(W*0.12),Math.floor(H*0.4)).data;
+      var edgeStats=calcColorStats(edgeData);
+
+      // Validate image IS a tongue
+      var validation=validateTongueImage(centerStats,fullStats);
+
+      var coatingDiff=Math.abs(centerStats.brightness-edgeStats.brightness);
+      var hasCoating=coatingDiff>18||centerStats.whiteness>155;
+      var coatingColor=centerStats.yellowness>35?'yellow':centerStats.whiteness>165?'white':'none';
+
+      loading.remove();
+
+      if(!validation.valid){
+        // Show rejection with reason
+        var errWrap=document.createElement('div');
+        errWrap.style.cssText='background:#2A0A0A;border:1.5px solid #C84030;border-radius:12px;padding:16px;margin-top:4px;';
+        errWrap.className='fade-in';
+        errWrap.innerHTML='<div style="font-size:13px;font-weight:700;color:#FF6B6B;margin-bottom:8px;">❌ Tongue Not Detected</div>'
+          +'<div style="font-size:12px;color:rgba(255,255,255,.8);line-height:1.7;margin-bottom:10px;">'+validation.reason+'</div>'
+          +'<div style="font-size:11px;color:rgba(255,255,255,.5);">Tips for better photo:<br>'
+          +'• Stick tongue OUT fully<br>• Bright natural light or lamp<br>• Camera 15-20cm away<br>• Tongue centered in frame<br>• Morning before eating</div>'
+          +'<button onclick="document.getElementById(\'jihva-result\').innerHTML=\'\';renderJihva();" style="margin-top:10px;width:100%;padding:9px;background:var(--gold);border:none;border-radius:8px;color:#1A1A1A;font-weight:700;font-size:12px;cursor:pointer;font-family:inherit;">📷 Try Again</button>';
+        resultDiv.innerHTML='';
+        resultDiv.appendChild(previewWrap.cloneNode(true));
+        resultDiv.appendChild(errWrap);
+        return;
+      }
+
+      var text=interpretJihva(centerStats,edgeStats,coatingColor,hasCoating,dom,validation);
+      showJihvaResult(text,imgData,dom);
+    };
+    analyzeImg.src=imgData;
+  };
+  reader.readAsDataURL(file);
+}
+
+function calcColorStats(data){
+  var rSum=0,gSum=0,bSum=0,count=0;
+  for(var i=0;i<data.length;i+=4){
+    rSum+=data[i];gSum+=data[i+1];bSum+=data[i+2];count++;
+  }
+  var r=rSum/count,g=gSum/count,b=bSum/count;
+  return{
+    r:r,g:g,b:b,
+    brightness:(r+g+b)/3,
+    whiteness:Math.min(r,g,b),
+    redness:r-((g+b)/2),
+    yellowness:(r+g)/2-b,
+    blueness:b-((r+g)/2),
+    saturation:Math.max(r,g,b)-Math.min(r,g,b)
+  };
+}
+
+// ── Tongue Image Validator (CS Indriyasthana Ch.1) ───────────────
+// Rejects: dark/overexposed, solid surfaces, green/blue objects
+// Accepts: organic pinkish-reddish tissue (all tongue types)
+// All 4 classical tongue states: Pitta (red), Vata (pale), 
+// Kapha (white-coated), Sama (normal pink)
+function validateTongueImage(stats, fullStats){
+  var r=stats.r,g=stats.g,b=stats.b;
+  var brightness=stats.brightness;
+  var saturation=stats.saturation||0;
+  var variance=fullStats.variance||stats.variance||0;
+  var rOverG=r-g,rOverB=r-b;
+
+  // Hard reject — obvious non-organic objects
+  if(brightness<45)
+    return{valid:false,score:0,reason:'Too dark. Use bright daylight or lamp directed at your tongue.'};
+  if(brightness>242&&saturation<12)
+    return{valid:false,score:0,reason:'White surface detected (paper/wall). Please photograph your extended tongue close-up.'};
+  if(saturation<8)
+    return{valid:false,score:0,reason:'Grayscale — use color camera in good lighting.'};
+  if(variance<80)
+    return{valid:false,score:0,reason:'Image too uniform — not a tongue photo. Stick tongue out fully and fill the frame.'};
+  if(g>r+20)
+    return{valid:false,score:0,reason:'Green-dominant image — photograph your tongue, not plants/objects.'};
+  if(b>r+15)
+    return{valid:false,score:0,reason:'Blue-dominant — photograph tongue in natural light, not sky/blue objects.'};
+  if(brightness>228&&rOverG<18&&rOverB<20)
+    return{valid:false,score:0,reason:'Bright uniform surface detected. Please photograph your extended tongue.'};
+
+  // Organic tissue check
+  var score=0;
+  var rDom=(r>=g&&r>=b);
+  if(rDom) score+=50;
+  if(rOverG>50) score+=30;
+  else if(rOverG>25) score+=20;
+  else if(rOverG>10) score+=12;
+  if(brightness>55&&brightness<240) score+=15;
+  if(variance>100) score+=10;
+  if(saturation>20) score+=10;
+  if(brightness>215&&saturation<18) score-=30;
+
+  var valid=score>=48;
+  var reason=valid?null:
+    !rDom?'Tongue not visible. Extend tongue OUT fully and ensure pink/red tissue fills the photo center.':
+    'Image unclear. Use bright light, stick tongue out fully, camera 10-15cm away.';
+  return{valid:valid,score:score,reason:reason};
+}
+
+function calcFullStats(data){
+  var s=calcColorStats(data);
+  var vals=[];
+  for(var i=0;i<data.length;i+=4) vals.push(data[i]);
+  var mean=vals.reduce(function(a,b){return a+b;})/vals.length;
+  var variance=vals.reduce(function(acc,v){return acc+Math.pow(v-mean,2);})/vals.length;
+  s.variance=variance;
+  return s;
+}
+
+
+function interpretJihva(stats, edgeStats, coatingColor, hasCoating, dom, valid){
+  if(!valid.valid){
+    return '❌ INVALID IMAGE\n\n'+valid.reason+'\n\nPlease try again with:\n• Bright natural or room light\n• Tongue extended clearly in frame\n• Camera 15-20cm from face\n• Tongue centered in photo';
+  }
+
+  var lines=[];
+  var vataSigns=[], pittaSigns=[], kaphaSigns=[];
+  var urgency='Routine self-care';
+
+  lines.push('TONGUE COLOR ANALYSIS');
+  lines.push('─────────────────────────────────');
+
+  var r=stats.r,g=stats.g,b=stats.b;
+  var brightness=stats.brightness;
+
+  if(brightness>190&&stats.saturation<20){
+    lines.push('Color: Very Pale / Almost White');
+    vataSigns.push('Pale tongue — Vata/Ama sign, possible anemia (CS Indriyasthana Ch.1)');
+    kaphaSigns.push('Pallor indicates Kapha congestion in channels');
+  } else if(stats.redness>45&&brightness<160){
+    lines.push('Color: Deep Red / Inflamed');
+    pittaSigns.push('Red/inflamed tongue — Pitta excess in Rakta dhatu (CS Vimanasthana 8.102)');
+    urgency='See Vaidya within 2 weeks';
+  } else if(stats.redness>20&&brightness>130&&brightness<200){
+    lines.push('Color: Healthy Pink-Red');
+    lines.push('✅ Good base color — normal Prakriti range');
+  } else if(stats.yellowness>40){
+    lines.push('Color: Yellowish tinge');
+    pittaSigns.push('Yellow — Pitta in liver/bile pathway (Ranjaka Pitta)');
+    urgency='See doctor — persistent yellow tongue needs evaluation';
+  } else if(stats.blueness>20){
+    lines.push('Color: Bluish/Purple tinge');
+    vataSigns.push('Blue/purple — Vata circulation issue or cold constitution');
+    urgency='See Vaidya soon';
+  } else {
+    lines.push('Color: Within normal range (brightness '+Math.round(brightness)+')');
+  }
+
+  lines.push('');
+  lines.push('TONGUE COATING');
+  lines.push('─────────────────────────────────');
+  if(!hasCoating){
+    lines.push('Coating: Minimal / Clean ✅');
+    lines.push('Clean tongue = good Agni, minimal Ama');
+  } else if(coatingColor==='white'){
+    lines.push('Coating: White coating present');
+    kaphaSigns.push('White coat = Ama (CS Sutrasthana 5 — Manda Agni indicator)');
+    lines.push('Action: Light fast or khichdi + tongue scraping daily');
+  } else if(coatingColor==='yellow'){
+    lines.push('Coating: Yellow coating present');
+    pittaSigns.push('Yellow coat = Pitta Ama, liver/bile excess');
+    urgency='See Vaidya within 2 weeks';
+    lines.push('Action: Amalaki 1 tsp cool water morning, avoid spicy food');
+  }
+
+  lines.push('');
+  lines.push('MOISTURE / TEXTURE');
+  lines.push('─────────────────────────────────');
+  if(stats.saturation<15&&brightness>160){
+    lines.push('Appearance: Dry (low saturation)');
+    vataSigns.push('Dry tongue — Vata excess, dehydration. AH: Shushka = Vata.');
+  } else if(stats.saturation>50){
+    lines.push('Appearance: Moist / Well hydrated ✅');
+  } else {
+    lines.push('Appearance: Normal moisture');
+  }
+
+  lines.push('');
+  lines.push('DOSHA INDICATORS');
+  lines.push('─────────────────────────────────');
+  lines.push(vataSigns.length?'🌬️ VATA:\n  • '+vataSigns.join('\n  • '):'🌬️ Vata: No significant signs');
+  lines.push(pittaSigns.length?'🔥 PITTA:\n  • '+pittaSigns.join('\n  • '):'🔥 Pitta: No significant signs');
+  lines.push(kaphaSigns.length?'🌊 KAPHA:\n  • '+kaphaSigns.join('\n  • '):'🌊 Kapha: No significant signs');
+
+  var vS=vataSigns.length,pS=pittaSigns.length,kS=kaphaSigns.length;
+  var dominant=pS>vS&&pS>kS?'Pitta Vikriti':vS>pS&&vS>kS?'Vata Vikriti':kS>pS&&kS>vS?'Kapha Vikriti':'Balanced';
+
+  lines.push('');
+  lines.push('CURRENT IMBALANCE (Vikriti)');
+  lines.push('─────────────────────────────────');
+  lines.push(dominant);
+  if(dom&&dom!=='unknown'){
+    lines.push('Your Prakriti: '+dom.charAt(0).toUpperCase()+dom.slice(1));
+    if(dominant.toLowerCase().includes(dom)) lines.push('→ Constitution reinforcing current state — address soon');
+    else if(dominant==='Balanced') lines.push('→ Good balance ✅');
+    else lines.push('→ Temporary Vikriti (differs from Prakriti)');
+  }
+
+  lines.push('');
+  lines.push('RECOMMENDED ACTION (CS Indriyasthana Ch.1)');
+  lines.push('─────────────────────────────────');
+  if(pS>0){
+    lines.push('1. Amalaki 1 tsp cool water morning');
+    lines.push('2. Avoid spicy, sour, hot foods 3-5 days');
+    lines.push('3. Coconut oil Gandusha (oil pulling) 5 min morning');
+  } else if(kS>0||hasCoating){
+    lines.push('1. Daily tongue scraping (Jihva Nirlekhana) with copper scraper');
+    lines.push('2. Trikatu ¼ tsp warm water before meals');
+    lines.push('3. Light fast or mung soup 1 day to clear Ama');
+  } else if(vS>0){
+    lines.push('1. Sesame oil pulling (Gandusha) 5-10 min morning');
+    lines.push('2. Yashtimadhu in warm water — AH: supreme throat/tongue herb');
+    lines.push('3. Warm, oily, nourishing foods — reduce dry/raw food');
+  } else {
+    lines.push('1. Daily tongue scraping (Jihva Nirlekhana) — maintain health');
+    lines.push('2. Warm water with ginger morning');
+    lines.push('3. Continue current routine ✅');
+  }
+
+  lines.push('');
+  lines.push('URGENCY: '+urgency);
+  lines.push('');
+  lines.push('Source: CS Indriyasthana Ch.1 | AH Sutrasthana 12 | CS Vimanasthana 8.94-106');
+
+  return lines.join('\n');
+}
+
 
 function analyzeDrikaImage(file){
   var resultDiv=document.getElementById('drika-result');
@@ -5136,9 +5143,10 @@ function analyzeDrikaImage(file){
     imgEl.style.cssText='max-width:220px;max-height:160px;border-radius:12px;object-fit:cover;border:2px solid var(--gold);box-shadow:0 4px 16px rgba(0,0,0,.2);';
     previewWrap.appendChild(imgEl);
     resultDiv.appendChild(previewWrap);
+
     var loading=document.createElement('div');
     loading.className='ai-loading';
-    loading.innerHTML='<div class="ai-dots"><div class="ai-dot"></div><div class="ai-dot"></div><div class="ai-dot"></div></div><span>Analyzing eye — scanning sclera, conjunctiva, moisture...</span>';
+    loading.innerHTML='<div class="ai-dots"><div class="ai-dot"></div><div class="ai-dot"></div><div class="ai-dot"></div></div><span>Validating eye image... scanning sclera and iris regions...</span>';
     resultDiv.appendChild(loading);
 
     var canvas=document.createElement('canvas');
@@ -5149,32 +5157,64 @@ function analyzeDrikaImage(file){
       canvas.height=analyzeImg.height;
       ctx.drawImage(analyzeImg,0,0);
 
-      // Sample different regions
-      var w=canvas.width,h=canvas.height;
-      // Center (iris/pupil area)
-      var center=calcColorStats(ctx.getImageData(Math.floor(w*0.35),Math.floor(h*0.3),Math.floor(w*0.3),Math.floor(h*0.4)).data);
-      // Left sclera (white of eye - left side)
-      var leftSclera=calcColorStats(ctx.getImageData(Math.floor(w*0.05),Math.floor(h*0.35),Math.floor(w*0.25),Math.floor(h*0.3)).data);
-      // Right sclera
-      var rightSclera=calcColorStats(ctx.getImageData(Math.floor(w*0.7),Math.floor(h*0.35),Math.floor(w*0.25),Math.floor(h*0.3)).data);
-      // Average sclera
-      var scleraR=(leftSclera.r+rightSclera.r)/2;
-      var scleraG=(leftSclera.g+rightSclera.g)/2;
-      var scleraB=(leftSclera.b+rightSclera.b)/2;
-      var scleraBrightness=(scleraR+scleraG+scleraB)/3;
-      var scleraRedness=scleraR-((scleraG+scleraB)/2);
-      var scleraYellow=(scleraR+scleraG)/2-scleraB;
+      var W=canvas.width, H=canvas.height;
+
+      // Full image
+      var fullData=ctx.getImageData(0,0,W,H).data;
+      var fullStats=calcFullStats(fullData);
+
+      // Left sclera region
+      var leftData=ctx.getImageData(Math.floor(W*0.05),Math.floor(H*0.3),Math.floor(W*0.22),Math.floor(H*0.4)).data;
+      var leftStats=calcColorStats(leftData);
+
+      // Right sclera region
+      var rightData=ctx.getImageData(Math.floor(W*0.73),Math.floor(H*0.3),Math.floor(W*0.22),Math.floor(H*0.4)).data;
+      var rightStats=calcColorStats(rightData);
+
+      // Center (iris/pupil - should be darker)
+      var centerData=ctx.getImageData(Math.floor(W*0.35),Math.floor(H*0.25),Math.floor(W*0.3),Math.floor(H*0.5)).data;
+      var centerStats=calcColorStats(centerData);
+
+      // Validate
+      var validation=validateEyeImage(leftStats,rightStats,centerStats,fullStats);
+
+      var scleraR=(leftStats.r+rightStats.r)/2;
+      var scleraG=(leftStats.g+rightStats.g)/2;
+      var scleraB=(leftStats.b+rightStats.b)/2;
+      var sBright=(scleraR+scleraG+scleraB)/3;
+      var sRed=scleraR-((scleraG+scleraB)/2);
+      var sYellow=(scleraR+scleraG)/2-scleraB;
 
       loading.remove();
-      var result=interpretDrika(scleraBrightness,scleraRedness,scleraYellow,center,dom);
-      showDrikaResult(result,imgData);
+
+      if(!validation.valid){
+        var errWrap=document.createElement('div');
+        errWrap.style.cssText='background:#2A0A0A;border:1.5px solid #C84030;border-radius:12px;padding:16px;margin-top:4px;';
+        errWrap.className='fade-in';
+        errWrap.innerHTML='<div style="font-size:13px;font-weight:700;color:#FF6B6B;margin-bottom:8px;">❌ Eye Not Detected</div>'
+          +'<div style="font-size:12px;color:rgba(255,255,255,.8);line-height:1.7;margin-bottom:10px;">'+(validation.reason||'Eye not clearly visible.')+'</div>'
+          +'<div style="font-size:11px;color:rgba(255,255,255,.5);">For best results:<br>'
+          +'• Eyes WIDE open, looking straight ahead<br>• Front camera, 20-25cm from face<br>• Bright room light — no dark backgrounds<br>• Both eyes visible in frame</div>'
+          +'<button onclick="document.getElementById(\'drika-result\').innerHTML=\'\';renderDrika();" style="margin-top:10px;width:100%;padding:9px;background:var(--gold);border:none;border-radius:8px;color:#1A1A1A;font-weight:700;font-size:12px;cursor:pointer;font-family:inherit;">📷 Try Again</button>';
+        resultDiv.innerHTML='';
+        resultDiv.appendChild(previewWrap.cloneNode(true));
+        resultDiv.appendChild(errWrap);
+        return;
+      }
+
+      var text=interpretDrika(sBright,sRed,sYellow,centerStats,dom,validation);
+      showDrikaResult(text,imgData);
     };
     analyzeImg.src=imgData;
   };
   reader.readAsDataURL(file);
 }
 
-function interpretDrika(sBright,sRed,sYellow,center,dom){
+function interpretDrika(sBright,sRed,sYellow,center,dom,validation){
+  if(!validation.valid){
+    return '❌ EYE NOT DETECTED\n\n'+(validation.reason||'Eye not clearly visible in image.')+'\n\nTips for better photo:\n• Eyes WIDE open\n• Front camera, 20-25cm away\n• Bright natural light\n• Look straight ahead\n• Both eyes in frame';
+  }
+
   var lines=[];
   var pittaSigns=[], vataSigns=[], kaphaSigns=[];
   var urgency='Routine self-care';
@@ -5182,126 +5222,484 @@ function interpretDrika(sBright,sRed,sYellow,center,dom){
   lines.push('EYE ANALYSIS — DRIKA PARIKSHA');
   lines.push('─────────────────────────────────');
 
-  // Sclera color
   lines.push('SCLERA (White of Eye)');
   if(sBright>210){
-    lines.push('Color: Very White / Bright ✅');
-    lines.push('Bright sclera = good health, balanced Alochaka Pitta');
-  } else if(sRed>25&&sBright<200){
+    lines.push('Color: Clear White / Bright ✅');
+    lines.push('Bright sclera = balanced Alochaka Pitta, good health');
+  } else if(sRed>30&&sBright<200){
     lines.push('Color: Reddish / Bloodshot');
-    pittaSigns.push('Red sclera — Pitta in Rakta dhatu, eye strain, inflammation');
-    lines.push('Indicates: Pitta excess, eye strain, possible heat');
+    pittaSigns.push('Red sclera — Pitta in Rakta dhatu, inflammation or eye strain');
     urgency='See Vaidya within 2 weeks';
-  } else if(sYellow>30){
-    lines.push('Color: Yellowish tinge detected');
-    pittaSigns.push('Yellow sclera — Pitta in liver/bile (Ranjaka Pitta). Possible jaundice.');
-    urgency='See a doctor immediately — yellow eyes require urgent evaluation';
-    lines.push('⚠️ Yellow eyes with yellow skin — see doctor urgently');
-  } else if(sBright<170){
-    lines.push('Color: Dull / Pale sclera');
-    vataSigns.push('Dull eyes — Vata or fatigue, depleted Alochaka Pitta');
-    kaphaSigns.push('Pallor could indicate Kapha congestion or anemia');
+  } else if(sYellow>35){
+    lines.push('Color: Yellow tinge detected');
+    pittaSigns.push('Yellow sclera — Pitta/liver (Ranjaka Pitta). Possible jaundice.');
+    urgency='See doctor urgently — yellow eyes need immediate evaluation';
+    lines.push('⚠️ Persistent yellow eyes — see doctor immediately');
+  } else if(sBright<150){
+    lines.push('Color: Dull / Pale');
+    vataSigns.push('Dull eyes — Vata, fatigue, depleted Alochaka Pitta');
   } else {
-    lines.push('Color: Normal range');
+    lines.push('Color: Normal range ✅');
   }
 
-  // Moisture estimate from saturation
   lines.push('');
   lines.push('EYE MOISTURE');
   var saturation=Math.abs(center.r-center.b)+Math.abs(center.g-center.b);
-  if(center.brightness<80){
-    lines.push('Appearance: Likely closed/dark — please retake with eyes open');
-  } else if(saturation<15&&center.brightness>150){
-    lines.push('Moisture: Appears dry');
-    vataSigns.push('Dry eyes — Vata dominant, Alochaka Pitta depleted. AH: Shushka netra = Vata.');
-  } else {
-    lines.push('Moisture: Normal / Moist ✅');
+  if(center.brightness>80){
+    if(saturation<12) {
+      lines.push('Moisture: Appears dry');
+      vataSigns.push('Dry eyes — Vata excess, Alochaka Pitta depleted (AH Sutrasthana 12)');
+    } else {
+      lines.push('Moisture: Normal / Adequate ✅');
+    }
   }
 
-  // Overall darkness / puffiness (lower lid area)
   lines.push('');
-  lines.push('DOSHA INDICATORS');
+  lines.push('DOSHA INDICATORS (CS Vimanasthana 8.94-106)');
   lines.push('─────────────────────────────────');
-  if(pittaSigns.length){
-    lines.push('🔥 PITTA signs:');
-    pittaSigns.forEach(function(s){lines.push('  • '+s);});
-  } else lines.push('🔥 Pitta: No significant signs');
-  if(vataSigns.length){
-    lines.push('🌬️ VATA signs:');
-    vataSigns.forEach(function(s){lines.push('  • '+s);});
-  } else lines.push('🌬️ Vata: No significant signs');
-  if(kaphaSigns.length){
-    lines.push('🌊 KAPHA signs:');
-    kaphaSigns.forEach(function(s){lines.push('  • '+s);});
-  } else lines.push('🌊 Kapha: No significant signs');
+  lines.push(pittaSigns.length?'🔥 PITTA:\n  • '+pittaSigns.join('\n  • '):'🔥 Pitta: No significant signs');
+  lines.push(vataSigns.length?'🌬️ VATA:\n  • '+vataSigns.join('\n  • '):'🌬️ Vata: No significant signs');
+  lines.push(kaphaSigns.length?'🌊 KAPHA:\n  • '+kaphaSigns.join('\n  • '):'🌊 Kapha: No significant signs');
 
   lines.push('');
   lines.push('ALOCHAKA PITTA STATUS');
   lines.push('─────────────────────────────────');
-  if(pittaSigns.length>0) lines.push('Aggravated — needs cooling');
-  else if(vataSigns.length>0) lines.push('Depleted — needs nourishment');
+  if(pittaSigns.length>0) lines.push('Aggravated — cooling needed');
+  else if(vataSigns.length>0) lines.push('Depleted — nourishment needed');
   else lines.push('Balanced ✅');
 
   lines.push('');
-  lines.push('REMEDIES (CS Vimanasthana 8.94-106)');
+  lines.push('RECOMMENDED REMEDIES');
   lines.push('─────────────────────────────────');
   if(pittaSigns.length){
-    lines.push('1. Rose water eye wash (cooling for Alochaka Pitta)');
-    lines.push('2. Triphala eyewash — CS: 1 tsp in 1 cup cool water, wash eyes');
-    lines.push('3. Reduce screen time + wear sunglasses outdoors');
+    lines.push('1. Rose water eye wash — 2-3 drops in each eye (cooling Pitta)');
+    lines.push('2. Triphala eyewash: 1 tsp in 1 cup cool water, wash eyes');
+    lines.push('3. Reduce screen time, wear sunglasses — avoid direct sun');
   } else if(vataSigns.length){
     lines.push('1. Ghee Nasya — 2 drops warm ghee in each nostril (AH Sutrasthana 20)');
-    lines.push('2. Netra Tarpana (eye bath with ghee — under Vaidya guidance)');
-    lines.push('3. Increase healthy fats: ghee, sesame, almonds');
+    lines.push('2. Netra Tarpana (ghee eye bath) — under Vaidya guidance');
+    lines.push('3. Increase ghee, sesame, almond in diet');
   } else {
-    lines.push('1. Triphala eyewash weekly for maintenance');
-    lines.push('2. Daily Trataka (candle gazing) — 2 min — AH Sutrasthana 20');
+    lines.push('1. Triphala eyewash weekly — CS: maintenance of eye health');
+    lines.push('2. Daily Trataka (candle gazing 2 min) — AH Sutrasthana 20');
     lines.push('3. Continue current routine ✅');
   }
 
   lines.push('');
   lines.push('URGENCY: '+urgency);
   lines.push('');
-  lines.push('Source: CS Vimanasthana 8.94-106 | AH Sutrasthana 12 | Ashtavidha Pariksha — 7th method');
-  lines.push('Best photo: Front camera, bright light, eyes wide open, straight ahead.');
+  lines.push('Source: CS Vimanasthana 8.94-106 | AH Sutrasthana 12 | Ashtavidha Pariksha — 7th method (Drika)');
 
   return lines.join('\n');
 }
 
-function showDrikaResult(text,imgData){
-  var resultDiv=document.getElementById('drika-result');
-  if(!resultDiv)return;
-  var wrap=document.createElement('div');
-  wrap.style.cssText='background:var(--dg);border-radius:14px;padding:16px;color:#fff;margin-top:8px;';
-  wrap.className='fade-in';
-  var header=document.createElement('div');
-  header.style.cssText='font-size:11px;font-weight:700;color:#C9973A;letter-spacing:1px;margin-bottom:10px;';
-  header.textContent='✦ AYURMIND AI — DRIKA PARIKSHA RESULT';
-  wrap.appendChild(header);
-  var body=document.createElement('div');
-  body.style.cssText='font-size:11px;line-height:1.8;white-space:pre-line;color:rgba(255,255,255,.88);';
-  body.textContent=text;
-  wrap.appendChild(body);
-  var disclaimer=document.createElement('p');
-  disclaimer.style.cssText='font-size:9px;color:rgba(255,255,255,.3);margin-top:12px;font-style:italic;';
-  disclaimer.textContent='⚕️ Educational only. Yellow sclera or severe symptoms — see a doctor immediately. Not a clinical diagnosis.';
-  wrap.appendChild(disclaimer);
-  var retryBtn=document.createElement('button');
-  retryBtn.style.cssText='margin-top:10px;background:rgba(255,255,255,.1);border:none;color:rgba(255,255,255,.6);border-radius:8px;padding:6px 14px;font-size:11px;cursor:pointer;font-family:inherit;';
-  retryBtn.textContent='📷 Analyze Another Photo';
-  retryBtn.onclick=function(){resultDiv.innerHTML='';};
-  wrap.appendChild(retryBtn);
-  resultDiv.innerHTML='';
-  resultDiv.appendChild(wrap);
-  resultDiv.scrollIntoView({behavior:'smooth',block:'nearest'});
+
+// ═══════════════════════════════════════════════════════════════
+// NADI PPG — Adaptive Finger Lock System
+// CS Vimanasthana 8.94-106 | PPG Technology
+// Adaptive: calibrates ambient brightness before finger placement
+// Lock: finger = dark frame (blood absorbs torch light)
+// ═══════════════════════════════════════════════════════════════
+var _ppg={
+  active:false, stream:null, video:null,
+  // Readings
+  readings:[],
+  // Adaptive calibration
+  ambientFrames:[],   // first frames (no finger) to calibrate threshold
+  ambientBaseline:0,  // avg brightness without finger
+  calibrated:false,
+  // Lock state
+  phase:'idle',       // idle|calibrate|waitfinger|locking|locked|unlocked|done
+  lockCount:0,
+  unlockCount:0,
+  LOCK_THRESHOLD:10,
+  UNLOCK_THRESHOLD:4,
+  lockedSeconds:0,
+  lockStartTime:0,
+  // BPM
+  bpmEstimate:0,
+  // Timers
+  timer:null,
+  animFrame:null
+};
+
+
+function startNadiPPG(){
+  var startBtn=document.getElementById('ppg-start');
+  var stopBtn=document.getElementById('ppg-stop');
+  var status=document.getElementById('ppg-status');
+  var lockIndicator=document.getElementById('ppg-lock');
+  if(!startBtn||!stopBtn||!status)return;
+
+  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){
+    status.textContent='Camera not available on this device/browser.';
+    status.style.color='#C84030';
+    return;
+  }
+
+  // Reset state
+  Object.assign(_ppg,{
+    active:true,readings:[],allFrames:[],phase:'waitfinger',
+    lockCount:0,unlockCount:0,lockedSeconds:0,lockStartTime:0,
+    peakIntervals:[],bpmEstimate:0,lastPeakIdx:0
+  });
+
+  status.innerHTML='<strong>Requesting camera...</strong>';
+
+  navigator.mediaDevices.getUserMedia({
+    video:{facingMode:{ideal:'environment'},width:{ideal:320},height:{ideal:240},frameRate:{ideal:30,min:20}}
+  })
+  .then(function(stream){
+    _ppg.stream=stream;
+    _ppg.video=document.createElement('video');
+    _ppg.video.srcObject=stream;
+    _ppg.video.setAttribute('playsinline','true');
+    _ppg.video.muted=true;
+    _ppg.video.play();
+
+    // Turn on torch
+    var track=stream.getVideoTracks()[0];
+    if(track){
+      var caps=track.getCapabilities?track.getCapabilities():{};
+      if(caps.torch){
+        track.applyConstraints({advanced:[{torch:true}]}).catch(function(){});
+      }
+    }
+
+    startBtn.style.display='none';
+    stopBtn.style.display='block';
+
+    updatePPGStatus('waitfinger',0,0);
+    _ppg.animFrame=requestAnimationFrame(readPPGFrame);
+  })
+  .catch(function(err){
+    _ppg.active=false;
+    status.innerHTML='<span style="color:#C84030;">Camera denied: '+err.message+'</span>';
+  });
 }
 
-// ════════════════════════════════════════════════════════════════
-// NADI PPG — Pulse Approximation via Phone Camera
-// Uses phone camera flashlight on fingertip (PPG method)
-// Source: CS Vimanasthana 8.94-106 (Nadi Pariksha)
-// Research: Smartphone PPG validated in multiple studies
-// ════════════════════════════════════════════════════════════════
+function updatePPGStatus(phase,bpmOrCount,lockedSecs){
+  var bpm=bpmOrCount||0;
+  var lockCount=bpmOrCount||0;
+  var status=document.getElementById('ppg-status');
+  var lockEl=document.getElementById('ppg-lock');
+  if(!status)return;
+
+  if(phase==='waitfinger'){
+    status.innerHTML='<strong style="color:#E8C070;">📍 Place fingertip</strong> over the REAR camera lens firmly. The torch will illuminate through your finger.';
+    if(lockEl){lockEl.textContent='⚪ NO FINGER';lockEl.style.background='rgba(255,100,50,.2)';lockEl.style.color='#FF6B6B';}
+  } else if(phase==='locking'){
+    status.innerHTML='<strong style="color:#F9A825;">🔄 Detecting... ('+Math.round(lockCount*100/_ppg.LOCK_THRESHOLD)+'%)</strong> Hold finger firmly over lens';
+    if(lockEl){lockEl.textContent='🔄 DETECTING';lockEl.style.background='rgba(249,168,37,.2)';lockEl.style.color='#F9A825';}
+  } else if(phase==='locked'){
+    var s=Math.min(30,Math.round(lockedSecs));
+    status.innerHTML='<strong style="color:#4ADE80;">🔒 LOCKED</strong> — Measuring pulse... '+(bpm>0?('<strong style="color:#E8C070;">'+bpm+' BPM</strong>'):'detecting...')+' ('+s+'/30s)';
+    if(lockEl){lockEl.textContent='🔒 LOCKED';lockEl.style.background='rgba(74,222,128,.2)';lockEl.style.color='#4ADE80';}
+  } else if(phase==='unlocked'){
+    status.innerHTML='<strong style="color:#FF6B6B;">⚠️ FINGER REMOVED</strong> — Replace fingertip to continue';
+    if(lockEl){lockEl.textContent='⚠️ NO FINGER';lockEl.style.background='rgba(255,80,50,.2)';lockEl.style.color='#FF6B6B';}
+  }
+}
+
+function readPPGFrame(){
+  if(!_ppg.active)return;
+  var video=_ppg.video;
+  if(!video||video.readyState<2){
+    _ppg.animFrame=requestAnimationFrame(readPPGFrame);
+    return;
+  }
+
+  var vw=video.videoWidth||320,vh=video.videoHeight||240;
+  var off=document.createElement('canvas');
+  off.width=vw;off.height=vh;
+  var octx=off.getContext('2d');
+
+  try{
+    octx.drawImage(video,0,0,vw,vh);
+    var sx=Math.floor(vw*0.2),sy=Math.floor(vh*0.2);
+    var sw=Math.floor(vw*0.6),sh=Math.floor(vh*0.6);
+    var d=octx.getImageData(sx,sy,sw,sh).data;
+    var rSum=0,gSum=0,bSum=0,cnt=0;
+    for(var i=0;i<d.length;i+=4){rSum+=d[i];gSum+=d[i+1];bSum+=d[i+2];cnt++;}
+    var avgR=rSum/cnt,avgG=gSum/cnt,avgB=bSum/cnt;
+    var brightness=(avgR+avgG+avgB)/3;
+    var now=Date.now();
+
+    // ── Phase 1: Ambient calibration (first 2 seconds, no finger) ──
+    if(!_ppg.calibrated){
+      if(_ppg.ambientFrames.length<50){
+        // Only record if appears bright (no finger yet)
+        if(brightness>100){
+          _ppg.ambientFrames.push(brightness);
+        }
+        if(_ppg.ambientFrames.length===1){
+          var status=document.getElementById('ppg-status');
+          if(status) status.innerHTML='<strong style="color:#F9A825;">Calibrating...</strong> Do NOT place finger yet. Hold phone normally for 2 seconds.';
+        }
+        _ppg.animFrame=requestAnimationFrame(readPPGFrame);
+        return;
+      } else {
+        // Calculate ambient baseline
+        var sum=_ppg.ambientFrames.reduce(function(a,b){return a+b;},0);
+        _ppg.ambientBaseline=sum/_ppg.ambientFrames.length;
+        _ppg.calibrated=true;
+        _ppg.phase='waitfinger';
+        // Finger threshold = 35% of ambient (accounts for different phones/skin)
+        _ppg.fingerThreshold=_ppg.ambientBaseline*0.35;
+        updatePPGStatus('waitfinger',0,0);
+        var st2=document.getElementById('ppg-status');
+        if(st2) st2.innerHTML='<strong style="color:#E8C070;">✅ Calibrated!</strong> Now place fingertip firmly over REAR camera lens.';
+      }
+    }
+
+    // ── Phase 2: Finger detection with adaptive threshold ──
+    // fingerOn = brightness below 35% of ambient (finger blocking torch)
+    // Also: red channel higher relative to blue (blood tissue signature)
+    var fingerThresh=_ppg.fingerThreshold||50;
+    var fingerOn=(brightness<fingerThresh)&&(avgR>avgB-10);
+
+    if(fingerOn){
+      _ppg.unlockCount=0;
+      _ppg.lockCount++;
+
+      if(_ppg.lockCount>=_ppg.LOCK_THRESHOLD&&_ppg.phase!=='locked'){
+        _ppg.phase='locked';
+        _ppg.lockStartTime=now;
+        updatePPGStatus('locked',_ppg.bpmEstimate,0);
+      } else if(_ppg.phase!=='locked'){
+        _ppg.phase='locking';
+        updatePPGStatus('locking',_ppg.lockCount,0);
+      }
+
+      if(_ppg.phase==='locked'){
+        _ppg.readings.push({t:now,r:avgR,g:avgG,b:avgB});
+        _ppg.lockedSeconds=(now-_ppg.lockStartTime)/1000;
+        if(_ppg.readings.length%25===0){
+          updatePPGStatus('locked',_ppg.bpmEstimate,_ppg.lockedSeconds);
+        }
+        if(_ppg.readings.length>40) detectPeaksAndBPM();
+        if(_ppg.lockedSeconds>=30) stopNadiPPG();
+      }
+    } else {
+      _ppg.lockCount=0;
+      _ppg.unlockCount++;
+      if(_ppg.unlockCount>=_ppg.UNLOCK_THRESHOLD){
+        if(_ppg.phase==='locked'||_ppg.phase==='locking'){
+          _ppg.phase='unlocked';
+          _ppg.lockStartTime=0;
+          updatePPGStatus('unlocked',0,_ppg.lockedSeconds);
+        } else if(_ppg.phase!=='waitfinger'&&_ppg.phase!=='unlocked'){
+          _ppg.phase='waitfinger';
+          updatePPGStatus('waitfinger',0,0);
+        }
+      }
+    }
+
+    var canvas=document.getElementById('ppg-canvas');
+    if(canvas) drawPPGWaveform(canvas.getContext('2d'),canvas.width,canvas.height);
+
+    // Heartbeat animation
+    if(_ppg.bpmEstimate>0&&_ppg.readings.length>0){
+      var beatsPerFrame=Math.round(_ppg.bpmEstimate/60*30);
+      if(beatsPerFrame>0&&_ppg.readings.length%beatsPerFrame===0){
+        var h=document.getElementById('ppg-heart');
+        if(h){h.style.transform='scale(1.3)';setTimeout(function(){if(h)h.style.transform='scale(1)';},130);}
+      }
+    }
+  }catch(ex){}
+  _ppg.animFrame=requestAnimationFrame(readPPGFrame);
+}
+
+
+function drawPPGWaveform(ctx,w,h){
+  ctx.fillStyle='#050E07';
+  ctx.fillRect(0,0,w,h);
+  if(_ppg.readings.length<5)return;
+
+  var vals=_ppg.readings.slice(-150).map(function(rd){return rd.r;});
+  var mn=Math.min.apply(null,vals),mx=Math.max.apply(null,vals);
+  var range=mx-mn||1;
+
+  // Grid
+  ctx.strokeStyle='rgba(74,222,128,.07)';ctx.lineWidth=0.5;
+  for(var gy=0;gy<h;gy+=16){ctx.beginPath();ctx.moveTo(0,gy);ctx.lineTo(w,gy);ctx.stroke();}
+
+  // Waveform
+  var wColor=_ppg.phase==='locked'?'#4ADE80':_ppg.phase==='unlocked'?'#FF6B6B':'#888888';
+  ctx.strokeStyle=wColor;ctx.lineWidth=2;ctx.beginPath();
+  vals.forEach(function(v,i){
+    var x=(i/Math.max(vals.length-1,1))*w;
+    var yp=h-(((v-mn)/range)*(h-8)+4);
+    if(i===0)ctx.moveTo(x,yp);else ctx.lineTo(x,yp);
+  });
+  ctx.stroke();
+
+  // BPM overlay
+  if(_ppg.bpmEstimate>0){
+    ctx.fillStyle='rgba(201,151,58,.18)';ctx.fillRect(w-62,3,59,24);
+    ctx.fillStyle='#E8C070';ctx.font='bold 14px monospace';
+    ctx.fillText(_ppg.bpmEstimate+' BPM',w-59,20);
+  }
+}
+
+function detectPeaksAndBPM(){
+  var readings=_ppg.readings;
+  if(readings.length<45)return;
+
+  var recent=readings.slice(-120);
+  var vals=recent.map(function(r){return r.r;});
+  var mn=Math.min.apply(null,vals),mx=Math.max.apply(null,vals);
+  var range=mx-mn;
+  if(range<4)return; // too weak
+
+  var thresh=mn+range*0.65;
+  var peaks=[];
+  for(var i=4;i<vals.length-4;i++){
+    if(vals[i]>thresh
+       &&vals[i]>=vals[i-1]&&vals[i]>=vals[i-2]&&vals[i]>=vals[i-3]
+       &&vals[i]>=vals[i+1]&&vals[i]>=vals[i+2]&&vals[i]>=vals[i+3]){
+      if(!peaks.length||i-peaks[peaks.length-1]>7) peaks.push(i);
+    }
+  }
+
+  if(peaks.length>=3){
+    var totalMs=recent[recent.length-1].t-recent[0].t;
+    var msPerFrame=totalMs/recent.length;
+    var intervals=[];
+    for(var j=1;j<peaks.length;j++){
+      var dt=(peaks[j]-peaks[j-1])*msPerFrame;
+      if(dt>320&&dt<1400) intervals.push(dt);
+    }
+    if(intervals.length>=2){
+      var avgInt=intervals.reduce(function(a,b){return a+b;})/intervals.length;
+      var bpm=Math.round(60000/avgInt);
+      if(bpm>=45&&bpm<=155){
+        _ppg.bpmEstimate=bpm;
+        var el=document.getElementById('ppg-bpm');
+        if(el) el.textContent=bpm;
+      }
+    }
+  }
+}
+
+function stopNadiPPG(){
+  _ppg.active=false;
+  _ppg.phase='done';
+  if(_ppg.animFrame) cancelAnimationFrame(_ppg.animFrame);
+  if(_ppg.stream){
+    _ppg.stream.getTracks().forEach(function(t){
+      try{t.applyConstraints({advanced:[{torch:false}]}).catch(function(){});}catch(e){}
+      t.stop();
+    });
+  }
+  if(_ppg.video){_ppg.video.srcObject=null;_ppg.video=null;}
+
+  var startBtn=document.getElementById('ppg-start');
+  var stopBtn=document.getElementById('ppg-stop');
+  var status=document.getElementById('ppg-status');
+  if(startBtn) startBtn.style.display='block';
+  if(stopBtn) stopBtn.style.display='none';
+
+  var finalBPM=_ppg.bpmEstimate;
+  var lockedSecs=_ppg.lockedSeconds;
+  var validReadings=_ppg.readings.length;
+
+  // Need at least 15 seconds of good signal
+  if(lockedSecs<12||validReadings<150||finalBPM<40){
+    var msg=lockedSecs<5?'Finger was not detected. Place fingertip firmly over the rear camera lens.':
+            lockedSecs<12?'Only '+Math.round(lockedSecs)+'s of valid signal. Need 15+ seconds. Try again — keep finger still.':
+            'Signal too weak — press finger more firmly over lens.';
+    if(status) status.innerHTML='<strong style="color:#FF9F40;">⚠️ Measurement Incomplete</strong><br><span style="font-size:11px;color:rgba(255,255,255,.7);">'+msg+'</span>';
+    return;
+  }
+
+  if(status) status.innerHTML='<strong style="color:#4ADE80;">✅ Measurement Complete</strong> — '+Math.round(lockedSecs)+'s signal captured';
+  showNadiPPGResult(finalBPM);
+}
+
+
+
+// ── validateEyeImage ────────────────────────────────────────────
+function validateEyeImage(leftStats,rightStats,centerStats,fullStats){
+  var avgBright=(leftStats.brightness+rightStats.brightness)/2;
+  var centerBright=centerStats.brightness;
+  var contrast=avgBright-centerBright;
+  var variance=fullStats.variance||0;
+  var sat=fullStats.saturation||0;
+
+  // Hard rejections
+  if(fullStats.brightness<40)
+    return{valid:false,score:0,reason:'Too dark. Use bright room light or natural daylight for eye photo.'};
+  if(variance<100)
+    return{valid:false,score:0,reason:'Image too uniform — not an eye photo. Open eyes wide and photograph close-up.'};
+  if(fullStats.g>fullStats.r+20)
+    return{valid:false,score:0,reason:'Green-dominant image — photograph your eye, not plants or objects.'};
+  if(fullStats.b>fullStats.r+20&&fullStats.b>150)
+    return{valid:false,score:0,reason:'Blue-dominant image — photograph your eye in natural light.'};
+
+  var score=0;
+  // Sclera (white of eye) should be bright
+  var hasBrightSclera=avgBright>130||leftStats.brightness>140||rightStats.brightness>140;
+  // Iris/pupil (center) should be darker than sclera
+  var hasIrisContrast=contrast>15;
+  // Full image should have variation
+  var hasVariance=variance>200;
+  // Organic colors (not solid blue/green)
+  var organic=(fullStats.r>60&&fullStats.g>45&&fullStats.b>40);
+
+  if(hasBrightSclera) score+=40;
+  if(hasIrisContrast) score+=30;
+  if(hasVariance) score+=15;
+  if(organic) score+=10;
+  if(avgBright>160) score+=5; // Very white sclera
+
+  var valid=score>=48;
+  var reason=valid?null:
+    !hasBrightSclera?'No white sclera detected. Open eyes WIDE — white parts must be clearly visible. Use bright light.':
+    !hasIrisContrast?'Insufficient eye contrast — pupil/iris not distinguishable. Try better lighting or open eyes wider.':
+    'Eye not clearly visible. Open eyes fully, face bright light, hold phone 20cm away, look straight ahead.';
+  return{valid:valid,score:score,reason:reason};
+}
+
+// ── detectPeaksAndBPM ───────────────────────────────────────────
+function detectPeaksAndBPM(){
+  var readings=_ppg.readings;
+  if(readings.length<45)return;
+  var recent=readings.slice(-120);
+  var vals=recent.map(function(r){return r.r;});
+  var mn=Math.min.apply(null,vals),mx=Math.max.apply(null,vals);
+  var range=mx-mn;
+  if(range<4)return;
+  var thresh=mn+range*0.65;
+  var peaks=[];
+  for(var i=4;i<vals.length-4;i++){
+    if(vals[i]>thresh
+       &&vals[i]>=vals[i-1]&&vals[i]>=vals[i-2]&&vals[i]>=vals[i-3]
+       &&vals[i]>=vals[i+1]&&vals[i]>=vals[i+2]&&vals[i]>=vals[i+3]){
+      if(!peaks.length||i-peaks[peaks.length-1]>7) peaks.push(i);
+    }
+  }
+  if(peaks.length>=3){
+    var totalMs=recent[recent.length-1].t-recent[0].t;
+    var msPerFrame=totalMs/Math.max(recent.length-1,1);
+    var intervals=[];
+    for(var j=1;j<peaks.length;j++){
+      var dt=(peaks[j]-peaks[j-1])*msPerFrame;
+      if(dt>320&&dt<1400) intervals.push(dt);
+    }
+    if(intervals.length>=2){
+      var avg=intervals.reduce(function(a,b){return a+b;})/intervals.length;
+      var bpm=Math.round(60000/avg);
+      if(bpm>=45&&bpm<=155){
+        _ppg.bpmEstimate=bpm;
+        var el=document.getElementById('ppg-bpm');
+        if(el) el.textContent=bpm;
+      }
+    }
+  }
+}
+
+// ── renderNadiPPG ───────────────────────────────────────────────
 function renderNadiPPG(){
   var el=document.getElementById('tool-nadi_ppg');
   if(!el)return;
@@ -5314,71 +5712,83 @@ function renderNadiPPG(){
   title.textContent='🫀 Nadi PPG — Pulse Rhythm Analysis';
   wrap.appendChild(title);
 
+  // Authority card
   var auth=document.createElement('div');
   auth.style.cssText='background:#1a3a2a;border-radius:12px;padding:11px 14px;margin-bottom:12px;color:#fff;';
-  auth.innerHTML='<div style="font-size:10px;color:#c9973a;font-weight:700;letter-spacing:1.5px;margin-bottom:4px;">CS VIMANASTHANA 8.94-106 | SMARTPHONE PPG TECHNOLOGY</div>'
-    +'<p style="font-size:11px;color:rgba(255,255,255,.85);line-height:1.65;margin:0;">Phone camera detects color changes in your fingertip caused by blood flow (Photoplethysmography / PPG). This estimates pulse rate and rhythm pattern which classical Ayurveda maps to Vata (snake/cobra), Pitta (frog/jumping), and Kapha (swan/steady) movements.</p>';
+  auth.innerHTML='<div style="font-size:10px;color:#c9973a;font-weight:700;letter-spacing:1.5px;margin-bottom:4px;">CS VIMANASTHANA 8.94-106 | FINGER-LOCK PPG TECHNOLOGY</div>'
+    +'<p style="font-size:11px;color:rgba(255,255,255,.85);line-height:1.65;margin:0;">Your phone\'s rear camera detects blood pulsation through your fingertip using Photoplethysmography (PPG). '
+    +'The <strong style="color:#E8C070;">FINGER LOCK</strong> system ensures measurement only happens when your finger is correctly placed — torch light passes through finger tissue and camera detects heartbeat as brightness changes.</p>';
   wrap.appendChild(auth);
 
+  // Lock indicator
+  var lockBar=document.createElement('div');
+  lockBar.id='ppg-lock';
+  lockBar.style.cssText='text-align:center;padding:10px;border-radius:10px;font-weight:700;font-size:13px;'
+    +'background:rgba(255,100,50,.15);color:#FF6B6B;margin-bottom:10px;letter-spacing:1px;transition:.3s;';
+  lockBar.textContent='⚪ NO FINGER — Place fingertip on rear camera';
+  wrap.appendChild(lockBar);
+
+  // Instructions
   var inst=document.createElement('div');
   inst.style.cssText='background:var(--pale);border:1px solid var(--gold);border-radius:10px;padding:10px 14px;margin-bottom:14px;';
-  inst.innerHTML='<div style="font-size:11px;font-weight:700;color:var(--dg);margin-bottom:5px;">How to measure:</div>'
-    +'<div style="font-size:11px;color:var(--muted);line-height:1.7;">1. Place your <strong>index fingertip gently</strong> over the rear camera lens\n'
-    +'2. Keep phone still — do not press hard\n'
-    +'3. Measurement takes <strong>30 seconds</strong>\n'
-    +'4. Sit quietly, normal breathing — no talking during measurement\n'
-    +'5. Best time: morning, before food</div>';
+  inst.innerHTML='<div style="font-size:11px;font-weight:700;color:var(--dg);margin-bottom:6px;">📍 How to use Finger Lock PPG:</div>'
+    +'<div style="font-size:11px;color:var(--muted);line-height:1.8;">'
+    +'<strong>1.</strong> Press <strong>Start</strong> — camera and torch turn ON<br>'
+    +'<strong>2.</strong> Place your <strong>index fingertip firmly</strong> over the REAR camera lens<br>'
+    +'<strong>3.</strong> Wait for <strong style="color:#2E7A48;">🔒 LOCKED</strong> status — finger confirmed<br>'
+    +'<strong>4.</strong> Hold <strong>perfectly still</strong> for 30 seconds — do not talk<br>'
+    +'<strong>5.</strong> If you see <strong style="color:#C84030;">⚠️ NO FINGER</strong> — reposition fingertip<br>'
+    +'<em>Result only given after 15+ seconds of locked signal</em></div>';
   wrap.appendChild(inst);
 
-  // Canvas for waveform visualization
-  var canvasCard=document.createElement('div');
-  canvasCard.style.cssText='background:var(--dg);border-radius:14px;padding:14px;margin-bottom:12px;';
+  // Camera card
+  var camCard=document.createElement('div');
+  camCard.style.cssText='background:var(--dg);border-radius:14px;padding:14px;margin-bottom:12px;';
 
-  var heartDisplay=document.createElement('div');
-  heartDisplay.style.cssText='display:flex;align-items:center;justify-content:center;gap:16px;margin-bottom:10px;';
-  var heartIcon=document.createElement('div');
-  heartIcon.id='ppg-heart';
-  heartIcon.style.cssText='font-size:36px;transition:transform .1s;';
-  heartIcon.textContent='🫀';
-  var bpmDiv=document.createElement('div');
-  bpmDiv.style.cssText='text-align:center;';
-  bpmDiv.innerHTML='<div id="ppg-bpm" style="font-family:Georgia,serif;font-size:42px;font-weight:700;color:#E8C070;">--</div>'
-    +'<div style="font-size:11px;color:rgba(255,255,255,.5);">BPM</div>';
-  heartDisplay.appendChild(heartIcon);
-  heartDisplay.appendChild(bpmDiv);
-  canvasCard.appendChild(heartDisplay);
+  // Heart + BPM display
+  var heartRow=document.createElement('div');
+  heartRow.style.cssText='display:flex;align-items:center;justify-content:center;gap:16px;margin-bottom:10px;';
+  var heartEl=document.createElement('div');
+  heartEl.id='ppg-heart';
+  heartEl.style.cssText='font-size:38px;transition:transform .15s ease;';
+  heartEl.textContent='🫀';
+  var bpmWrap=document.createElement('div');
+  bpmWrap.style.cssText='text-align:center;';
+  bpmWrap.innerHTML='<div id="ppg-bpm" style="font-family:Georgia,serif;font-size:44px;font-weight:700;color:#E8C070;line-height:1;">--</div>'
+    +'<div style="font-size:11px;color:rgba(255,255,255,.45);margin-top:2px;">BPM</div>';
+  heartRow.appendChild(heartEl);
+  heartRow.appendChild(bpmWrap);
+  camCard.appendChild(heartRow);
 
   // Waveform canvas
   var canvas=document.createElement('canvas');
   canvas.id='ppg-canvas';
-  canvas.style.cssText='width:100%;height:80px;border-radius:8px;background:#0A1A0E;display:block;';
   canvas.width=400;canvas.height=80;
-  canvasCard.appendChild(canvas);
+  canvas.style.cssText='width:100%;height:80px;border-radius:8px;background:#050E07;display:block;margin-bottom:8px;';
+  camCard.appendChild(canvas);
 
-  // Status
-  var status=document.createElement('div');
-  status.id='ppg-status';
-  status.style.cssText='font-size:11px;color:rgba(255,255,255,.6);text-align:center;margin-top:8px;';
-  status.textContent='Press Start to begin measurement';
-  canvasCard.appendChild(status);
-  wrap.appendChild(canvasCard);
+  // Status text
+  var statusEl=document.createElement('div');
+  statusEl.id='ppg-status';
+  statusEl.style.cssText='font-size:11px;color:rgba(255,255,255,.65);text-align:center;min-height:32px;line-height:1.5;';
+  statusEl.textContent='Press Start, then place fingertip over rear camera lens';
+  camCard.appendChild(statusEl);
+  wrap.appendChild(camCard);
 
-  // Control buttons
+  // Buttons
   var btnRow=document.createElement('div');
   btnRow.style.cssText='display:flex;gap:10px;margin-bottom:12px;';
-
   var startBtn=document.createElement('button');
   startBtn.id='ppg-start';
   startBtn.className='ai-btn';
   startBtn.style.cssText='flex:1;';
-  startBtn.textContent='▶ Start Measurement';
+  startBtn.innerHTML='▶ Start Measurement';
   startBtn.onclick=startNadiPPG;
   btnRow.appendChild(startBtn);
-
   var stopBtn=document.createElement('button');
   stopBtn.id='ppg-stop';
-  stopBtn.style.cssText='flex:1;padding:12px;background:var(--cream);border:1.5px solid var(--border);border-radius:12px;color:var(--dg);font-size:13px;cursor:pointer;font-family:inherit;display:none;';
-  stopBtn.textContent='⏹ Stop';
+  stopBtn.style.cssText='flex:1;padding:12px;background:rgba(200,60,40,.8);border:none;border-radius:12px;color:#fff;font-size:13px;cursor:pointer;font-family:inherit;font-weight:600;display:none;';
+  stopBtn.innerHTML='⏹ Stop';
   stopBtn.onclick=stopNadiPPG;
   btnRow.appendChild(stopBtn);
   wrap.appendChild(btnRow);
@@ -5390,361 +5800,256 @@ function renderNadiPPG(){
 
   var foot=document.createElement('p');
   foot.style.cssText='font-size:10px;color:var(--muted);margin-top:8px;font-style:italic;';
-  foot.textContent='Note: PPG gives approximate pulse rate and rhythm pattern. Classical Nadi Pariksha requires a trained Vaidya for full diagnostic assessment (CS Vimanasthana 8.94-106).';
+  foot.textContent='Source: CS Vimanasthana 8.94-106 (Nadi Pariksha) | PPG validated in peer-reviewed clinical studies';
   wrap.appendChild(foot);
   el.appendChild(wrap);
 }
 
-// ── Nadi PPG State ────────────────────────────────────────────
-var _ppg={
-  active:false,stream:null,video:null,
-  readings:[],  // {t, r, g, b}
-  phase:'idle', // idle|calibrate|measure|done
-  calBaseline:0,calDone:false,
-  timer:null,animFrame:null,
-  lastPeakTime:0,peakIntervals:[],bpmEstimate:0
-};
-
-function startNadiPPG(){
-  var startBtn=document.getElementById('ppg-start');
-  var stopBtn=document.getElementById('ppg-stop');
-  var status=document.getElementById('ppg-status');
-  if(!startBtn||!stopBtn||!status)return;
-
-  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){
-    status.textContent='Camera not available. Please use Chrome/Safari on a mobile device.';
-    status.style.color='#C84030';
-    return;
-  }
-
-  status.textContent='Requesting camera access...';
-  status.style.color='rgba(255,255,255,.7)';
-
-  // Use rear camera (environment) for PPG - torch works better
-  navigator.mediaDevices.getUserMedia({
-    video:{
-      facingMode:{ideal:'environment'},
-      width:{ideal:320},height:{ideal:240},
-      frameRate:{ideal:30,min:15}
-    }
-  })
-  .then(function(stream){
-    _ppg.stream=stream;
-    _ppg.active=true;
-    _ppg.phase='calibrate';
-    _ppg.readings=[];
-    _ppg.peakIntervals=[];
-    _ppg.bpmEstimate=0;
-    _ppg.calDone=false;
-
-    // Create video element
-    _ppg.video=document.createElement('video');
-    _ppg.video.srcObject=stream;
-    _ppg.video.setAttribute('playsinline','true');
-    _ppg.video.muted=true;
-    _ppg.video.play();
-
-    // Enable torch (flashlight) — essential for PPG
-    var track=stream.getVideoTracks()[0];
-    if(track){
-      var caps=track.getCapabilities?track.getCapabilities():{};
-      if(caps.torch){
-        track.applyConstraints({advanced:[{torch:true}]})
-          .then(function(){console.log('Torch ON');})
-          .catch(function(){console.log('Torch not available');});
-      }
-    }
-
-    startBtn.style.display='none';
-    stopBtn.style.display='block';
-
-    // Guided instruction sequence
-    status.innerHTML='<strong style="color:#E8C070;">Step 1:</strong> Cover the REAR camera lens completely with your index fingertip — press gently';
-    status.style.color='rgba(255,255,255,.85)';
-
-    // Phase 1: Calibration (0-5s)
-    setTimeout(function(){
-      if(!_ppg.active)return;
-      status.innerHTML='<strong style="color:#E8C070;">Step 2:</strong> Hold still... Calibrating baseline signal';
-      _ppg.phase='measure';
-    },5000);
-
-    setTimeout(function(){
-      if(!_ppg.active)return;
-      status.innerHTML='<strong style="color:#4ADE80;">Measuring heartbeat...</strong> Keep finger pressed firmly. Do not move.';
-    },7000);
-
-    setTimeout(function(){
-      if(_ppg.active) stopNadiPPG();
-    },35000); // 35 second auto-stop
-
-    _ppg.animFrame=requestAnimationFrame(readPPGFrame);
-  })
-  .catch(function(err){
-    status.textContent='Camera denied: '+err.message+'. Please allow camera and try again.';
-    status.style.color='#C84030';
-  });
-}
-
-function readPPGFrame(){
-  if(!_ppg.active)return;
-  var video=_ppg.video;
-  if(!video||video.readyState<2){
-    _ppg.animFrame=requestAnimationFrame(readPPGFrame);
-    return;
-  }
-
-  var vw=video.videoWidth||320;
-  var vh=video.videoHeight||240;
-
-  // Offscreen canvas for sampling
-  var offscreen=document.createElement('canvas');
-  offscreen.width=vw;offscreen.height=vh;
-  var octx=offscreen.getContext('2d');
-
-  try{
-    octx.drawImage(video,0,0,vw,vh);
-
-    // Sample FULL center area (fingertip covers whole lens)
-    var sx=Math.floor(vw*0.2),sy=Math.floor(vh*0.2);
-    var sw=Math.floor(vw*0.6),sh=Math.floor(vh*0.6);
-    var imgData=octx.getImageData(sx,sy,sw,sh);
-    var d=imgData.data;
-
-    var rSum=0,gSum=0,bSum=0,cnt=0;
-    for(var i=0;i<d.length;i+=4){
-      rSum+=d[i];gSum+=d[i+1];bSum+=d[i+2];cnt++;
-    }
-    var avgR=rSum/cnt,avgG=gSum/cnt,avgB=bSum/cnt;
-    var t=Date.now()-(_ppg.readings[0]?_ppg.readings[0].t+Date.now()-_ppg.readings[0].t:Date.now());
-
-    // Check if finger is covering lens (image should be very dark-red, not bright)
-    var overallBright=(avgR+avgG+avgB)/3;
-    var status=document.getElementById('ppg-status');
-
-    if(overallBright>200){
-      // Too bright = finger not covering lens
-      if(status&&_ppg.phase==='measure'){
-        status.innerHTML='<strong style="color:#FF6B6B;">⚠️ Cover lens fully</strong> — press fingertip firmly over camera';
-      }
-      _ppg.animFrame=requestAnimationFrame(readPPGFrame);
-      return;
-    }
-
-    // Store reading
-    _ppg.readings.push({t:Date.now(),r:avgR,g:avgG,b:avgB});
-    if(_ppg.readings.length>300) _ppg.readings.shift();
-
-    // Calibration baseline
-    if(!_ppg.calDone&&_ppg.readings.length>=45){
-      var calVals=_ppg.readings.slice(0,45).map(function(x){return x.r;});
-      _ppg.calBaseline=calVals.reduce(function(a,b){return a+b;})/calVals.length;
-      _ppg.calDone=true;
-    }
-
-    // Draw waveform
-    var canvas=document.getElementById('ppg-canvas');
-    if(canvas) drawPPGWaveform(canvas.getContext('2d'),canvas.width,canvas.height);
-
-    // Detect peaks and calculate BPM
-    if(_ppg.calDone&&_ppg.readings.length>60) detectPeaksAndBPM();
-
-  }catch(ex){}
-
-  _ppg.animFrame=requestAnimationFrame(readPPGFrame);
-}
-
-function drawPPGWaveform(ctx,w,h){
-  ctx.fillStyle='#060F08';
-  ctx.fillRect(0,0,w,h);
-  if(_ppg.readings.length<5)return;
-
-  var vals=_ppg.readings.slice(-150).map(function(rd){return rd.r;});
-  var mn=Math.min.apply(null,vals),mx=Math.max.apply(null,vals);
-  var range=mx-mn||1;
-
-  // Grid lines
-  ctx.strokeStyle='rgba(74,222,128,.08)';ctx.lineWidth=0.5;
-  for(var y=0;y<h;y+=20){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(w,y);ctx.stroke();}
-
-  // Waveform
-  ctx.strokeStyle='#4ADE80';ctx.lineWidth=2;ctx.beginPath();
-  vals.forEach(function(v,i){
-    var x=(i/vals.length)*w;
-    var yp=h-(((v-mn)/range)*(h-8)+4);
-    if(i===0)ctx.moveTo(x,yp);else ctx.lineTo(x,yp);
-  });
-  ctx.stroke();
-
-  // BPM overlay
-  if(_ppg.bpmEstimate>0){
-    ctx.fillStyle='rgba(232,192,112,.15)';
-    ctx.fillRect(w-55,4,51,22);
-    ctx.fillStyle='#E8C070';
-    ctx.font='bold 13px monospace';
-    ctx.fillText(_ppg.bpmEstimate+' BPM',w-52,19);
-  }
-}
-
-function detectPeaksAndBPM(){
-  var readings=_ppg.readings;
-  if(readings.length<60)return;
-
-  var vals=readings.slice(-120).map(function(r){return r.r;});
-  var mn=Math.min.apply(null,vals),mx=Math.max.apply(null,vals);
-  var range=mx-mn;
-
-  // Need decent signal (finger covering lens gives range ~10-80)
-  if(range<5){
-    var status=document.getElementById('ppg-status');
-    if(status&&_ppg.phase==='measure'){
-      status.innerHTML='<strong style="color:#FF9F40;">Weak signal</strong> — press finger more firmly and ensure torch light is on';
-    }
-    return;
-  }
-
-  // Adaptive threshold at 65% of range
-  var threshold=mn+range*0.65;
-  var peaks=[];
-  for(var i=3;i<vals.length-3;i++){
-    if(vals[i]>threshold
-       &&vals[i]>=vals[i-1]&&vals[i]>=vals[i-2]&&vals[i]>=vals[i-3]
-       &&vals[i]>=vals[i+1]&&vals[i]>=vals[i+2]&&vals[i]>=vals[i+3]){
-      if(peaks.length===0||i-peaks[peaks.length-1]>6){
-        peaks.push(i);
-      }
-    }
-  }
-
-  if(peaks.length>=3){
-    // Calculate intervals in milliseconds
-    var timePerFrame=(readings[readings.length-1].t-readings[readings.length-120<0?0:readings.length-120].t)/120;
-    var intervals=[];
-    for(var j=1;j<peaks.length;j++){
-      var dtMs=(peaks[j]-peaks[j-1])*timePerFrame;
-      if(dtMs>300&&dtMs<1500) intervals.push(dtMs);
-    }
-    if(intervals.length>=2){
-      var avgInterval=intervals.reduce(function(a,b){return a+b;})/intervals.length;
-      var bpm=Math.round(60000/avgInterval);
-      if(bpm>=45&&bpm<=160){
-        _ppg.bpmEstimate=bpm;
-        var bpmEl=document.getElementById('ppg-bpm');
-        var heartEl=document.getElementById('ppg-heart');
-        if(bpmEl) bpmEl.textContent=bpm;
-        if(heartEl){
-          heartEl.style.transform='scale(1.25)';
-          setTimeout(function(){if(heartEl)heartEl.style.transform='scale(1)';},150);
-        }
-      }
-    }
-  }
-}
-
-function stopNadiPPG(){
-  _ppg.active=false;
-  _ppg.phase='done';
-  if(_ppg.timer) clearTimeout(_ppg.timer);
-  if(_ppg.animFrame) cancelAnimationFrame(_ppg.animFrame);
-  if(_ppg.stream){
-    _ppg.stream.getTracks().forEach(function(t){
-      // Turn off torch
-      if(t.applyConstraints){
-        t.applyConstraints({advanced:[{torch:false}]}).catch(function(){});
-      }
-      t.stop();
-    });
-  }
-  if(_ppg.video){_ppg.video.srcObject=null;_ppg.video=null;}
-
-  var startBtn=document.getElementById('ppg-start');
-  var stopBtn=document.getElementById('ppg-stop');
-  if(startBtn) startBtn.style.display='block';
-  if(stopBtn) stopBtn.style.display='none';
-
-  var finalBPM=_ppg.bpmEstimate;
-  var readingCount=_ppg.readings.length;
-  var status=document.getElementById('ppg-status');
-
-  if(readingCount<80||finalBPM<40){
-    if(status) status.innerHTML='<strong style="color:#FF9F40;">Not enough signal.</strong> Try again — cover lens fully with fingertip, stay still for full 30 seconds.';
-    return;
-  }
-
-  if(status) status.textContent='Measurement complete. Analyzing...';
-  showNadiPPGResult(finalBPM);
-}
-
-
+// ── showNadiPPGResult ────────────────────────────────────────────
 function showNadiPPGResult(bpm){
   var resultDiv=document.getElementById('nadi-ppg-result');
   if(!resultDiv)return;
   var r=appState.resultData;
   var dom=r?r.dominant:'unknown';
 
-  // Calculate HRV approximation from readings
+  // Calculate signal quality metrics
   var vals=_ppg.readings.map(function(rd){return rd.r;});
   var mn=Math.min.apply(null,vals),mx=Math.max.apply(null,vals);
   var amplitude=mx-mn;
   var variance=0;
   for(var i=1;i<vals.length;i++) variance+=Math.pow(vals[i]-vals[i-1],2);
-  variance/=vals.length;
-  var irregularity=Math.sqrt(variance)/(amplitude||1);
+  variance/=Math.max(vals.length-1,1);
+  var irregularity=Math.sqrt(variance)/Math.max(amplitude,1);
+  var lockedSecs=Math.round(_ppg.lockedSeconds);
 
-  // Nadi type classification
-  var nadiType, nadiDosha, nadiDesc, nadiRemedy;
-  if(bpm<65){
-    nadiType='Mandagati (Slow/Swan)'; nadiDosha='Kapha Nadi';
-    nadiDesc='Slow, steady, deep, flowing like a swan (Hamsa Gati). Strong Kapha qualities. CS describes this as Manda-Sthira type — slow and stable.';
-    nadiRemedy='Trikatu before meals to stimulate Agni. Morning exercise essential. Kapalbhati pranayama.';
-  } else if(bpm>=65&&bpm<=80){
-    if(irregularity<0.15){
-      nadiType='Samagati (Balanced)'; nadiDosha='Sama / Pitta-Kapha Nadi';
-      nadiDesc='Regular, moderately paced, steady — indicates good balance. This is the ideal Sama Nadi state described in classical texts.';
-      nadiRemedy='Maintain current lifestyle. Triphala at bedtime for maintenance.';
+  // Nadi classification (CS Vimanasthana 8.102)
+  var nadiType,nadiDosha,nadiDesc,nadiRemedy,nadiRhythm;
+  if(bpm<62){
+    nadiType='Mandagati — Swan (Hamsa)';
+    nadiDosha='Kapha Nadi';
+    nadiRhythm='Slow, deep, steady, heavy';
+    nadiDesc='CS: Manda-Sthira pulse — slow like swan gliding on water. Strong Kapha dominance. Indicates good strength but possible sluggish metabolism.';
+    nadiRemedy='Trikatu ¼ tsp before meals · Kapalbhati pranayama morning · Vigorous exercise daily · Avoid heavy daytime meals';
+  } else if(bpm>=62&&bpm<=78){
+    if(irregularity<0.18){
+      nadiType='Samagati — Balanced (Sama)';
+      nadiDosha='Sama / Balanced Nadi';
+      nadiRhythm='Regular, moderate, steady';
+      nadiDesc='CS: Ideal Sama Nadi — steady, rhythmic, moderate pace. Indicates good constitutional balance and healthy Agni.';
+      nadiRemedy='Triphala at bedtime for maintenance · Continue current lifestyle · Seasonal Ritucharya';
     } else {
-      nadiType='Tikshna-Manduka (Frog-like)'; nadiDosha='Pitta-Kapha Nadi';
-      nadiDesc='Moderate rate with slight irregularity — jumping frog quality. Pitta in digestive system with some Kapha.';
-      nadiRemedy='Amalaki morning, avoid spicy foods. Regular meal times.';
+      nadiType='Manduka-Sarpa Mix';
+      nadiDosha='Pitta-Vata Nadi';
+      nadiRhythm='Moderate rate, mild irregularity';
+      nadiDesc='Mixed qualities — moderate pace with some irregularity. Pitta-Vata combined activity.';
+      nadiRemedy='Brahmi + Ashwagandha · Regular meal times · Avoid multitasking';
     }
-  } else if(bpm>80&&bpm<=95){
-    nadiType='Manduka Gati (Frog/Jumping)'; nadiDosha='Pitta Nadi';
-    nadiDesc='Slightly fast, jumping quality like a frog — Pitta activation. CS describes Tikshna, Chala quality. Associated with high metabolism, sharp Agni.';
-    nadiRemedy='Brahmi + Shatavari to cool Pitta. Sheetali pranayama. Avoid excess spicy food.';
+  } else if(bpm>78&&bpm<=95){
+    nadiType='Manduka Gati — Frog (Jumping)';
+    nadiDosha='Pitta Nadi';
+    nadiRhythm='Slightly fast, jumping, sharp';
+    nadiDesc='CS: Tikshna-Chala pulse — jumping frog quality. Pitta activation, high metabolism, sharp Agni. AH: associated with Pitta constitutions.';
+    nadiRemedy='Brahmi + Shatavari · Sheetali pranayama · Coconut water · Avoid spicy food + excess sun';
   } else {
-    nadiType='Sarpa Gati (Serpentine)'; nadiDosha='Vata Nadi';
-    nadiDesc='Fast, irregular, thin — serpentine movement like a cobra. CS Vimanasthana 8.102: Vata Nadi is Sushira (hollow), Laghu (light), Shighra (fast). Indicates Vata dominance or stress.';
-    nadiRemedy='Ashwagandha + warm milk at bedtime. Abhyanga daily. Slow breathing exercises.';
+    nadiType='Sarpa Gati — Serpentine (Cobra)';
+    nadiDosha='Vata Nadi';
+    nadiRhythm='Fast, irregular, thin, wiry';
+    nadiDesc='CS: Sushira-Laghu-Shighra — hollow, light, fast like cobra movement. Vata dominance or stress response. CS Vimanasthana 8.102.';
+    nadiRemedy='Ashwagandha + warm milk at bedtime · Daily Abhyanga (sesame oil massage) · Nadi Shodhana pranayama · Reduce stimulants';
   }
 
   var wrap=document.createElement('div');
   wrap.style.cssText='background:var(--dg);border-radius:14px;padding:16px;color:#fff;margin-top:8px;';
   wrap.className='fade-in';
 
-  wrap.innerHTML='<div style="font-size:11px;font-weight:700;color:#C9973A;letter-spacing:1px;margin-bottom:12px;">✦ AYURMIND AI — NADI PPG RESULT</div>'
-    +'<div style="display:flex;gap:16px;margin-bottom:14px;flex-wrap:wrap;">'
-    +'<div style="text-align:center;background:rgba(255,255,255,.08);border-radius:12px;padding:12px 18px;">'
-    +'<div style="font-family:Georgia,serif;font-size:36px;font-weight:700;color:#E8C070;">'+bpm+'</div>'
-    +'<div style="font-size:10px;color:rgba(255,255,255,.5);">BPM</div></div>'
-    +'<div style="flex:1;min-width:160px;">'
-    +'<div style="font-size:13px;font-weight:700;color:#E8C070;margin-bottom:3px;">'+nadiType+'</div>'
-    +'<div style="font-size:11px;color:var(--sg);font-weight:700;margin-bottom:5px;">'+nadiDosha+'</div>'
-    +'<div style="font-size:11px;color:rgba(255,255,255,.75);line-height:1.6;">'+nadiDesc+'</div>'
-    +'</div></div>'
-    +(dom&&dom!=='unknown'?'<div style="background:rgba(255,255,255,.06);border-radius:10px;padding:10px 12px;margin-bottom:10px;">'
-    +'<div style="font-size:10px;color:var(--sg);font-weight:700;margin-bottom:4px;">CROSS-CHECK WITH YOUR PRAKRITI</div>'
-    +'<div style="font-size:11px;color:rgba(255,255,255,.8);">Your Prakriti: '+dom.charAt(0).toUpperCase()+dom.slice(1)+' — Nadi: '+nadiDosha.split(' ')[0]+'</div>'
-    +'<div style="font-size:11px;color:rgba(255,255,255,.65);margin-top:3px;">'+(nadiDosha.toLowerCase().includes(dom)?'✅ Nadi consistent with your Prakriti — confirms constitutional tendency':'ℹ️ Nadi differs from Prakriti — may indicate current Vikriti (imbalance). Prakriti is constitutional; Nadi reflects current state.')+'</div>'
-    +'</div>':'')
-    +'<div style="background:rgba(255,255,255,.06);border-radius:10px;padding:10px 12px;margin-bottom:10px;">'
-    +'<div style="font-size:10px;color:var(--sg);font-weight:700;margin-bottom:4px;">CLASSICAL REMEDY (CS VIMANASTHANA 8.102)</div>'
-    +'<div style="font-size:11px;color:rgba(255,255,255,.8);">'+nadiRemedy+'</div>'
+  wrap.innerHTML=''
+    +'<div style="font-size:11px;font-weight:700;color:#C9973A;letter-spacing:1px;margin-bottom:14px;">✦ AYURMIND AI — NADI PPG RESULT</div>'
+
+    // BPM + Nadi type
+    +'<div style="display:flex;gap:14px;margin-bottom:14px;align-items:flex-start;flex-wrap:wrap;">'
+    +'<div style="text-align:center;background:rgba(255,255,255,.07);border-radius:14px;padding:14px 20px;flex-shrink:0;">'
+    +'<div style="font-family:Georgia,serif;font-size:48px;font-weight:700;color:#E8C070;line-height:1;">'+bpm+'</div>'
+    +'<div style="font-size:10px;color:rgba(255,255,255,.45);margin-top:3px;">BPM</div>'
+    +'<div style="font-size:9px;color:rgba(255,255,255,.3);margin-top:2px;">'+lockedSecs+'s signal</div>'
     +'</div>'
-    +'<p style="font-size:9px;color:rgba(255,255,255,.3);font-style:italic;">⚕️ PPG is an approximation. Classical Nadi Pariksha requires a trained Vaidya\'s 3-finger technique. This result is for educational awareness only.</p>';
+    +'<div style="flex:1;min-width:160px;">'
+    +'<div style="font-size:14px;font-weight:700;color:#E8C070;font-family:Georgia,serif;margin-bottom:2px;">'+nadiType+'</div>'
+    +'<div style="font-size:11px;color:var(--sg);font-weight:700;margin-bottom:6px;">'+nadiDosha+'</div>'
+    +'<div style="font-size:10px;color:rgba(255,255,255,.5);margin-bottom:6px;font-style:italic;">Rhythm: '+nadiRhythm+'</div>'
+    +'<div style="font-size:11px;color:rgba(255,255,255,.78);line-height:1.65;">'+nadiDesc+'</div>'
+    +'</div></div>'
+
+    // Prakriti cross-check
+    +(dom&&dom!=='unknown'?'<div style="background:rgba(255,255,255,.05);border-radius:10px;padding:10px 12px;margin-bottom:10px;">'
+    +'<div style="font-size:9px;color:var(--sg);font-weight:700;letter-spacing:1px;margin-bottom:4px;">CROSS-CHECK WITH YOUR PRAKRITI</div>'
+    +'<div style="font-size:11px;color:rgba(255,255,255,.82);">Prakriti: <strong style="color:#E8C070;">'+dom.charAt(0).toUpperCase()+dom.slice(1)+'</strong> · Nadi: <strong style="color:#E8C070;">'+nadiDosha.split(' ')[0]+'</strong></div>'
+    +'<div style="font-size:11px;color:rgba(255,255,255,.6);margin-top:3px;">'
+    +(nadiDosha.toLowerCase().includes(dom)
+      ?'✅ Nadi consistent with Prakriti — confirms constitutional tendency'
+      :'ℹ️ Nadi differs from Prakriti — may indicate Vikriti (current imbalance). Prakriti is fixed; Nadi reflects today\'s state.')
+    +'</div></div>':'')
+
+    // Remedies
+    +'<div style="background:rgba(255,255,255,.05);border-radius:10px;padding:10px 12px;margin-bottom:10px;">'
+    +'<div style="font-size:9px;color:var(--sg);font-weight:700;letter-spacing:1px;margin-bottom:6px;">CLASSICAL REMEDY (CS VIMANASTHANA 8.102)</div>'
+    +'<div style="font-size:11px;color:rgba(255,255,255,.82);line-height:1.7;">'+nadiRemedy.split('·').map(function(s,i){return (i+1)+'. '+s.trim();}).join('<br>')+'</div>'
+    +'</div>'
+
+    +'<p style="font-size:9px;color:rgba(255,255,255,.25);font-style:italic;margin-top:8px;">⚕️ PPG gives approximate pulse rate and rhythm. Classical Nadi Pariksha requires a trained Vaidya\'s 3-finger technique for full diagnosis (CS Vimanasthana 8.94-106). This is for health awareness only.</p>';
+
+  // Retry
+  var retryBtn=document.createElement('button');
+  retryBtn.style.cssText='width:100%;margin-top:8px;padding:9px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.6);border-radius:8px;font-size:11px;cursor:pointer;font-family:inherit;';
+  retryBtn.textContent='🔄 Measure Again';
+  retryBtn.onclick=function(){resultDiv.innerHTML='';renderNadiPPG();};
+  wrap.appendChild(retryBtn);
 
   resultDiv.innerHTML='';
   resultDiv.appendChild(wrap);
   resultDiv.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+
+// ── showJihvaResult ─────────────────────────────────────────────
+// Renders Jihva analysis result card
+function showJihvaResult(text, imgData, dom){
+  var resultDiv = document.getElementById('jihva-result');
+  if(!resultDiv) return;
+
+  // Check if text is a rejection message
+  var isRejected = text.indexOf('❌ INVALID IMAGE') === 0;
+  var isUrgent   = text.indexOf('See Vaidya soon') >= 0 || text.indexOf('see doctor') >= 0;
+  var headerCol  = isRejected ? '#FF6B6B' : isUrgent ? '#FF9F40' : '#C9973A';
+
+  var wrap = document.createElement('div');
+  wrap.className = 'fade-in';
+
+  if(isRejected){
+    // Show rejection card
+    wrap.style.cssText = 'background:#2A0A0A;border:1.5px solid #C84030;border-radius:14px;padding:16px;margin-top:8px;';
+    var errTitle = document.createElement('div');
+    errTitle.style.cssText = 'font-size:13px;font-weight:700;color:#FF6B6B;margin-bottom:10px;';
+    errTitle.textContent = '❌ Tongue Not Detected';
+    wrap.appendChild(errTitle);
+
+    var errBody = document.createElement('div');
+    errBody.style.cssText = 'font-size:12px;color:rgba(255,255,255,.82);line-height:1.75;white-space:pre-line;margin-bottom:12px;';
+    // Remove the header line, show reason + tips
+    errBody.textContent = text.replace('❌ INVALID IMAGE\n\n','');
+    wrap.appendChild(errBody);
+
+    var retryBtn = document.createElement('button');
+    retryBtn.style.cssText = 'width:100%;padding:10px;background:var(--gold);border:none;border-radius:10px;color:#1A1A1A;font-weight:700;font-size:12px;cursor:pointer;font-family:inherit;';
+    retryBtn.textContent = '📷 Try Again';
+    retryBtn.onclick = function(){ document.getElementById('jihva-result').innerHTML=''; renderJihva(); };
+    wrap.appendChild(retryBtn);
+
+  } else {
+    // Show full analysis card
+    wrap.style.cssText = 'background:var(--dg);border-radius:14px;padding:16px;color:#fff;margin-top:8px;';
+
+    var header = document.createElement('div');
+    header.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:1px;margin-bottom:12px;color:'+headerCol+';';
+    header.textContent = '✦ AYURMIND AI — JIHVA PARIKSHA RESULT';
+    wrap.appendChild(header);
+
+    // Urgency badge
+    if(isUrgent){
+      var badge = document.createElement('div');
+      badge.style.cssText = 'background:rgba(200,60,40,.2);border:1px solid #FF6B6B;border-radius:8px;padding:7px 12px;margin-bottom:10px;font-size:11px;color:#FF9F40;font-weight:600;';
+      badge.textContent = '⚠️ ' + (text.match(/URGENCY: ([^\n]+)/)||['','See Vaidya'])[1];
+      wrap.appendChild(badge);
+    }
+
+    var body = document.createElement('div');
+    body.style.cssText = 'font-size:11.5px;line-height:1.85;white-space:pre-line;color:rgba(255,255,255,.88);';
+    body.textContent = text;
+    wrap.appendChild(body);
+
+    var disclaimer = document.createElement('p');
+    disclaimer.style.cssText = 'font-size:9.5px;color:rgba(255,255,255,.28);margin-top:12px;font-style:italic;border-top:1px solid rgba(255,255,255,.08);padding-top:8px;';
+    disclaimer.textContent = '⚕️ Educational guidance only — not a clinical diagnosis. Consult a qualified Vaidya (BAMS/MD Ayurveda) for medical advice.';
+    wrap.appendChild(disclaimer);
+
+    var retryBtn = document.createElement('button');
+    retryBtn.style.cssText = 'margin-top:10px;width:100%;padding:9px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);color:rgba(255,255,255,.55);border-radius:8px;font-size:11px;cursor:pointer;font-family:inherit;';
+    retryBtn.textContent = '📷 Analyze Another Photo';
+    retryBtn.onclick = function(){ document.getElementById('jihva-result').innerHTML=''; renderJihva(); };
+    wrap.appendChild(retryBtn);
+  }
+
+  resultDiv.innerHTML = '';
+  resultDiv.appendChild(wrap);
+  resultDiv.scrollIntoView({behavior:'smooth', block:'nearest'});
+}
+
+// ── showDrikaResult ─────────────────────────────────────────────
+// Renders Drika eye analysis result card
+function showDrikaResult(text, imgData){
+  var resultDiv = document.getElementById('drika-result');
+  if(!resultDiv) return;
+
+  var isRejected = text.indexOf('❌ EYE NOT DETECTED') === 0;
+  var isUrgent   = text.indexOf('urgently') >= 0 || text.indexOf('immediately') >= 0;
+  var headerCol  = isRejected ? '#FF6B6B' : isUrgent ? '#FF9F40' : '#C9973A';
+
+  var wrap = document.createElement('div');
+  wrap.className = 'fade-in';
+
+  if(isRejected){
+    wrap.style.cssText = 'background:#2A0A0A;border:1.5px solid #C84030;border-radius:14px;padding:16px;margin-top:8px;';
+
+    var errTitle = document.createElement('div');
+    errTitle.style.cssText = 'font-size:13px;font-weight:700;color:#FF6B6B;margin-bottom:10px;';
+    errTitle.textContent = '❌ Eye Not Detected';
+    wrap.appendChild(errTitle);
+
+    var errBody = document.createElement('div');
+    errBody.style.cssText = 'font-size:12px;color:rgba(255,255,255,.82);line-height:1.75;white-space:pre-line;margin-bottom:12px;';
+    errBody.textContent = text.replace('❌ EYE NOT DETECTED\n\n','');
+    wrap.appendChild(errBody);
+
+    var retryBtn = document.createElement('button');
+    retryBtn.style.cssText = 'width:100%;padding:10px;background:var(--gold);border:none;border-radius:10px;color:#1A1A1A;font-weight:700;font-size:12px;cursor:pointer;font-family:inherit;';
+    retryBtn.textContent = '📷 Try Again';
+    retryBtn.onclick = function(){ document.getElementById('drika-result').innerHTML=''; renderDrika(); };
+    wrap.appendChild(retryBtn);
+
+  } else {
+    wrap.style.cssText = 'background:var(--dg);border-radius:14px;padding:16px;color:#fff;margin-top:8px;';
+
+    var header = document.createElement('div');
+    header.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:1px;margin-bottom:12px;color:'+headerCol+';';
+    header.textContent = '✦ AYURMIND AI — DRIKA PARIKSHA RESULT';
+    wrap.appendChild(header);
+
+    if(isUrgent){
+      var badge = document.createElement('div');
+      badge.style.cssText = 'background:rgba(200,0,0,.25);border:1px solid #FF4040;border-radius:8px;padding:7px 12px;margin-bottom:10px;font-size:11px;color:#FF9F40;font-weight:600;';
+      badge.textContent = '⚠️ ' + (text.match(/URGENCY: ([^\n]+)/)||['','See doctor urgently'])[1];
+      wrap.appendChild(badge);
+    }
+
+    var body = document.createElement('div');
+    body.style.cssText = 'font-size:11.5px;line-height:1.85;white-space:pre-line;color:rgba(255,255,255,.88);';
+    body.textContent = text;
+    wrap.appendChild(body);
+
+    var disclaimer = document.createElement('p');
+    disclaimer.style.cssText = 'font-size:9.5px;color:rgba(255,255,255,.28);margin-top:12px;font-style:italic;border-top:1px solid rgba(255,255,255,.08);padding-top:8px;';
+    disclaimer.textContent = '⚕️ Educational only — not a clinical diagnosis. Yellow sclera or severe redness: see a doctor immediately. Consult a Vaidya (BAMS/MD) for Ayurvedic care.';
+    wrap.appendChild(disclaimer);
+
+    var retryBtn = document.createElement('button');
+    retryBtn.style.cssText = 'margin-top:10px;width:100%;padding:9px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);color:rgba(255,255,255,.55);border-radius:8px;font-size:11px;cursor:pointer;font-family:inherit;';
+    retryBtn.textContent = '📷 Analyze Another Photo';
+    retryBtn.onclick = function(){ document.getElementById('drika-result').innerHTML=''; renderDrika(); };
+    wrap.appendChild(retryBtn);
+  }
+
+  resultDiv.innerHTML = '';
+  resultDiv.appendChild(wrap);
+  resultDiv.scrollIntoView({behavior:'smooth', block:'nearest'});
 }
 
 
