@@ -5828,7 +5828,7 @@ function stopNadiPPG(){
   if(lockElR){
     lockElR.textContent='\u26AA Ready \u2014 Press Start to begin';
     lockElR.style.background='rgba(201,151,58,.1)';
-    lockElR.style.color='#FFFFFF';
+    lockElR.style.color='#E8C070';
     lockElR.style.border='1.5px solid rgba(201,151,58,.35)';
   }
 
@@ -5952,7 +5952,7 @@ function renderNadiPPG(){
   wrap.appendChild(auth);
   var lockBar=document.createElement('div');
   lockBar.id='ppg-lock';
-  lockBar.style.cssText='text-align:center;padding:11px 16px;border-radius:12px;font-weight:700;font-size:13px;background:rgba(201,151,58,.18);color:#FFFFFF;margin-bottom:12px;transition:all .3s;border:1.5px solid rgba(201,151,58,.6);letter-spacing:.5px;';
+  lockBar.style.cssText='text-align:center;padding:11px 16px;border-radius:12px;font-weight:700;font-size:13px;background:rgba(201,151,58,.22);color:#E8C070;margin-bottom:12px;transition:all .3s;border:1.5px solid #C9973A;letter-spacing:.5px;';
   lockBar.textContent='⚪ Ready — Press Start to begin';
   wrap.appendChild(lockBar);
   var steps=document.createElement('div');
