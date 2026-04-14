@@ -1920,40 +1920,85 @@ function renderResult(){
   if(age){
     const ksDiv=document.getElementById('kala-svabhava-card');
     if(ksDiv){
-      let phase='',phaseColor='',phaseNote='',accuracy='',note='';
-      if(age<21){
-        phase='Balya Phase (Kapha)'; phaseColor='#4A7C5E';
-        phaseNote='Ages 0-20: Natural Kapha dominance — growth, tissue building, anabolism (CS Sutrasthana 7.5)';
-        accuracy='85%'; note='Some answers may reflect youthful Kapha physiology. Best assessment window: 25-50 years.';
-      } else if(age<=50){
-        phase='Madhyama Phase (Pitta)'; phaseColor='#D4693A';
-        phaseNote='Ages 20-60: Pitta dominates — peak activity, metabolism, productivity (AH Sutrasthana 1.9)';
-        accuracy='97%'; note='Prime Prakriti assessment window. Most accurate results. (CCRAS-PAS Protocol)';
+      // Classical life stage determination
+      // Sources: CS Shar.3.13 | AH Sutr.1.9 | SS Shar.35.24 | CCRAS-PAS 2012
+      let phase='', phaseColor='', phaseNote='', reliability='', note='', src='', subStage='';
+
+      if(age<20){
+        phase='Balya Avastha'; phaseColor='#4A7C5E';
+        subStage='Kapha dominant — growth phase';
+        phaseNote='Natural Kapha dominance: tissue growth, anabolism, softness (CS Sutrasthana 7.5). Prakriti questionnaire not validated for this age group.';
+        reliability='Below optimal range'; note='Some answers reflect youthful Kapha physiology — not necessarily your Prakriti. Results require Vaidya confirmation.';
+        src='CS Sutrasthana 7.5 | CS Sharirasthana 3.13 (Bala: 0-16) | CCRAS-PAS: below validated range';
+      } else if(age<=24){
+        phase='Yauvana Avastha'; phaseColor='#C5943A';
+        subStage='Pitta rising — transition phase';
+        phaseNote='Kapha transitioning to Pitta dominance (AH Sutrasthana 1.9). Metabolism sharpening. CCRAS-PAS validated range begins at 18.';
+        reliability='Good'; note='Results reliable. Answers about skin, digestion, energy reflect rising Pitta. Body frame and mental traits are most accurate Prakriti markers at this age.';
+        src='AH Sutrasthana 1.9 | CCRAS-PAS Protocol 2012 (18+ validated)';
+      } else if(age<=45){
+        phase='Praudha Avastha'; phaseColor='#D4693A';
+        subStage='Pitta dominant — prime of life';
+        phaseNote='Peak Pitta phase: stable metabolism, maximum productivity, clearest constitutional expression (AH commentators — Arunadatta on Sutr.1.9).';
+        reliability='Optimal'; note='Prime Prakriti assessment window. Kala Svabhava interference is minimal. Results most accurately reflect true constitutional Prakriti. (Chakrapani commentary on CS, CCRAS-PAS)';
+        src='AH Sutrasthana 1.9 | Chakrapani on CS Vimana 8 | CCRAS-PAS (optimal: 25-50) | PMC3135904';
       } else if(age<=60){
-        phase='Prapakva Phase (Pitta→Vata transition)'; phaseColor='#9B7B5E';
-        phaseNote='Ages 50-60: Pitta declining, Vata beginning to rise — transitional phase';
-        accuracy='88%'; note='Dry skin, lighter sleep may reflect aging (Kala Svabhava), not your Prakriti. Consider Vaidya confirmation.';
+        phase='Prapakva Avastha'; phaseColor='#9B7B5E';
+        subStage='Pitta declining, Vata rising';
+        phaseNote='Pitta gradually declines, Vata begins to increase — transitional period before Vriddha phase (AH Sarvangasundara commentary on Sutr.1.9).';
+        reliability='Moderate — review with Vaidya'; note='Dry skin, lighter sleep, joint sensitivity may reflect natural aging (Kala Svabhava) rather than Vata Prakriti. Physical examination by a Vaidya recommended to confirm.';
+        src='AH Sutrasthana 1.9 commentators (Arunadatta, Hemadri) | CCRAS-PAS clinical guidelines';
       } else {
-        phase='Vriddha Phase (Vata)'; phaseColor='#5B8FA8';
-        phaseNote='Ages 60+: Natural Vata dominance — depletion, dryness, degeneration (SS Sutrasthana 15.17)';
-        accuracy='78%'; note='Dry skin, anxiety, light sleep may reflect aging, NOT Vata Prakriti. Clinical assessment by Vaidya strongly recommended.';
+        phase='Vriddha Avastha'; phaseColor='#5B8FA8';
+        subStage='Vata dominant — depletion phase';
+        phaseNote='Natural Vata increase: dryness, lightness, degeneration (SS Sutrasthana 15.17 | CS Sutrasthana 7.8 | AH Sutrasthana 1.9).';
+        reliability='Requires clinical confirmation'; note='Dry skin, anxiety, light sleep, constipation are normal aging signs — NOT necessarily Vata Prakriti. Prakriti determined by lifelong stable traits: body frame, bone structure, voice, mental tendencies.';
+        src='CS Sutrasthana 7.5-8 | SS Sharirasthana 35.24-25 | AH Sutrasthana 1.9 | CCRAS-PAS clinical notes';
       }
+
+      // Reliability badge color
+      const relColor = reliability==='Optimal'?'#4ADE80':reliability==='Good'?'#86EFAC':reliability==='Moderate — review with Vaidya'?'#FCD34D':'#FCA5A5';
+
       ksDiv.innerHTML=
         '<div style="background:linear-gradient(135deg,#1A3A2A,#0F2018);border-radius:14px;padding:16px;margin:12px 0;border:1.5px solid '+phaseColor+';color:#fff;">'+
-        '<div style="font-size:10px;font-weight:700;letter-spacing:1.5px;color:'+phaseColor+';margin-bottom:8px;">KALA SVABHAVA — AGE-PHASE DOSHA (CS SUTRASTHANA 7.5-8)</div>'+
-        '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:8px;">'+
-        '<div><div style="font-size:14px;font-weight:700;color:#E8C070;">'+phase+'</div>'+
-        '<div style="font-size:11px;color:rgba(255,255,255,.7);margin-top:3px;">Age '+age+' years</div></div>'+
-        '<div style="background:rgba(255,255,255,.08);border-radius:10px;padding:8px 14px;text-align:center;">'+
-        '<div style="font-size:20px;font-weight:700;color:#4ADE80;">'+accuracy+'</div>'+
-        '<div style="font-size:9px;color:rgba(255,255,255,.5);margin-top:1px;">Accuracy</div></div></div>'+
-        '<div style="font-size:11px;color:rgba(255,255,255,.8);line-height:1.65;margin-bottom:8px;">'+phaseNote+'</div>'+
-        '<div style="background:rgba(255,255,255,.06);border-radius:8px;padding:8px 12px;font-size:11px;color:rgba(255,255,255,.7);">'+
-        '<strong style="color:#E8C070;">Clinical Note:</strong> '+note+'</div>'+
-        '<div style="margin-top:10px;font-size:10px;color:rgba(255,255,255,.4);border-top:1px solid rgba(255,255,255,.1);padding-top:8px;">'+
-        'Your Prakriti is FIXED at birth (CS Shar.4.36: Yā prakṛtiḥ sā sthirā bhavati). '+
-        'Kala Svabhava is the natural age-phase dosha that OVERLAPS with Prakriti — doctors interpret both together. '+
-        'Source: CS 7.5-8 | AH 1.9 | SS 15.17 | CCRAS-PAS Protocol 2012</div></div>';
+        '<div style="font-size:10px;font-weight:700;letter-spacing:1.5px;color:'+phaseColor+';margin-bottom:10px;">KALA SVABHAVA — AGE-PHASE DOSHA</div>'+
+
+        // Phase + age + reliability row
+        '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;flex-wrap:wrap;gap:8px;">'+
+        '<div>'+
+          '<div style="font-size:15px;font-weight:700;color:#E8C070;margin-bottom:2px;">'+phase+'</div>'+
+          '<div style="font-size:11px;color:rgba(255,255,255,.6);">'+subStage+'</div>'+
+          '<div style="font-size:11px;color:rgba(255,255,255,.5);margin-top:2px;">Age: '+age+' years</div>'+
+        '</div>'+
+        '<div style="background:rgba(255,255,255,.06);border-radius:10px;padding:8px 12px;text-align:center;min-width:90px;">'+
+          '<div style="font-size:11px;font-weight:700;color:'+relColor+';">'+reliability+'</div>'+
+          '<div style="font-size:9px;color:rgba(255,255,255,.4);margin-top:2px;">Assessment reliability</div>'+
+        '</div>'+
+        '</div>'+
+
+        // Phase note
+        '<div style="font-size:11px;color:rgba(255,255,255,.82);line-height:1.7;margin-bottom:8px;padding:8px 10px;background:rgba(255,255,255,.04);border-radius:8px;">'+phaseNote+'</div>'+
+
+        // Clinical note
+        '<div style="background:rgba(255,255,255,.05);border-radius:8px;padding:8px 12px;margin-bottom:8px;">'+
+          '<div style="font-size:9.5px;font-weight:700;color:#C9973A;letter-spacing:1px;margin-bottom:4px;">CLINICAL NOTE</div>'+
+          '<div style="font-size:11px;color:rgba(255,255,255,.75);line-height:1.65;">'+note+'</div>'+
+        '</div>'+
+
+        // Assessment method note
+        '<div style="background:rgba(255,255,255,.04);border-radius:8px;padding:7px 10px;margin-bottom:8px;">'+
+          '<div style="font-size:10px;color:rgba(255,255,255,.65);line-height:1.6;">'+
+          '<strong style="color:#E8C070;">Assessment method:</strong> Prashna Pariksha (questioning — 24 questions). '+
+          'CS Sharirasthana 4.62: Complete Prakriti assessment requires both Prashna + Darshana (physical examination). '+
+          'For full confirmation, consult a Vaidya (BAMS/MD Ayurveda).'+
+          '</div>'+
+        '</div>'+
+
+        // Source
+        '<div style="font-size:9.5px;color:rgba(255,255,255,.3);border-top:1px solid rgba(255,255,255,.08);padding-top:7px;">'+
+          'Sources: '+src+' | CS Sharirasthana 4.36 (Prakriti permanence)'+
+        '</div>'+
+        '</div>';
     }
   }
   setTimeout(()=>drawDoshaChart(r), 100);
