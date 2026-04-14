@@ -2003,12 +2003,14 @@ function analyseSymptoms(){
     <div class="ai-badge">✦ AI-POWERED</div>
     <div class="ai-section-title">🌿 AyurMind AI — Deep Symptom Analysis</div>
     <div class="ai-section-sub">Tap below to get targeted Ayurvedic remedies for your specific symptoms (${pickedNames})</div>
-    <div id="ai-sym-output">
+        <div id="sym-vikriti-note"></div>
+<div id="ai-sym-output">
       <button class="ai-btn" onclick="getAISymptomAnalysis(appState._symNames||'',appState._symDom||'vata')">✦ Analyze My Symptoms with AI</button>
     </div>
     <div id="ai-sym-qna"></div>
   </div>`;
   symBox.scrollIntoView({behavior:'smooth',block:'nearest'});
+  renderSymVikritiNote();
 }
 
 // ══════════════════════════════════════════════════════════════════
@@ -5266,6 +5268,39 @@ function interpretJihva(stats,edgeStats,coatingColor,hasCoating,dom,valid,extras
   lines.push('Assessment basis: Multi-zone optical tissue analysis. Best accuracy: bright natural light, tongue fully extended, morning before eating.');
   lines.push('Source: CS Indriyasthana Ch.1 | CS Sutrasthana 5.71 | AH Sutrasthana 12 | CS Vimanasthana 8.102');
   lines.push('For clinical Jihva Pariksha: consult a Vaidya (BAMS/MD Ayurveda).');
+  lines.push('');
+  // ── Personalized Prakriti vs Vikriti note (CS Vimanasthana 8.95 | AH Nidanasthana 1.12) ──
+  lines.push('');
+  lines.push('PRAKRITI vs VIKRITI  (CS Vimanasthana 8.95 | AH Nidanasthana 1.12)');
+  lines.push('--------------------------------');
+  if(dom&&dom!=='unknown'){
+    var domCap=dom.charAt(0).toUpperCase()+dom.slice(1);
+    var vikCap=dV.replace(' Vikriti','').replace('Balanced — no significant Vikriti','Balanced');
+    lines.push('Your Prakriti (fixed, from quiz): '+domCap);
+    lines.push('Today\'s Tongue Vikriti: '+vikCap);
+    lines.push('');
+    if(dV==='Balanced — no significant Vikriti'){
+      lines.push('✅ Tongue shows no significant imbalance today.');
+      lines.push('AH: "Prakriti samam arogyam" — health is alignment with your Prakriti. You are in balance.');
+    } else if(dV.toLowerCase().indexOf(dom)>=0){
+      lines.push('⚠️ Prakriti and Vikriti are the SAME dosha ('+domCap+').');
+      lines.push('Classical note (CS Sutrasthana 9.4): When Vikriti matches Prakriti, the imbalance is deeper');
+      lines.push('and requires more sustained correction — not just symptomatic treatment.');
+      lines.push('Priority: Address '+domCap+' aggravation through Prakriti-specific Ahara and Vihara.');
+    } else {
+      lines.push('Prakriti and Vikriti differ — this is completely normal and expected.');
+      lines.push('CS Vimanasthana 8.95: Prakriti is fixed at conception and never changes.');
+      lines.push('CS Sutrasthana 9.4: Vikriti is the current deviation caused by Ahara, Vihara, Kala.');
+      lines.push('Action: Correct today\'s '+vikCap+' Vikriti using the remedies above.');
+      lines.push('Your '+domCap+' Prakriti remains your baseline health blueprint.');
+    }
+  } else {
+    lines.push('Quiz Prakriti not yet assessed.');
+    lines.push('For personalized Prakriti vs Vikriti comparison: complete the 24-question Prakriti Quiz first.');
+    lines.push('CS Vimanasthana 8.95: Both Prakriti and Vikriti must be known for complete Ayurvedic assessment.');
+  }
+  lines.push('');
+  lines.push('Source: CS Vimanasthana 8.95 (Prakriti permanence) | CS Sutrasthana 9.4 (Vikriti definition) | AH Nidanasthana 1.12');
   return lines.join('\n');
 }
 
@@ -5473,6 +5508,36 @@ function interpretDrika(sBright,sRed,sYellow,center,dom,validation){
   lines.push('Assessment basis: Optical sclera & conjunctiva analysis. Best results: bright natural light, eyes wide open, front camera.');
   lines.push('Source: CS Vimanasthana 8.94-106 | AH Sutrasthana 12 | Ashtavidha Pariksha (7th: Drika)');
   lines.push('For clinical Drika Pariksha: consult a Vaidya (BAMS/MD Ayurveda).');
+  lines.push('');
+  // ── Personalized Prakriti vs Vikriti (CS Vimanasthana 8.95 | AH Nidanasthana 1.12) ──
+  lines.push('PRAKRITI vs VIKRITI  (CS Vimanasthana 8.95 | AH Nidanasthana 1.12)');
+  lines.push('--------------------------------');
+  if(dom&&dom!=='unknown'){
+    var domCapD=dom.charAt(0).toUpperCase()+dom.slice(1);
+    var vikCapD=dV.replace(' Vikriti','').replace('Balanced','Balanced');
+    lines.push('Your Prakriti (fixed, from quiz): '+domCapD);
+    lines.push('Today\'s Eye Vikriti (Alochaka Pitta): '+vikCapD);
+    lines.push('');
+    if(dV==='Balanced'){
+      lines.push('✅ Eye analysis shows no significant Dosha imbalance today.');
+      lines.push('Alochaka Pitta is in healthy state — "Prakriti samam arogyam" (AH).');
+    } else if(dV.toLowerCase().indexOf(dom)>=0){
+      lines.push('⚠️ Eye Vikriti matches your Prakriti ('+domCapD+') — imbalance is constitutional in nature.');
+      lines.push('CS Sutrasthana 9.4: When Vikriti matches Prakriti, Ahara and Vihara correction is essential.');
+      lines.push('Sustained Prakriti-specific eye care recommended — consult a Vaidya.');
+    } else {
+      lines.push('Eye Vikriti ('+vikCapD+') differs from your Prakriti ('+domCapD+') — normal and expected.');
+      lines.push('CS Vimanasthana 8.95: Prakriti is fixed. Vikriti is the current eye state.');
+      lines.push('AH Nidanasthana 1.12: Both must be assessed together for complete Drishti Pariksha.');
+      lines.push('Correct today\'s '+vikCapD+' eye Vikriti using the remedies above.');
+    }
+  } else {
+    lines.push('Quiz Prakriti not yet assessed.');
+    lines.push('Take the 24-question Prakriti Quiz for personalized Prakriti vs Eye Vikriti comparison.');
+    lines.push('CS Vimanasthana 8.95: Complete Drika Pariksha requires knowing both Prakriti and Vikriti.');
+  }
+  lines.push('');
+  lines.push('Source: CS Vimanasthana 8.95 | CS Sutrasthana 9.4 | AH Nidanasthana 1.12');
   return lines.join('\n');
 }
 
@@ -6161,6 +6226,56 @@ function showDrikaResult(text, imgData){
   resultDiv.innerHTML = '';
   resultDiv.appendChild(wrap);
   resultDiv.scrollIntoView({behavior:'smooth', block:'nearest'});
+}
+
+
+function renderSymVikritiNote(){
+  var el=document.getElementById('sym-vikriti-note');
+  if(!el)return;
+  var r=appState.resultData;
+  var symDom=appState._symDom||'';
+  var prakriti=r?r.dominant:null;
+  var pc=prakriti?(prakriti.charAt(0).toUpperCase()+prakriti.slice(1)):null;
+  var sc=symDom?(symDom.charAt(0).toUpperCase()+symDom.slice(1)):'';
+  var borderColor='rgba(201,151,58,.4)';
+  var inner='';
+
+  if(!pc){
+    inner='<div style="font-size:10px;font-weight:700;color:#C9973A;letter-spacing:1.2px;margin-bottom:6px;">PRAKRITI vs VIKRITI</div>'+
+      '<div style="font-size:11.5px;color:rgba(255,255,255,.85);line-height:1.7;">'+
+      'Symptom analysis reflects your current <strong style="color:#E8C070;">Vikriti</strong> (current imbalance).<br>'+
+      '<span style="color:rgba(255,255,255,.6);">Complete the 24-question Prakriti Quiz for personalized comparison.<br>'+
+      'CS Vimanasthana 8.95: Knowing both Prakriti and Vikriti is essential for complete assessment.</span></div>';
+  } else if(sc&&sc.toLowerCase()===prakriti.toLowerCase()){
+    borderColor='rgba(200,60,40,.4)';
+    inner='<div style="font-size:10px;font-weight:700;color:#FF9F40;letter-spacing:1.2px;margin-bottom:6px;">PRAKRITI vs VIKRITI — ATTENTION NEEDED</div>'+
+      '<div style="font-size:11.5px;color:rgba(255,255,255,.88);line-height:1.75;">'+
+      '<strong style="color:#E8C070;">Your Prakriti: '+pc+'</strong> (fixed for life) &nbsp;|&nbsp; '+
+      '<strong style="color:#FF9F40;">Symptom Vikriti: '+sc+'</strong> (current)<br>'+
+      '<span style="color:rgba(255,255,255,.7);">&#9888;&#65039; Prakriti and Vikriti are the <strong>same dosha</strong> — indicates a deeper constitutional imbalance.<br>'+
+      'CS Sutrasthana 9.4: When Vikriti aligns with Prakriti, sustained Ahara + Vihara correction is required.<br>'+
+      'Recommend consulting a Vaidya for Prakriti-specific Shodhana protocol.</span></div>';
+  } else if(sc){
+    inner='<div style="font-size:10px;font-weight:700;color:#C9973A;letter-spacing:1.2px;margin-bottom:6px;">PRAKRITI vs VIKRITI  (CS Vimanasthana 8.95)</div>'+
+      '<div style="font-size:11.5px;color:rgba(255,255,255,.88);line-height:1.75;">'+
+      '<strong style="color:#E8C070;">Your Prakriti: '+pc+'</strong> (fixed, from quiz) &nbsp;|&nbsp; '+
+      '<strong style="color:#E8C070;">Symptom Vikriti: '+sc+'</strong> (current)<br>'+
+      '<span style="color:rgba(255,255,255,.7);">These differ — completely normal. Prakriti is fixed at conception (CS Sharirasthana 4.36).<br>'+
+      'Vikriti changes daily with Ahara, Vihara, Kala (CS Sutrasthana 9.4).<br>'+
+      'Correct '+sc+' Vikriti using the remedies above. '+pc+' Prakriti is your lifelong health blueprint.</span></div>';
+  } else {
+    inner='<div style="font-size:10px;font-weight:700;color:#C9973A;letter-spacing:1.2px;margin-bottom:6px;">PRAKRITI vs VIKRITI</div>'+
+      '<div style="font-size:11.5px;color:rgba(255,255,255,.75);line-height:1.7;">'+
+      'Your Prakriti: <strong style="color:#E8C070;">'+pc+'</strong> (fixed for life).<br>'+
+      'Select symptoms above to see your current Vikriti and Prakriti comparison.<br>'+
+      '<span style="font-size:10px;color:rgba(255,255,255,.45);">CS Vimanasthana 8.95: Prakriti is fixed. Vikriti is the current deviation.</span></div>';
+  }
+
+  el.innerHTML='<div style="background:linear-gradient(135deg,rgba(201,151,58,.12),rgba(26,58,42,.3));'+
+    'border:1.5px solid '+borderColor+';border-radius:10px;padding:12px 14px;margin-bottom:12px;">'+
+    inner+
+    '<div style="font-size:9.5px;color:rgba(255,255,255,.3);margin-top:8px;border-top:1px solid rgba(255,255,255,.08);padding-top:6px;">'+
+    'Source: CS Vimanasthana 8.95 | CS Sutrasthana 9.4 | CS Sharirasthana 4.36 | AH Nidanasthana 1.12</div></div>';
 }
 
 
