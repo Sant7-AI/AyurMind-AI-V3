@@ -5586,6 +5586,23 @@ function interpretDrika(sBright,sRed,sYellow,center,dom,validation){
   return lines.join('\n');
 }
 
+// ═══════════════════════════════════════════════════════════
+// NADI PPG STATE — must be defined before startNadiPPG
+// PMC4321461 | PMC5595574 | PMC8474463 | CS Vimanasthana 8.94-106
+// ═══════════════════════════════════════════════════════════
+var _ppg={
+  active:false, stream:null, video:null,
+  readings:[], ambientFrames:[],
+  ambientBaseline:0, calibrated:false,
+  phase:'idle',
+  lockCount:0, unlockCount:0,
+  LOCK_THRESHOLD:10, UNLOCK_THRESHOLD:4,
+  lockedSeconds:0, lockStartTime:0,
+  bpmEstimate:0, fingerThreshold:0,
+  timer:null, animFrame:null,
+  offCanvas:null, offCtx:null
+};
+
 function startNadiPPG(){
   var startBtn=document.getElementById('ppg-start');
   var stopBtn=document.getElementById('ppg-stop');
@@ -5609,7 +5626,7 @@ function startNadiPPG(){
     return;
   }
 
-  Object.assign(_ppg,{active:true,readings:[],ambientFrames:[],ambientBaseline:0,calibrated:false,phase:'calibrate',lockCount:0,unlockCount:0,lockedSeconds:0,lockStartTime:0,bpmEstimate:0,fingerThreshold:0});
+  Object.assign(_ppg,{active:true,readings:[],ambientFrames:[],ambientBaseline:0,calibrated:false,phase:'calibrate',lockCount:0,unlockCount:0,lockedSeconds:0,lockStartTime:0,bpmEstimate:0,fingerThreshold:0,offCanvas:null,offCtx:null});
 
   if(lockEl){lockEl.textContent='⚙️ Calibrating...';lockEl.style.cssText='text-align:center;padding:11px 16px;border-radius:12px;font-weight:700;font-size:13px;background:rgba(249,168,37,.15);color:#F9A825;margin-bottom:12px;transition:all .3s;border:1.5px solid rgba(249,168,37,.4);';}
   if(status)status.innerHTML='<strong style="color:#F9A825;">Step 1: Calibrating</strong> — Do NOT place finger yet. Hold phone normally for 3 seconds.';
@@ -5673,9 +5690,13 @@ function readPPGFrame(){
   }
 
   var vw=video.videoWidth||320,vh=video.videoHeight||240;
-  var off=document.createElement('canvas');
-  off.width=vw;off.height=vh;
-  var octx=off.getContext('2d');
+  // Reuse offscreen canvas (prevent memory leak from creating new canvas every frame)
+  if(!_ppg.offCanvas||_ppg.offCanvas.width!==vw||_ppg.offCanvas.height!==vh){
+    _ppg.offCanvas=document.createElement('canvas');
+    _ppg.offCanvas.width=vw; _ppg.offCanvas.height=vh;
+    _ppg.offCtx=_ppg.offCanvas.getContext('2d');
+  }
+  var off=_ppg.offCanvas, octx=_ppg.offCtx;
 
   try{
     octx.drawImage(video,0,0,vw,vh);
@@ -5691,10 +5712,8 @@ function readPPGFrame(){
     // ── Phase 1: Ambient calibration (first 2 seconds, no finger) ──
     if(!_ppg.calibrated){
       if(_ppg.ambientFrames.length<50){
-        // Only record if appears bright (no finger yet)
-        if(brightness>100){
-          _ppg.ambientFrames.push(brightness);
-        }
+        // Record all frames during calibration (torch may not be on yet)
+        _ppg.ambientFrames.push(brightness);
         if(_ppg.ambientFrames.length===1){
           var status=document.getElementById('ppg-status');
           if(status) status.innerHTML='<strong style="color:#F9A825;">Calibrating...</strong> Do NOT place finger yet. Hold phone normally for 2 seconds.';
