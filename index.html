@@ -1157,6 +1157,49 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text);
 </div>
 
 <!-- QUIZ SCREEN -->
+<div id="s-age" class="screen">
+  <div class="hdr">
+    <div class="logo">Ayur<span>Mind</span> AI</div>
+    <div class="lang-btn" style="cursor:default;font-size:11px;">Prakriti Assessment</div>
+  </div>
+  <div style="background:#FFF8EC;border-bottom:1px solid #E8C070;padding:7px 18px;font-size:11px;color:#7A4E00;text-align:center;">
+    ⚕️ Age helps interpret your Prakriti accurately — CS Sutrasthana 7.5-8 | CCRAS-PAS Protocol
+  </div>
+  <div style="padding:24px 20px 20px;max-width:480px;margin:0 auto;">
+    <h2 style="font-family:Georgia,serif;font-size:22px;color:#1A3A2A;margin-bottom:6px;text-align:center;">Before We Begin</h2>
+    <p style="font-size:13px;color:#5A5A5A;text-align:center;margin-bottom:20px;line-height:1.65;">
+      Your age helps distinguish your true <strong>Prakriti</strong> (fixed constitution) from 
+      <strong>Kala Svabhava</strong> (age-phase dosha) — a critical distinction in classical Ayurveda.
+    </p>
+    <div style="background:#1A3A2A;border-radius:14px;padding:16px;margin-bottom:18px;color:#fff;">
+      <div style="font-size:10px;color:#C9973A;font-weight:700;letter-spacing:1.5px;margin-bottom:8px;">THREE LIFE PHASES — CS SUTRASTHANA 7.5-8 | AH SUTRASTHANA 1.9</div>
+      <div style="font-size:11.5px;line-height:1.85;color:rgba(255,255,255,.88);">
+        <strong style="color:#4A7C5E;">🌊 Balya (0–20 yrs):</strong> Kapha dominates — growth phase, tissue building<br>
+        <strong style="color:#E8C070;">🔥 Madhyama (20–60 yrs):</strong> Pitta dominates — ideal Prakriti assessment window<br>
+        <strong style="color:#5B8FA8;">🌬️ Vriddha (60+ yrs):</strong> Vata increases — depletion phase
+      </div>
+      <div style="font-size:10px;color:rgba(255,255,255,.5);margin-top:8px;border-top:1px solid rgba(255,255,255,.1);padding-top:8px;">
+        Prakriti is FIXED at conception (CS Sharirasthana 4.36: "Yā prakṛtiḥ sā sthirā bhavati"). 
+        Kala Svabhava is the natural age-phase dosha that overlaps with it.
+      </div>
+    </div>
+    <div style="margin-bottom:20px;">
+      <label style="display:block;font-size:13px;font-weight:700;color:#1A3A2A;margin-bottom:8px;">Your Age (years)</label>
+      <input type="number" id="age-input" min="16" max="80" placeholder="e.g. 32"
+        style="width:100%;padding:14px 16px;border:2px solid #E8C070;border-radius:12px;font-size:20px;color:#1A3A2A;background:#FFFDF5;box-sizing:border-box;text-align:center;font-family:Georgia,serif;outline:none;"
+        onkeydown="if(event.key==='Enter')startQuizWithAge()">
+      <div id="age-error" style="color:#C84030;font-size:11px;margin-top:6px;display:none;">Please enter a valid age between 16 and 80.</div>
+    </div>
+    <button onclick="startQuizWithAge();"
+      style="width:100%;padding:15px;background:#1A3A2A;border:none;border-radius:14px;color:#E8C070;font-size:15px;font-weight:700;cursor:pointer;font-family:Georgia,serif;letter-spacing:.5px;">
+      Begin Prakriti Assessment &nbsp;→
+    </button>
+    <p style="font-size:10px;color:#999;text-align:center;margin-top:12px;line-height:1.6;">
+      Source: CS Sutrasthana 7.5-8 | AH Sutrasthana 1.9 | SS Sutrasthana 15.17 | CCRAS-PAS Assessment Protocol 2012
+    </p>
+  </div>
+</div>
+
 <div id="s-quiz" class="screen">
   <div class="hdr">
     <div class="logo">Ayur<span>Mind</span> AI</div>
@@ -1353,7 +1396,7 @@ function cycleLang(){
 // ══════════════════════════════════════════════════════════════════
 // APP STATE
 // ══════════════════════════════════════════════════════════════════
-const appState={ mode:'patient', resultData:null, curQ:0, answers:{}, activeTab:'home', activeTool:'bmi', pickedSymptoms:new Set(), selectedHerb:null, vikritiAnswers:{}, activeDietDay:0, _autoAdvance:null };
+const appState={ mode:'patient', resultData:null, curQ:0, answers:{}, activeTab:'home', activeTool:'bmi', pickedSymptoms:new Set(), selectedHerb:null, vikritiAnswers:{}, activeDietDay:0, _autoAdvance:null, userAge:null };
 
 // ══════════════════════════════════════════════════════════════════
 // QUESTIONS (24 — same as v5, unchanged for continuity)
@@ -1575,7 +1618,29 @@ function chooseMode(m){
 }
 function enterApp(){
   if(appState.resultData){ showScreen('s-app'); renderHome(); }
-  else { appState.curQ=0; appState.answers={}; renderQ(); showScreen('s-quiz'); }
+  else { showAgeScreen(); }
+}
+
+function showAgeScreen(){
+  if(appState.userAge){ startQuiz(); return; }
+  showScreen('s-age');
+  setTimeout(function(){var inp=document.getElementById('age-input');if(inp){inp.value='';inp.focus();}},300);
+}
+
+function startQuizWithAge(){
+  const inp=document.getElementById('age-input');
+  const errEl=document.getElementById('age-error');
+  const age=parseInt(inp?inp.value:0);
+  if(!age||age<16||age>80){
+    if(errEl){errEl.style.display='block';errEl.textContent='Please enter a valid age (16–80)';}
+    return;
+  }
+  appState.userAge=age;
+  startQuiz();
+}
+
+function startQuiz(){
+  appState.curQ=0; appState.answers={}; renderQ(); showScreen('s-quiz');
 }
 function setMode(m){
   appState.mode=m;
@@ -1789,6 +1854,7 @@ function renderResult(){
       <button class="pdf-btn" onclick="openPdfModal()">📄 PDF Report</button>
       <button class="share-btn" onclick="resetQuiz()" style="background:rgba(0,0,0,.08);color:var(--dg);">🔄 Retake</button>
     </div>
+    <div id="kala-svabhava-card"></div>
     <div class="res-body">
       <div class="disc-banner">⚕️ <strong>Educational tool only.</strong> For clinical Prakriti determination, consult a qualified <strong>Vaidya (BAMS/MD Ayurveda)</strong>. Source: Charaka Samhita Vimanasthana Ch.8 | CCRAS-PAS framework | Med Sci Monit 2015</div>
 
@@ -1849,6 +1915,47 @@ function renderResult(){
 
       <div style="font-size:10px;color:var(--muted);font-style:italic;text-align:center;padding:8px 0 4px;">📚 ${d.src}</div>
     </div>`;
+  // ── Kala Svabhava Age Card ───────────────────────────
+  const age=appState.userAge;
+  if(age){
+    const ksDiv=document.getElementById('kala-svabhava-card');
+    if(ksDiv){
+      let phase='',phaseColor='',phaseNote='',accuracy='',note='';
+      if(age<21){
+        phase='Balya Phase (Kapha)'; phaseColor='#4A7C5E';
+        phaseNote='Ages 0-20: Natural Kapha dominance — growth, tissue building, anabolism (CS Sutrasthana 7.5)';
+        accuracy='85%'; note='Some answers may reflect youthful Kapha physiology. Best assessment window: 25-50 years.';
+      } else if(age<=50){
+        phase='Madhyama Phase (Pitta)'; phaseColor='#D4693A';
+        phaseNote='Ages 20-60: Pitta dominates — peak activity, metabolism, productivity (AH Sutrasthana 1.9)';
+        accuracy='97%'; note='Prime Prakriti assessment window. Most accurate results. (CCRAS-PAS Protocol)';
+      } else if(age<=60){
+        phase='Prapakva Phase (Pitta→Vata transition)'; phaseColor='#9B7B5E';
+        phaseNote='Ages 50-60: Pitta declining, Vata beginning to rise — transitional phase';
+        accuracy='88%'; note='Dry skin, lighter sleep may reflect aging (Kala Svabhava), not your Prakriti. Consider Vaidya confirmation.';
+      } else {
+        phase='Vriddha Phase (Vata)'; phaseColor='#5B8FA8';
+        phaseNote='Ages 60+: Natural Vata dominance — depletion, dryness, degeneration (SS Sutrasthana 15.17)';
+        accuracy='78%'; note='Dry skin, anxiety, light sleep may reflect aging, NOT Vata Prakriti. Clinical assessment by Vaidya strongly recommended.';
+      }
+      ksDiv.innerHTML=
+        '<div style="background:linear-gradient(135deg,#1A3A2A,#0F2018);border-radius:14px;padding:16px;margin:12px 0;border:1.5px solid '+phaseColor+';color:#fff;">'+
+        '<div style="font-size:10px;font-weight:700;letter-spacing:1.5px;color:'+phaseColor+';margin-bottom:8px;">KALA SVABHAVA — AGE-PHASE DOSHA (CS SUTRASTHANA 7.5-8)</div>'+
+        '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:8px;">'+
+        '<div><div style="font-size:14px;font-weight:700;color:#E8C070;">'+phase+'</div>'+
+        '<div style="font-size:11px;color:rgba(255,255,255,.7);margin-top:3px;">Age '+age+' years</div></div>'+
+        '<div style="background:rgba(255,255,255,.08);border-radius:10px;padding:8px 14px;text-align:center;">'+
+        '<div style="font-size:20px;font-weight:700;color:#4ADE80;">'+accuracy+'</div>'+
+        '<div style="font-size:9px;color:rgba(255,255,255,.5);margin-top:1px;">Accuracy</div></div></div>'+
+        '<div style="font-size:11px;color:rgba(255,255,255,.8);line-height:1.65;margin-bottom:8px;">'+phaseNote+'</div>'+
+        '<div style="background:rgba(255,255,255,.06);border-radius:8px;padding:8px 12px;font-size:11px;color:rgba(255,255,255,.7);">'+
+        '<strong style="color:#E8C070;">Clinical Note:</strong> '+note+'</div>'+
+        '<div style="margin-top:10px;font-size:10px;color:rgba(255,255,255,.4);border-top:1px solid rgba(255,255,255,.1);padding-top:8px;">'+
+        'Your Prakriti is FIXED at birth (CS Shar.4.36: Yā prakṛtiḥ sā sthirā bhavati). '+
+        'Kala Svabhava is the natural age-phase dosha that OVERLAPS with Prakriti — doctors interpret both together. '+
+        'Source: CS 7.5-8 | AH 1.9 | SS 15.17 | CCRAS-PAS Protocol 2012</div></div>';
+    }
+  }
   setTimeout(()=>drawDoshaChart(r), 100);
 }
 
@@ -2056,7 +2163,7 @@ function showHerbDose(i){
   }
   var wrap=document.createElement('div');
   wrap.className='dose-result fade-in';
-  wrap.innerHTML='<h4 style="font-size:14px;font-weight:700;color:var(--dg);margin-bottom:10px;">🌿 '+h.name+' — Classical Dose Guide</h4>'
+  wrap.innerHTML='<h4 style="font-size:14px;font-weight:700;color:#E8C070;margin-bottom:10px;">🌿 '+h.name+' — Classical Dose Guide</h4>'
     +(dom?'<div style="background:'+(doshaMatch?'#EBF5EC':'#FFF8EC')+';border-radius:8px;padding:7px 11px;margin-bottom:8px;font-size:11px;color:'+(doshaMatch?'var(--kapha)':'#7A4E00')+';">'+(doshaMatch?'✅ Good for your '+dom.charAt(0).toUpperCase()+dom.slice(1)+' Prakriti':'⚠️ Check safety for your '+dom.charAt(0).toUpperCase()+dom.slice(1)+' Prakriti below')+'</div>':'')
     +'<div class="dose-row"><span>Botanical Name</span><span style="font-style:italic;">'+h.botanical+'</span></div>'
     +'<div class="dose-row"><span>Balances Dosha</span><span>'+h.dosha+'</span></div>'
@@ -4942,45 +5049,55 @@ function calcColorStats(data){
 // Accepts: organic pinkish-reddish tissue (all tongue types)
 // All 4 classical tongue states: Pitta (red), Vata (pale), 
 // Kapha (white-coated), Sama (normal pink)
-function validateTongueImage(stats, fullStats){
+function validateTongueImage(stats,fullStats){
   var r=stats.r,g=stats.g,b=stats.b;
-  var brightness=stats.brightness;
-  var saturation=stats.saturation||0;
+  var brightness=stats.brightness,saturation=stats.saturation||0;
   var variance=fullStats.variance||stats.variance||0;
-  var rOverG=r-g,rOverB=r-b;
+  var rOverG=r-g,rOverB=r-b,gbGap=g-b;
 
-  // Hard reject — obvious non-organic objects
-  if(brightness<45)
-    return{valid:false,score:0,reason:'Too dark. Use bright daylight or lamp directed at your tongue.'};
+  // Hard rejects — not tongue tissue
+  if(brightness<50)
+    return{valid:false,score:0,reason:'Photo too dark. Use bright daylight or lamp on tongue.'};
   if(brightness>242&&saturation<12)
-    return{valid:false,score:0,reason:'White surface detected (paper/wall). Please photograph your extended tongue close-up.'};
+    return{valid:false,score:0,reason:'White surface (paper/wall). Photograph your extended tongue.'};
   if(saturation<8)
-    return{valid:false,score:0,reason:'Grayscale — use color camera in good lighting.'};
+    return{valid:false,score:0,reason:'Grayscale image. Use color camera in good lighting.'};
   if(variance<80)
-    return{valid:false,score:0,reason:'Image too uniform — not a tongue photo. Stick tongue out fully and fill the frame.'};
+    return{valid:false,score:0,reason:'Image too uniform. Stick tongue OUT fully and photograph close-up.'};
   if(g>r+20)
-    return{valid:false,score:0,reason:'Green-dominant image — photograph your tongue, not plants/objects.'};
+    return{valid:false,score:0,reason:'Green dominant. Photograph your tongue, not plants or objects.'};
   if(b>r+15)
-    return{valid:false,score:0,reason:'Blue-dominant — photograph tongue in natural light, not sky/blue objects.'};
-  if(brightness>228&&rOverG<18&&rOverB<20)
-    return{valid:false,score:0,reason:'Bright uniform surface detected. Please photograph your extended tongue.'};
+    return{valid:false,score:0,reason:'Blue dominant. Photograph tongue in natural light.'};
+  if(brightness>228&&rOverG<18)
+    return{valid:false,score:0,reason:'Bright uniform surface. Photograph your extended tongue.'};
+  if(saturation>165&&brightness<145)
+    return{valid:false,score:0,reason:'Oversaturated artificial colors — not tongue tissue.'};
+  // Brown/food/wood: tongue mucosa always has B channel > 68
+  if(b<68&&rOverG>30)
+    return{valid:false,score:0,reason:'Brown/amber object detected. Tongue tissue has B>68. Photograph actual tongue in bright light.'};
+  // Large G-B gap with low B = brown/orange food
+  if(gbGap>45&&b<90)
+    return{valid:false,score:0,reason:'Color profile matches food/object, not tongue tissue. Extend tongue fully into frame.'};
 
-  // Organic tissue check
   var score=0;
-  var rDom=(r>=g&&r>=b);
-  if(rDom) score+=50;
-  if(rOverG>50) score+=30;
-  else if(rOverG>25) score+=20;
-  else if(rOverG>10) score+=12;
-  if(brightness>55&&brightness<240) score+=15;
-  if(variance>100) score+=10;
-  if(saturation>20) score+=10;
-  if(brightness>215&&saturation<18) score-=30;
+  if(r>90&&r<240) score+=20;
+  if(g>60&&g<165) score+=20;
+  if(b>68&&b<180) score+=20;
+  if(rOverG>18&&rOverG<115) score+=30;
+  if(rOverB>20&&rOverB<130) score+=15;
+  if(variance>150) score+=8;
+  if(saturation>18&&saturation<145) score+=8;
+  if(brightness>70&&brightness<225) score+=5;
+  if(saturation>130) score-=20;
+  if(rOverG>115) score-=30;
+  if(b<75) score-=15;
 
-  var valid=score>=48;
+  var valid=score>=55;
   var reason=valid?null:
-    !rDom?'Tongue not visible. Extend tongue OUT fully and ensure pink/red tissue fills the photo center.':
-    'Image unclear. Use bright light, stick tongue out fully, camera 10-15cm away.';
+    rOverG>115?'Too intensely red. Use natural lighting on extended tongue.':
+    saturation>130?'Oversaturated — not tongue tissue. Use natural tongue in daylight.':
+    b<75?'Warm/brown object detected. Tongue must fill frame in bright natural light.':
+    'Tongue not detected. Extend tongue fully, bright light, camera 12-18cm away.';
   return{valid:valid,score:score,reason:reason};
 }
 
@@ -4997,131 +5114,158 @@ function calcFullStats(data){
 
 function interpretJihva(stats,edgeStats,coatingColor,hasCoating,dom,valid,extras){
   if(!valid.valid){
-    return '\u274c INVALID\n\n'+valid.reason+'\n\nTry again:\n- Stick tongue OUT fully\n- Bright light\n- Camera 12-18cm away\n- Tongue fills frame\n- Morning before eating';
+    return 'IMAGE NOT VALID\n\n'+valid.reason+'\n\nHow to retake:\n- Stick tongue OUT fully\n- Bright light on tongue\n- Camera 12-18cm away\n- Tongue fills the frame\n- Best: morning before eating/brushing';
   }
   var isDry=extras&&extras.isDry||false;
   var isWet=extras&&extras.isWet||false;
   var coatingThick=extras&&extras.coatingThick||false;
   var hasTeethMarks=extras&&extras.hasTeethMarks||false;
   var hasCracks=extras&&extras.hasCracks||false;
-  var lines=[],vataSigns=[],pittaSigns=[],kaphaSigns=[];
+  var lines=[],vata=[],pitta=[],kapha=[];
   var urgency='Routine self-care';
   var r=stats.r,g=stats.g,b=stats.b,brightness=stats.brightness;
   var rOverG=r-g,rOverB=r-b;
 
   lines.push('TONGUE COLOR  (CS Vimanasthana 8.102)');
-  lines.push('----------------------------------');
-  if(brightness>188&&stats.saturation<22){
-    lines.push('Color: Pale / Whitish');
-    vataSigns.push('Pale tongue - Vata/Ama, possible anemia (Pandu)');
-    kaphaSigns.push('White pallor - Kapha congestion, Manda Agni');
-  } else if(rOverG>60&&brightness<158){
+  lines.push('--------------------------------');
+  if(brightness>210&&stats.saturation<15){
+    lines.push('Color: Very Pale / White');
+    lines.push('Classical: Pandu (anemia), Vata/Kapha imbalance');
+    vata.push('Extreme pallor — Vata, Rasa dhatu depletion');
+    kapha.push('White pallor — Kapha congestion, Manda Agni');
+  } else if(brightness>170&&rOverG<35&&stats.saturation<35){
+    lines.push('Color: Pale Pink / Whitish-Pink');
+    lines.push('Classical: Mild Vata or Kapha tendency, depleted Rasa dhatu');
+    vata.push('Pale tongue — Vata excess or Rasa dhatu weakness');
+  } else if(rOverG>65&&brightness<150){
     lines.push('Color: Deep Red / Inflamed');
-    pittaSigns.push('Deep red - Pitta excess in Rakta dhatu, Tikshna Agni (CS 8.102)');
+    lines.push('Classical: Tikshna Agni, Pitta in Rakta dhatu (CS 8.102)');
+    pitta.push('Deep red — Pitta excess, Rakta dhatu aggravated');
     urgency='See Vaidya within 1 week';
-  } else if(rOverG>33&&rOverB>33&&brightness>108&&brightness<198){
-    lines.push('Color: Healthy Pink-Red (✅ Normal)');
-    lines.push('Normal range - Sama Agni indicator');
-  } else if(stats.yellowness>38){
-    lines.push('Color: Yellowish tinge');
-    pittaSigns.push('Yellow - Ranjaka Pitta, liver/bile imbalance');
-    urgency='See Vaidya - persistent yellow tongue needs evaluation';
-  } else if(stats.blueness>16){
+  } else if(rOverG>38&&rOverG<=65&&brightness>105&&brightness<195){
+    lines.push('Color: Healthy Pink-Red (Normal) ✅');
+    lines.push('Classical: Sama Agni, balanced Rasa-Rakta dhatu');
+  } else if(rOverG>18&&rOverG<=38&&brightness>130){
+    lines.push('Color: Light Pink / Mildly Pale');
+    lines.push('Classical: Mild Vata elevation or post-illness recovery');
+    vata.push('Light pink — mild Vata, Rasa slightly depleted');
+  } else if(stats.yellowness>40){
+    lines.push('Color: Yellowish');
+    lines.push('Classical: Ranjaka Pitta excess, Yakrit (liver) involvement');
+    pitta.push('Yellow — Ranjaka Pitta, liver/bile pathway imbalance');
+    urgency='See Vaidya — persistent yellow tongue needs evaluation';
+  } else if(stats.blueness>18){
     lines.push('Color: Bluish/Purple');
-    vataSigns.push('Blue/purple - Vata circulation issue, poor blood flow');
+    lines.push('Classical: Vata in Raktavaha Srotas, poor circulation');
+    vata.push('Blue/purple — Vata, poor peripheral blood flow');
     urgency='See Vaidya soon';
   } else {
-    lines.push('Color: brightness='+Math.round(brightness)+' redness='+Math.round(rOverG));
+    var desc=rOverG>10?
+      (rOverG>30?'Moderately Pink-Red (mild Pitta/Vata tendency)':'Light Pink (mild Vata tendency, Rasa slightly depleted)'):
+      (brightness>190?'Very Pale / Almost White (Vata-Kapha, check for Ama)':'Neutral — within normal range');
+    lines.push('Color: '+desc);
+    if(brightness>160) vata.push('Low color saturation — possible Vata/Kapha tendency');
   }
 
   lines.push('');
-  lines.push('TONGUE COATING  (CS Sutrasthana 5.71)');
-  lines.push('----------------------------------');
+  lines.push('COATING  (CS Sutrasthana 5.71 — Ama indicator)');
+  lines.push('--------------------------------');
   if(!hasCoating){
-    lines.push('Coating: None / Clean (✅ Good Agni)');
-    lines.push('Clean tongue = good Agni, minimal Ama');
+    lines.push('Coating: None / Clean ✅');
+    lines.push('Sama Agni — minimal Ama (toxins)');
   } else if(coatingColor==='yellow'){
     lines.push('Coating: YELLOW'+(coatingThick?' (thick)':' (thin)'));
-    pittaSigns.push('Yellow coat = Pitta Ama, liver/bile excess');
+    lines.push('Classical: Pitta Ama — Ranjaka Pitta, liver/bile');
+    pitta.push('Yellow coat = Pitta Ama (CS Sutrasthana 5.71)');
+    lines.push('Action: Amalaki morning · avoid spicy/fermented foods');
     urgency='See Vaidya within 1 week';
-    lines.push('Action: Amalaki morning + avoid spicy/fermented');
   } else {
-    lines.push('Coating: WHITE'+(coatingThick?' (THICK - significant Ama)':' (thin - mild Ama)'));
-    kaphaSigns.push('White coat = Kapha Ama, Manda Agni (CS Sutrasthana 5.71)');
-    if(coatingThick) vataSigns.push('Thick back coating - Vishama Agni or chronic Ama');
-    lines.push('Action: Tongue scraping + Trikatu before meals');
+    lines.push('Coating: WHITE'+(coatingThick?' (THICK — significant Ama)':' (thin — mild Ama)'));
+    lines.push('Classical: Kapha Ama, Manda Agni (CS Sutrasthana 5.71)');
+    kapha.push('White coat = Kapha Ama, Jatharagni depleted');
+    if(coatingThick) vata.push('Thick posterior coating — Vishama Agni or chronic Ama');
+    lines.push('Action: Tongue scraping (Jihva Nirlekhana) + Trikatu before meals');
   }
 
   lines.push('');
-  lines.push('MOISTURE / TEXTURE');
-  lines.push('----------------------------------');
+  lines.push('MOISTURE & TEXTURE  (AH Sutrasthana 12)');
+  lines.push('--------------------------------');
   if(isDry){
-    lines.push('Moisture: DRY tongue detected');
-    vataSigns.push('Dry tongue - Vata excess, dehydration (AH: Shushka = Vata)');
+    lines.push('Moisture: DRY (Shushka) — Vata excess');
+    lines.push('Classical: AH Shushka jihva = Vata Vikriti in Pranavaha Srotas');
+    vata.push('Dry tongue — Vata excess, dehydration, Ojas depletion');
   } else if(isWet){
-    lines.push('Moisture: EXCESS moisture');
-    kaphaSigns.push('Wet/slippery - Kapha excess, Shleshma accumulation');
+    lines.push('Moisture: EXCESS moisture (Shleshma) — Kapha excess');
+    kapha.push('Wet/slippery — Kapha Shleshma in Rasavaha Srotas');
   } else {
-    lines.push('Moisture: Normal (✅)');
+    lines.push('Moisture: Normal ✅');
   }
 
   if(hasCracks||hasTeethMarks){
     lines.push('');
-    lines.push('SURFACE FEATURES  (AH Sutrasthana 12)');
-    lines.push('----------------------------------');
-    if(hasCracks){ lines.push('Surface: Texture variation / possible cracks'); vataSigns.push('Cracks - Vata dryness in Rasa dhatu (AH Sutrasthana 12)'); }
-    if(hasTeethMarks){ lines.push('Edges: Asymmetry detected (possible scalloping)'); kaphaSigns.push('Scalloped edges - Kapha enlargement (CS: Sthula jihva)'); }
+    lines.push('SURFACE FEATURES  (AH Sutrasthana 12.22)');
+    lines.push('--------------------------------');
+    if(hasCracks){lines.push('Cracks/Texture: Detected — Vata dryness in Rasa dhatu');vata.push('Cracks — Vata dryness (AH 12.22)');}
+    if(hasTeethMarks){lines.push('Edges: Asymmetry — possible scalloped teeth marks');kapha.push('Scalloped edges — Kapha Sthula jihva (CS)');}
   }
 
   lines.push('');
-  lines.push('DOSHA INDICATORS');
-  lines.push('----------------------------------');
-  lines.push(vataSigns.length?'Vata: '+vataSigns.join(' | '):'Vata: No significant signs');
-  lines.push(pittaSigns.length?'Pitta: '+pittaSigns.join(' | '):'Pitta: No significant signs');
-  lines.push(kaphaSigns.length?'Kapha: '+kaphaSigns.join(' | '):'Kapha: No significant signs');
+  lines.push('DOSHA INDICATORS  (CS Vimanasthana 8.102)');
+  lines.push('--------------------------------');
+  if(vata.length){lines.push('🌬️ VATA:');vata.forEach(function(s){lines.push('  • '+s);});}
+  else lines.push('🌬️ Vata: No significant signs today');
+  if(pitta.length){lines.push('🔥 PITTA:');pitta.forEach(function(s){lines.push('  • '+s);});}
+  else lines.push('🔥 Pitta: No significant signs today');
+  if(kapha.length){lines.push('🌊 KAPHA:');kapha.forEach(function(s){lines.push('  • '+s);});}
+  else lines.push('🌊 Kapha: No significant signs today');
 
-  var vS=vataSigns.length,pS=pittaSigns.length,kS=kaphaSigns.length;
-  var dV=pS>vS&&pS>kS?'Pitta Vikriti':vS>pS&&vS>kS?'Vata Vikriti':kS>pS&&kS>vS?'Kapha Vikriti':'Balanced (no significant Vikriti)';
+  var vS=vata.length,pS=pitta.length,kS=kapha.length;
+  var dV=pS>vS&&pS>kS?'Pitta Vikriti':vS>pS&&vS>kS?'Vata Vikriti':kS>pS&&kS>vS?'Kapha Vikriti':'Balanced — no significant Vikriti';
 
   lines.push('');
-  lines.push('CURRENT VIKRITI (Today\'s Imbalance)');
-  lines.push('----------------------------------');
+  lines.push("TODAY'S VIKRITI (Current Imbalance)");
+  lines.push('--------------------------------');
   lines.push(dV);
   if(dom&&dom!=='unknown'){
     var dc=dom.charAt(0).toUpperCase()+dom.slice(1);
-    lines.push('Your Prakriti: '+dc+' | Tongue shows: '+dV);
-    if(dV.toLowerCase().includes(dom)) lines.push('⚠️ Constitution + current imbalance align - address promptly');
-    else if(dV.indexOf('Balanced')>=0) lines.push('✅ Tongue balanced today');
-    else lines.push('ℹ️ Temporary Vikriti (differs from Prakriti)');
+    lines.push('Prakriti: '+dc+' | Vikriti: '+dV);
+    if(dV.toLowerCase().indexOf(dom)>=0) lines.push('⚠️ Prakriti + Vikriti align — address promptly');
+    else if(dV.indexOf('Balanced')>=0) lines.push('✅ Tongue balanced today — good Agni');
+    else lines.push('ℹ️ Temporary Vikriti (different from Prakriti) — correct with lifestyle');
   }
 
   lines.push('');
-  lines.push('RECOMMENDED ACTIONS (CS Sutrasthana 5)');
-  lines.push('----------------------------------');
+  lines.push('CLASSICAL REMEDIES  (CS Sutrasthana 5 | AH Sutrasthana 12)');
+  lines.push('--------------------------------');
   if(pS>0){
-    lines.push('1. Amalaki 1 tsp + cool water morning fasting');
-    lines.push('2. Triphala 1 tsp warm water at bedtime');
-    lines.push('3. Coconut oil Gandusha 5 min (CS Sutrasthana 5)');
-    lines.push('4. Avoid: spicy, sour, fermented foods 5 days');
+    lines.push('1. Amalaki 1 tsp + cool water, morning fasting (CS: primary Pitta herb)');
+    lines.push('2. Triphala 1 tsp warm water, bedtime (Pitta emphasis)');
+    lines.push('3. Coconut oil Gandusha 5 min (CS Sutrasthana 5 — oral Pitta)');
+    lines.push('4. Avoid: spicy, sour, fermented, alcohol — 5 days');
+    lines.push('5. Sheetali pranayama — cooling Pitta breath');
   } else if(kS>0||hasCoating){
-    lines.push('1. Jihva Nirlekhana (tongue scraping) daily - copper scraper');
-    lines.push('2. Trikatu churna 1/4 tsp warm water before meals');
-    lines.push('3. Light fast (mung soup/khichdi) 1 day');
-    lines.push('4. Warm ginger + lemon + honey water morning');
+    lines.push('1. Jihva Nirlekhana (tongue scraping) — copper scraper, morning (CS)');
+    lines.push('2. Trikatu churna 1/4 tsp warm water before meals — kindles Agni');
+    lines.push('3. Warm ginger + lemon + honey water, morning');
+    lines.push('4. Light fast: mung soup/khichdi 1 day — clears Ama');
+    lines.push('5. Kapalbhati pranayama — clears Kapha channels');
   } else if(vS>0){
     lines.push('1. Sesame oil Gandusha 5-10 min morning (CS Sutrasthana 5)');
-    lines.push('2. Yashtimadhu in warm milk (AH: supreme throat/tongue herb)');
-    lines.push('3. Warm, oily, nourishing diet - reduce raw/dry/cold');
-    lines.push('4. Daily Abhyanga (oil massage) - reduces Vata dryness');
+    lines.push('2. Yashtimadhu (licorice) in warm milk (AH supreme tongue herb)');
+    lines.push('3. Warm, oily, nourishing diet — reduce raw/dry/cold foods');
+    lines.push('4. Abhyanga (oil massage) daily — pacifies Vata dryness');
+    lines.push('5. Nadi Shodhana pranayama — balances Vata Prana');
   } else {
-    lines.push('1. Jihva Nirlekhana daily - maintain Agni');
-    lines.push('2. Warm ginger water morning - supports Jatharagni');
-    lines.push('3. Balance maintained - continue Ritucharya ✅');
+    lines.push('1. Jihva Nirlekhana daily — maintain Agni, prevent Ama');
+    lines.push('2. Warm ginger water morning — supports Jatharagni');
+    lines.push('3. Continue current diet and Ritucharya ✅');
   }
   lines.push('');
   lines.push('URGENCY: '+urgency);
   lines.push('');
+  lines.push('Assessment basis: Multi-zone optical tissue analysis. Best accuracy: bright natural light, tongue fully extended, morning before eating.');
   lines.push('Source: CS Indriyasthana Ch.1 | CS Sutrasthana 5.71 | AH Sutrasthana 12 | CS Vimanasthana 8.102');
+  lines.push('For clinical Jihva Pariksha: consult a Vaidya (BAMS/MD Ayurveda).');
   return lines.join('\n');
 }
 
@@ -5209,169 +5353,181 @@ function analyzeDrikaImage(file){
 
 function interpretDrika(sBright,sRed,sYellow,center,dom,validation){
   if(!validation.valid){
-    return '❌ EYE NOT DETECTED\n\n'+(validation.reason||'Eye not clearly visible in image.')+'\n\nTips for better photo:\n• Eyes WIDE open\n• Front camera, 20-25cm away\n• Bright natural light\n• Look straight ahead\n• Both eyes in frame';
+    return '❌ EYE NOT DETECTED\n\n'+(validation.reason||'Eye not clearly visible.')+'\n\nFor best results:\n• Eyes WIDE open — white sclera clearly visible\n• Front (selfie) camera, 20-25cm from face\n• Bright natural light, face a window\n• Look straight ahead, both eyes in frame';
   }
 
-  var lines=[];
-  var pittaSigns=[], vataSigns=[], kaphaSigns=[];
+  var lines=[], pittaSigns=[], vataSigns=[], kaphaSigns=[];
   var urgency='Routine self-care';
 
-  lines.push('EYE ANALYSIS — DRIKA PARIKSHA');
-  lines.push('─────────────────────────────────');
-
-  lines.push('SCLERA (White of Eye)');
+  // ── SCLERA COLOR (CS Vimanasthana 8.94-106) ────────────────
+  lines.push('★ SCLERA COLOR  (CS Vimanasthana 8.94-106)');
+  lines.push('--------------------------------');
   if(sBright>210){
     lines.push('Color: Clear White / Bright ✅');
-    lines.push('Bright sclera = balanced Alochaka Pitta, good health');
+    lines.push('Balanced Alochaka Pitta — good systemic health (CS 8.102)');
   } else if(sRed>30&&sBright<200){
     lines.push('Color: Reddish / Bloodshot');
-    pittaSigns.push('Red sclera — Pitta in Rakta dhatu, inflammation or eye strain');
+    lines.push('Classical: Pitta in Rakta dhatu, Rakta Stasis, eye strain');
+    pittaSigns.push('Red/bloodshot — Pitta excess in Chakshu Indriya (CS 8.102)');
     urgency='See Vaidya within 2 weeks';
   } else if(sYellow>35){
-    lines.push('Color: Yellow tinge detected');
-    pittaSigns.push('Yellow sclera — Pitta/liver (Ranjaka Pitta). Possible jaundice.');
-    urgency='See doctor urgently — yellow eyes need immediate evaluation';
-    lines.push('⚠️ Persistent yellow eyes — see doctor immediately');
-  } else if(sBright<150){
-    lines.push('Color: Dull / Pale');
-    vataSigns.push('Dull eyes — Vata, fatigue, depleted Alochaka Pitta');
+    lines.push('Color: Yellow tinge');
+    lines.push('Classical: Ranjaka Pitta excess — Yakrit (liver) involvement');
+    pittaSigns.push('Yellow sclera — Ranjaka Pitta, possible Kamala (jaundice)');
+    urgency='⚠️ See doctor urgently — yellow eyes need immediate evaluation';
+    lines.push('NOTE: Persistent yellow eyes require urgent medical evaluation');
+  } else if(sBright<145){
+    lines.push('Color: Dull / Dim sclera');
+    lines.push('Classical: Depleted Alochaka Pitta, fatigue, Ojas depletion');
+    vataSigns.push('Dull sclera — Vata excess, fatigue, Alochaka Pitta depleted (AH 12)');
   } else {
-    lines.push('Color: Normal range ✅');
+    lines.push('Color: Moderate (Alochaka Pitta — within normal range)');
+    lines.push('Within normal range — minor Pitta/Vata tendency possible');
   }
 
+  // ── MOISTURE / CONJUNCTIVA ──────────────────────────────────
   lines.push('');
-  lines.push('EYE MOISTURE');
-  var saturation=Math.abs(center.r-center.b)+Math.abs(center.g-center.b);
-  if(center.brightness>80){
-    if(saturation<12) {
-      lines.push('Moisture: Appears dry');
-      vataSigns.push('Dry eyes — Vata excess, Alochaka Pitta depleted (AH Sutrasthana 12)');
-    } else {
-      lines.push('Moisture: Normal / Adequate ✅');
-    }
+  lines.push('★ EYE MOISTURE  (AH Sutrasthana 12)');
+  lines.push('--------------------------------');
+  var centerSat=Math.abs(center.r-center.b)+Math.abs(center.g-center.b);
+  if(centerSat<15){
+    lines.push('Moisture: Appears Dry (Shushka Netra)');
+    vataSigns.push('Dry eyes — Vata excess, Alochaka Pitta depleted (AH Sutrasthana 12)');
+    lines.push('Action: Triphala eyewash nightly · Increase ghee/sesame in diet');
+  } else {
+    lines.push('Moisture: Normal ✅');
   }
 
+  // ── ALOCHAKA PITTA STATUS ───────────────────────────────────
   lines.push('');
-  lines.push('DOSHA INDICATORS (CS Vimanasthana 8.94-106)');
-  lines.push('─────────────────────────────────');
-  lines.push(pittaSigns.length?'🔥 PITTA:\n  • '+pittaSigns.join('\n  • '):'🔥 Pitta: No significant signs');
-  lines.push(vataSigns.length?'🌬️ VATA:\n  • '+vataSigns.join('\n  • '):'🌬️ Vata: No significant signs');
-  lines.push(kaphaSigns.length?'🌊 KAPHA:\n  • '+kaphaSigns.join('\n  • '):'🌊 Kapha: No significant signs');
+  lines.push('★ ALOCHAKA PITTA  (CS Vimanasthana 8.102)');
+  lines.push('--------------------------------');
+  if(pittaSigns.length>0){
+    lines.push('Status: AGGRAVATED — cooling and calming needed');
+    lines.push('Alochaka Pitta governs vision clarity and eye health');
+  } else if(vataSigns.length>0){
+    lines.push('Status: DEPLETED — nourishment and oleation needed');
+  } else {
+    lines.push('Status: Balanced ✅');
+    lines.push('Alochaka Pitta is in healthy state today');
+  }
 
+  // ── DOSHA INDICATORS ───────────────────────────────────────
   lines.push('');
-  lines.push('ALOCHAKA PITTA STATUS');
-  lines.push('─────────────────────────────────');
-  if(pittaSigns.length>0) lines.push('Aggravated — cooling needed');
-  else if(vataSigns.length>0) lines.push('Depleted — nourishment needed');
-  else lines.push('Balanced ✅');
-
-  lines.push('');
-  lines.push('RECOMMENDED REMEDIES');
-  lines.push('─────────────────────────────────');
+  lines.push('★ DOSHA INDICATORS  (CS Vimanasthana 8.94-106)');
+  lines.push('--------------------------------');
   if(pittaSigns.length){
-    lines.push('1. Rose water eye wash — 2-3 drops in each eye (cooling Pitta)');
-    lines.push('2. Triphala eyewash: 1 tsp in 1 cup cool water, wash eyes');
-    lines.push('3. Reduce screen time, wear sunglasses — avoid direct sun');
-  } else if(vataSigns.length){
-    lines.push('1. Ghee Nasya — 2 drops warm ghee in each nostril (AH Sutrasthana 20)');
-    lines.push('2. Netra Tarpana (ghee eye bath) — under Vaidya guidance');
-    lines.push('3. Increase ghee, sesame, almond in diet');
+    lines.push('🔥 PITTA:');
+    pittaSigns.forEach(function(s){lines.push('  • '+s);});
+  } else lines.push('🔥 Pitta: No significant signs today');
+  if(vataSigns.length){
+    lines.push('🌬️ VATA:');
+    vataSigns.forEach(function(s){lines.push('  • '+s);});
+  } else lines.push('🌬️ Vata: No significant signs today');
+  if(kaphaSigns.length){
+    lines.push('🌊 KAPHA:');
+    kaphaSigns.forEach(function(s){lines.push('  • '+s);});
+  } else lines.push('🌊 Kapha: No significant signs today');
+
+  var pS=pittaSigns.length,vS=vataSigns.length,kS=kaphaSigns.length;
+  var dV=pS>vS&&pS>kS?'Pitta Vikriti':vS>pS&&vS>kS?'Vata Vikriti':kS>vS&&kS>pS?'Kapha Vikriti':'Balanced';
+  lines.push('');
+  lines.push("★ TODAY'S EYE VIKRITI");
+  lines.push('--------------------------------');
+  lines.push(dV);
+  if(dom&&dom!=='unknown'){
+    var dc=dom.charAt(0).toUpperCase()+dom.slice(1);
+    lines.push('Your Prakriti: '+dc+' | Eye Vikriti: '+dV);
+    if(dV.toLowerCase().indexOf(dom)>=0) lines.push('⚠️ Prakriti + Vikriti align — address promptly');
+    else if(dV==='Balanced') lines.push('✅ Eyes look balanced today');
+    else lines.push('ℹ️ Temporary Vikriti — different from your Prakriti');
+  }
+
+  // ── CLASSICAL REMEDIES ─────────────────────────────────────
+  lines.push('');
+  lines.push('★ CLASSICAL REMEDIES  (CS Vimanasthana 8.94-106 | AH 12)');
+  lines.push('--------------------------------');
+  if(pS>0){
+    lines.push('1. Rose water eye drops — 2 drops each eye (cooling Alochaka Pitta)');
+    lines.push('2. Triphala eyewash: 1 tsp in cool water, wash eyes twice daily (CS)');
+    lines.push('3. Reduce screen time · Wear UV protection outdoors');
+    lines.push('4. Amalaki 1 tsp + cool water morning — cools Rakta dhatu');
+    lines.push('5. Sheetali pranayama — cooling Pitta in Chakshu Srotas');
+  } else if(vS>0){
+    lines.push('1. Ghee Nasya — 2 drops warm clarified ghee in each nostril (AH 20)');
+    lines.push('2. Netra Tarpana (ghee eye bath) — under Vaidya supervision');
+    lines.push('3. Triphala eyewash weekly — maintains eye clarity');
+    lines.push('4. Increase ghee, sesame, almonds in diet — nourishes Alochaka Pitta');
+    lines.push('5. Avoid excessive screen time and dry/windy environments');
   } else {
-    lines.push('1. Triphala eyewash weekly — CS: maintenance of eye health');
-    lines.push('2. Daily Trataka (candle gazing 2 min) — AH Sutrasthana 20');
-    lines.push('3. Continue current routine ✅');
+    lines.push('1. Triphala eyewash weekly — CS maintenance protocol');
+    lines.push('2. Trataka (candle gazing 2 min) — AH Sutrasthana 20 (eye strengthening)');
+    lines.push('3. Ghee in diet daily — maintains Alochaka Pitta');
+    lines.push('4. Palming (warm hands over closed eyes) 2 min morning');
+    lines.push('5. Continue current eye-care routine ✅');
   }
 
   lines.push('');
   lines.push('URGENCY: '+urgency);
   lines.push('');
-  lines.push('Source: CS Vimanasthana 8.94-106 | AH Sutrasthana 12 | Ashtavidha Pariksha — 7th method (Drika)');
-
+  lines.push('Assessment basis: Optical sclera & conjunctiva analysis. Best results: bright natural light, eyes wide open, front camera.');
+  lines.push('Source: CS Vimanasthana 8.94-106 | AH Sutrasthana 12 | Ashtavidha Pariksha (7th: Drika)');
+  lines.push('For clinical Drika Pariksha: consult a Vaidya (BAMS/MD Ayurveda).');
   return lines.join('\n');
 }
-
-
-// ═══════════════════════════════════════════════════════════════
-// NADI PPG — Adaptive Finger Lock System
-// CS Vimanasthana 8.94-106 | PPG Technology
-// Adaptive: calibrates ambient brightness before finger placement
-// Lock: finger = dark frame (blood absorbs torch light)
-// ═══════════════════════════════════════════════════════════════
-var _ppg={
-  active:false, stream:null, video:null,
-  // Readings
-  readings:[],
-  // Adaptive calibration
-  ambientFrames:[],   // first frames (no finger) to calibrate threshold
-  ambientBaseline:0,  // avg brightness without finger
-  calibrated:false,
-  // Lock state
-  phase:'idle',       // idle|calibrate|waitfinger|locking|locked|unlocked|done
-  lockCount:0,
-  unlockCount:0,
-  LOCK_THRESHOLD:10,
-  UNLOCK_THRESHOLD:4,
-  lockedSeconds:0,
-  lockStartTime:0,
-  // BPM
-  bpmEstimate:0,
-  // Timers
-  timer:null,
-  animFrame:null
-};
-
 
 function startNadiPPG(){
   var startBtn=document.getElementById('ppg-start');
   var stopBtn=document.getElementById('ppg-stop');
   var status=document.getElementById('ppg-status');
-  var lockIndicator=document.getElementById('ppg-lock');
+  var lockEl=document.getElementById('ppg-lock');
   if(!startBtn||!stopBtn||!status)return;
 
+  // Device detection — PPG requires mobile torch
+  var isMobile=/Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
+  var isIOS=/iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+  if(!isMobile){
+    if(lockEl){lockEl.textContent='⚠️ MOBILE ONLY — No torch on laptop';lockEl.style.cssText='text-align:center;padding:11px;border-radius:12px;font-weight:700;font-size:12px;background:rgba(200,100,0,.2);color:#FF9F40;margin-bottom:12px;border:1.5px solid #FF9F40;';}
+    if(status){status.innerHTML='<strong style="color:#FF9F40;">⚠️ Desktop/Laptop detected</strong><br><span style="font-size:10.5px;">Nadi PPG needs a smartphone rear camera with torch/flash. Laptop webcams have no torch — light cannot pass through fingertip. Open this app on Android or iPhone.</span>';}
+    return;
+  }
+  if(isIOS&&status){status.innerHTML='<span style="font-size:10px;color:#F9A825;">iOS note: Safari torch support is limited. Use iOS Chrome or Android for best results.</span>';}
+
   if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){
-    status.textContent='Camera not available on this device/browser.';
-    status.style.color='#C84030';
+    if(status)status.textContent='Camera not supported. Use Chrome/Safari on mobile.';
     return;
   }
 
-  // Reset state
-  Object.assign(_ppg,{
-    active:true,readings:[],allFrames:[],phase:'waitfinger',
-    lockCount:0,unlockCount:0,lockedSeconds:0,lockStartTime:0,
-    peakIntervals:[],bpmEstimate:0,lastPeakIdx:0
-  });
+  Object.assign(_ppg,{active:true,readings:[],ambientFrames:[],ambientBaseline:0,calibrated:false,phase:'calibrate',lockCount:0,unlockCount:0,lockedSeconds:0,lockStartTime:0,bpmEstimate:0,fingerThreshold:0});
 
-  status.innerHTML='<strong>Requesting camera...</strong>';
+  if(lockEl){lockEl.textContent='⚙️ Calibrating...';lockEl.style.cssText='text-align:center;padding:11px 16px;border-radius:12px;font-weight:700;font-size:13px;background:rgba(249,168,37,.15);color:#F9A825;margin-bottom:12px;transition:all .3s;border:1.5px solid rgba(249,168,37,.4);';}
+  if(status)status.innerHTML='<strong style="color:#F9A825;">Step 1: Calibrating</strong> — Do NOT place finger yet. Hold phone normally for 3 seconds.';
 
-  navigator.mediaDevices.getUserMedia({
-    video:{facingMode:{ideal:'environment'},width:{ideal:320},height:{ideal:240},frameRate:{ideal:30,min:20}}
-  })
+  navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'},width:{ideal:320},height:{ideal:240},frameRate:{ideal:30,min:20}}})
   .then(function(stream){
     _ppg.stream=stream;
     _ppg.video=document.createElement('video');
     _ppg.video.srcObject=stream;
     _ppg.video.setAttribute('playsinline','true');
-    _ppg.video.muted=true;
-    _ppg.video.play();
-
-    // Turn on torch
+    _ppg.video.muted=true;_ppg.video.play();
     var track=stream.getVideoTracks()[0];
     if(track){
       var caps=track.getCapabilities?track.getCapabilities():{};
       if(caps.torch){
-        track.applyConstraints({advanced:[{torch:true}]}).catch(function(){});
+        track.applyConstraints({advanced:[{torch:true}]}).catch(function(){
+          if(status)status.innerHTML+='<br><span style="font-size:10px;color:#FF9F40;">Torch not available — use in dimmer light</span>';
+        });
       }
     }
-
     startBtn.style.display='none';
     stopBtn.style.display='block';
-
-    updatePPGStatus('waitfinger',0,0);
     _ppg.animFrame=requestAnimationFrame(readPPGFrame);
   })
   .catch(function(err){
     _ppg.active=false;
-    status.innerHTML='<span style="color:#C84030;">Camera denied: '+err.message+'</span>';
+    if(status)status.innerHTML='<span style="color:#C84030;">Camera denied: '+err.message+'. Allow camera access and retry.</span>';
+    if(lockEl)lockEl.textContent='⚪ Ready — Press Start to begin';
   });
 }
 
@@ -5674,7 +5830,7 @@ function renderNadiPPG(){
   auth.innerHTML=
     '<div style="font-size:10px;color:#c9973a;font-weight:700;letter-spacing:1.5px;margin-bottom:5px;">CS VIMANASTHANA 8.94-106 | PPG: PMC4321461, PMC5595574, PMC8474463</div>'+
     '<p style="font-size:11px;color:rgba(255,255,255,.85);line-height:1.7;margin:0 0 5px;">'+
-    '<strong style="color:#E8C070;">How Camera PPG works:</strong> Phone torch shines light through your fingertip. Blood absorbs torch light with each heartbeat — camera detects brightness change (Photoplethysmography). Validated in 50+ peer-reviewed studies (±5 BPM accuracy).</p>'+
+    '<strong style="color:#E8C070;">How AyurMind Pulse Analysis works:</strong> Phone torch shines light through your fingertip. Blood absorbs torch light with each heartbeat — camera detects brightness change (Photoplethysmography). Validated in 50+ peer-reviewed studies (±5 BPM accuracy).</p>'+
     '<p style="font-size:10px;color:rgba(255,255,255,.4);margin:0;">Note: Fingerprint sensor is NOT accessible via any browser/WebAPI — it is hardware-locked. Camera PPG is the only validated scientific method available in HTML apps (PMC-verified).</p>';
   wrap.appendChild(auth);
   var lockBar=document.createElement('div');
@@ -5911,6 +6067,16 @@ function showJihvaResult(text, imgData, dom){
     retryBtn.textContent = '📷 Analyze Another Photo';
     retryBtn.onclick = function(){ document.getElementById('jihva-result').innerHTML=''; renderJihva(); };
     wrap.appendChild(retryBtn);
+
+    // Deep Symptom Analysis card
+    var deepCard=document.createElement('div');
+    deepCard.style.cssText='background:linear-gradient(135deg,rgba(201,151,58,.18),rgba(30,80,50,.3));border:1.5px solid var(--gold);border-radius:12px;padding:14px;margin-top:12px;';
+    deepCard.innerHTML='<div style="font-size:10px;font-weight:700;color:var(--sg);letter-spacing:1.5px;margin-bottom:6px;">AYURMIND AI</div>'+
+      '<div style="font-size:13px;font-weight:700;color:#E8C070;margin-bottom:6px;">🩺 Deep Symptom Analysis</div>'+
+      '<div style="font-size:11px;color:rgba(255,255,255,.75);line-height:1.65;margin-bottom:10px;">'+
+      'Combine tongue findings with full symptom assessment — get comprehensive Ayurvedic health analysis including Agni, Ama, and Dosha correction plan.</div>'+
+      '<button onclick="showTab(\'symptoms\');" style="width:100%;padding:10px;background:var(--gold);border:none;border-radius:8px;color:#1A1A1A;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;">→ Open Deep Symptom Analysis</button>';
+    wrap.appendChild(deepCard);
   }
 
   resultDiv.innerHTML = '';
@@ -5980,6 +6146,16 @@ function showDrikaResult(text, imgData){
     retryBtn.textContent = '📷 Analyze Another Photo';
     retryBtn.onclick = function(){ document.getElementById('drika-result').innerHTML=''; renderDrika(); };
     wrap.appendChild(retryBtn);
+
+    // Deep Symptom Analysis card
+    var deepCard=document.createElement('div');
+    deepCard.style.cssText='background:linear-gradient(135deg,rgba(201,151,58,.18),rgba(30,80,50,.3));border:1.5px solid var(--gold);border-radius:12px;padding:14px;margin-top:12px;';
+    deepCard.innerHTML='<div style="font-size:10px;font-weight:700;color:var(--sg);letter-spacing:1.5px;margin-bottom:6px;">AYURMIND AI</div>'+
+      '<div style="font-size:13px;font-weight:700;color:#E8C070;margin-bottom:6px;">🩺 Deep Symptom Analysis</div>'+
+      '<div style="font-size:11px;color:rgba(255,255,255,.75);line-height:1.65;margin-bottom:10px;">'+
+      'Get a comprehensive Ayurvedic analysis of your current health — combining eye findings with your full symptom picture, Prakriti, and Dosha assessment.</div>'+
+      '<button onclick="showTab(\'symptoms\');" style="width:100%;padding:10px;background:var(--gold);border:none;border-radius:8px;color:#1A1A1A;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;">→ Open Deep Symptom Analysis</button>';
+    wrap.appendChild(deepCard);
   }
 
   resultDiv.innerHTML = '';
