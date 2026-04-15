@@ -1256,6 +1256,20 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text);
     <h2 class="page-title">What's Bothering You?</h2>
     <p class="page-sub">Select all current symptoms — we'll identify the dosha imbalance & give remedies</p>
     <div class="sym-grid" id="sym-grid"></div>
+
+    <!-- Custom symptom input -->
+    <div style="margin:14px 0 10px;background:rgba(255,255,255,.04);border-radius:12px;padding:12px 14px;border:1.5px dashed rgba(201,151,58,.4);">
+      <div style="font-size:10px;font-weight:700;color:#C9973A;letter-spacing:1px;margin-bottom:8px;">+ ADD YOUR OWN SYMPTOM</div>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <input type="text" id="custom-sym-input" placeholder="e.g. knee pain, hair fall, acid reflux..."
+          style="flex:1;padding:9px 12px;border-radius:9px;border:1.5px solid rgba(201,151,58,.4);background:rgba(255,255,255,.06);color:#fff;font-size:12px;font-family:inherit;outline:none;"
+          onkeydown="if(event.key==='Enter')addCustomSymptom()">
+        <button onclick="addCustomSymptom();"
+          style="padding:9px 16px;background:#C9973A;border:none;border-radius:9px;color:#1A3A2A;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;">Add</button>
+      </div>
+      <div id="custom-sym-chips" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;min-height:4px;"></div>
+    </div>
+
     <button class="btn btn-gold btn-full" onclick="analyseSymptoms()">Analyse Symptoms →</button>
     <div id="sym-result-box" style="margin-top:16px;"></div>
   </div>
@@ -1396,7 +1410,7 @@ function cycleLang(){
 // ══════════════════════════════════════════════════════════════════
 // APP STATE
 // ══════════════════════════════════════════════════════════════════
-const appState={ mode:'patient', resultData:null, curQ:0, answers:{}, activeTab:'home', activeTool:'bmi', pickedSymptoms:new Set(), selectedHerb:null, vikritiAnswers:{}, activeDietDay:0, _autoAdvance:null, userAge:null };
+const appState={ mode:'patient', resultData:null, curQ:0, answers:{}, activeTab:'home', activeTool:'bmi', pickedSymptoms:new Set(), selectedHerb:null, vikritiAnswers:{}, activeDietDay:0, _autoAdvance:null, userAge:null, customSymptoms:[] };
 
 // ══════════════════════════════════════════════════════════════════
 // QUESTIONS (24 — same as v5, unchanged for continuity)
@@ -1440,6 +1454,104 @@ const PD={
 // ══════════════════════════════════════════════════════════════════
 // SYMPTOMS & ANALYSIS
 // ══════════════════════════════════════════════════════════════════
+
+// ═══════════════════════════════════════════════════════════════════
+// SMART SYMPTOM IDENTIFICATION — 11 Categories, 286 Keywords
+// Source: CS Vimanasthana 5.3-8 (13 Srotas) | CS Nidanasthana
+// ═══════════════════════════════════════════════════════════════════
+const SC={
+  DIGESTIVE:{emoji:'🔥',label:'Digestive System',srotas:'Annavaha + Purishavaha Srotas',src:'CS Vimanasthana 5.8 | CS Chikitsasthana 15',
+    kw:['acid','acidity','heartburn','bloat','bloating','gas','flatulence','constipat','loose stool','diarrh','nausea','vomit','indigest','appetite','stomach','abdomen','bowel','ibs','gastric','ulcer','reflux','belch','burp','fullness','hungry','no appetite','liver','gallbladder','bile','jaundice','hepat','pancrea','colon','rectal','hemorrhoid','piles'],
+    vkw:['constipat','bloat','gas'],pkw:['acid','heartburn','ulcer','reflux','loose stool','diarrh','jaundice'],kkw:['fullness','no appetite','nausea'],def:'pitta',
+    vata:{d:'Vata — Apana Vata disturbed',r:['Hingvastak churna + warm water after meals','Warm sesame oil abdominal massage clockwise','Dashamula tea morning empty stomach','Avoid raw, cold, dry foods','Triphala at bedtime 1 tsp warm water']},
+    pitta:{d:'Pitta — Pachaka Pitta disturbed',r:['Avipattikar churna 1 tsp after meals','Yashtimadhu (licorice) tea twice daily','Amalaki churna + honey morning empty stomach','Avoid spicy, sour, fermented foods','Coconut water + cumin seeds drink']},
+    kapha:{d:'Kapha — Kledaka Kapha excess',r:['Trikatu churna + warm water before meals','Light warm foods, avoid heavy and cold','Ginger + black pepper tea before eating','Triphala morning and evening','Walk 15 min after every meal']}},
+  RESPIRATORY:{emoji:'💨',label:'Respiratory System',srotas:'Pranavaha Srotas',src:'CS Vimanasthana 5.8 | CS Chikitsasthana 17',
+    kw:['cough','breath','breathe','breathless','wheez','asthma','congestion','sinus','sinusitis','phlegm','mucus','chest tight','lung','flu','throat','nasal','sneez','allerg','rhinitis','bronch','pneum','tonsil','voice hoarse','post nasal','polyp'],
+    vkw:['voice hoarse','breathless','dry cough'],pkw:['fever','chest tight','bronch'],kkw:['congestion','sinus','phlegm','mucus','asthma','wheez','sneez'],def:'kapha',
+    pitta:{d:'Pitta — Pranavaha inflammation',r:['Sitopaladi churna + honey','Tulsi + ginger tea with raw honey','Steam inhalation with Eucalyptus','Avoid hot spicy foods','Turmeric milk + black pepper bedtime']},
+    kapha:{d:'Kapha — Avalambaka Kapha excess',r:['Trikatu churna + honey twice daily','Steam inhalation with Ajwain seeds','Neti pot with saline water morning','Avoid dairy, cold foods, sugar','Ginger + turmeric + black pepper tea']},
+    vata:{d:'Vata — dry Pranavaha Srotas',r:['Vasaka (Adhatoda) syrup or decoction','Warm sesame oil Nasya 2 drops each nostril','Honey + ginger + long pepper paste','Avoid cold dry air, use humidifier','Warm sesame milk with turmeric at night']}},
+  MUSCULOSKELETAL:{emoji:'🦴',label:'Musculoskeletal System',srotas:'Asthivaha + Mamsavaha Srotas',src:'CS Vimanasthana 5.8 | CS Chikitsasthana 28',
+    kw:['joint','knee','hip','back','spine','neck','shoulder','elbow','wrist','ankle','bone','muscle','cramp','spasm','stiff','stiffness','arthrit','rheuma','gout','spondyl','sciatica','fibro','myalg','muscular','ligament','tendon','cartilage','disc','slip disc','lumbago'],
+    vkw:['joint','bone','spasm','cramp','stiff','sciatica'],pkw:['gout','hot joint','burning pain'],kkw:['swollen joint'],def:'vata',
+    vata:{d:'Vata — Asthi dhatu (CS Nidanasthana 1.17)',r:['Mahanarayan oil warm massage daily on joints','Dashamula kwatha 30ml twice daily','Nirgundi (Vitex negundo) oil or leaves poultice','Warm sesame, ghee, nuts — avoid cold dry foods','Yogaraj guggul under Vaidya guidance']},
+    pitta:{d:'Pitta — inflammation in Asthi/Mamsa dhatu',r:['Castor oil pack on inflamed joint','Guduchi (Tinospora) decoction — anti-inflammatory','Avoid hot, spicy, sour foods','Chandraprabha vati under Vaidya guidance','Cold sesame oil compress for acute inflammation']},
+    kapha:{d:'Kapha — Ama (toxins) accumulated in joints',r:['Shallaki (Boswellia) — proven joint supplement','Trikatu + Guggul combination to clear Ama','Light fasting weekly to reduce Ama','Dry ginger + castor oil paste on swollen joints','Vajrasana and Pavanamuktasana yoga daily']}},
+  MENTAL:{emoji:'🧠',label:'Mental & Emotional',srotas:'Manovaha Srotas',src:'CS Sharirasthana 7.9 | CS Chikitsasthana 9',
+    kw:['stress','anxiety','fear','worry','panic','depress','sad','mood','anger','irritab','frustrat','overthink','racing mind','mental','emotion','nervous','burnout','grief','trauma','bipolar','ocd','phobia','loneliness','concentration','focus','brain fog','confusion','mental fatigue','mood swing'],
+    vkw:['anxiety','fear','worry','panic','overthink','racing mind','nervous'],pkw:['anger','irritab','frustrat','burnout','ocd'],kkw:['depress','sad','loneliness','grief','mental fatigue','brain fog'],def:'vata',
+    vata:{d:'Vata — Prana Vata disturbed (CS Sutrasthana 12)',r:['Ashwagandha 1 tsp + warm milk at bedtime','Brahmi (Bacopa) 500mg morning empty stomach','Abhyanga warm sesame oil massage daily','Nadi Shodhana pranayama 10 min morning','Reduce screen time, establish fixed sleep routine']},
+    pitta:{d:'Pitta — Sadhaka Pitta excess (CS Sutrasthana 12)',r:['Brahmi ghee 1 tsp + warm milk daily','Shatavari + Ashwagandha combination','Sheetali pranayama cooling breath daily','Avoid spicy foods, alcohol, excess competition','Moonlight walk, jasmine aroma, cool environment']},
+    kapha:{d:'Kapha — Tarpaka Kapha stagnation in Manovaha',r:['Brahmi + Vacha (Acorus calamus) combination','Exercise 30 min daily — Kapha needs movement','Morning sun exposure 20 minutes','Avoid excessive sleep and sedentary lifestyle','Trikatu + honey to clear mental fog']}},
+  SKIN_HAIR:{emoji:'✨',label:'Skin & Hair',srotas:'Raktavaha + Svedavaha Srotas',src:'CS Vimanasthana 5.8 | CS Chikitsasthana 7',
+    kw:['rash','acne','itch','itching','skin','dry skin','oily skin','hair fall','hair loss','alopecia','dandruff','eczema','psoriasis','pigment','dark spot','wound','nail','fungal','ringworm','urticaria','hives','dermatitis','whitehead','blackhead','pimple','boil','leucoderma','vitiligo','stretch mark','wrinkle','scar'],
+    vkw:['dry skin','hair fall','hair loss','alopecia','wrinkle'],pkw:['rash','acne','itch','psoriasis','pigment','boil'],kkw:['oily skin','dandruff','whitehead','blackhead'],def:'pitta',
+    pitta:{d:'Pitta — Bhrajaka Pitta + Raktavaha (CS Chikitsa 7)',r:['Neem + Turmeric paste on affected area','Manjistha capsule — blood purifier','Amalaki 1 tsp daily — Pitta skin tonic','Avoid spicy, oily, fermented, fast foods','Coconut oil on scalp for hair (Bhrajaka Pitta)']},
+    vata:{d:'Vata — dry skin, hair loss (Asthi dhatu link)',r:['Sesame oil full body massage daily','Ashwagandha + Shatavari for hair roots','Increase ghee, sesame, almonds in diet','Bhringraj oil on scalp 2x weekly','Triphala + ghee nourishes Rakta dhatu']},
+    kapha:{d:'Kapha — Kledaka Kapha excess, oily skin',r:['Multani mitti face mask weekly','Neem face wash — antibacterial for Kapha','Avoid dairy, sugar, oily foods completely','Trikatu + neem internally clears Ama from skin','Exercise daily — sweating clears Svedavaha Srotas']}},
+  SLEEP:{emoji:'😴',label:'Sleep & Rest',srotas:'Manovaha + Tarpaka Kapha',src:'CS Sutrasthana 21.36 | AH Sutrasthana 7',
+    kw:['insomnia','sleep','wake up','can not sleep','sleepless','light sleep','deep sleep','drowsy','oversleep','fatigue on waking','restless sleep','nightmare','dream','daytime sleep','snoring','sleep apnea'],
+    vkw:['insomnia','can not sleep','light sleep','restless','wake up','nightmare'],pkw:['vivid dream','disturbed sleep','sleep after midnight'],kkw:['oversleep','drowsy','daytime sleep','difficulty waking'],def:'vata',
+    vata:{d:'Vata — Tarpaka Kapha depleted (CS Sutrasthana 21)',r:['Warm sesame oil scalp massage 30 min before sleep','Ashwagandha + warm milk at bedtime','Fixed sleep-wake time, no screen 1 hr before bed','Brahmi vati calms Vata in Manovaha Srotas','Ksheerabala oil 2 drops each nostril before sleep']},
+    pitta:{d:'Pitta — excess mental activity disturbing sleep',r:['Brahmi ghee 1 tsp + warm milk at night','Cool room temperature Pitta aggravated by heat','Moonlight walk 15 min before bed','Shatavari + milk at night calming Pitta','Avoid stimulating activities after sunset']},
+    kapha:{d:'Kapha — Tarpaka Kapha excess heavy dull sleep',r:['Trikatu churna morning to clear brain fog','Regular exercise prevents Kapha stagnation','Avoid afternoon naps completely','Early dinner before sunset Kapha rule','Dry massage with chickpea flour stimulates Kapha']}},
+  ENERGY:{emoji:'⚡',label:'Energy & Metabolism',srotas:'Rasavaha + Medavaha Srotas',src:'CS Vimanasthana 5.8 | CS Nidanasthana 4',
+    kw:['fatigue','lethargy','weak','weakness','no energy','exhausted','tired','low stamina','weight gain','obesity','overweight','sugar craving','sweet craving','diabetic','thyroid','hypothyroid','cholesterol','triglycerid','metabol','insulin','blood sugar','prediabetic'],
+    vkw:['weak','weakness','no energy','exhausted','low stamina'],pkw:['burnout','thyroid'],kkw:['fatigue','lethargy','tired','weight gain','obesity','sugar craving','diabetic'],def:'kapha',
+    kapha:{d:'Kapha — Medavaha Srotas blocked (CS Nidana 4)',r:['Gudmar (Gymnema) sugar metabolism support','Vijayasar Pterocarpus marsupium classic diabetes herb','Trikatu + Triphala combination daily','Intermittent fasting skip breakfast Kapha rule','30 min brisk walk daily mandatory for Medavaha']},
+    vata:{d:'Vata — Rasavaha depleted fatigue and weakness',r:['Ashwagandha + Shatavari Rasayana combination','Chyawanprash 1 tsp morning + warm milk (CS Rasayana)','Warm nourishing foods increase healthy calories','8 hours sleep minimum for Vata recovery','Iron-rich foods dates, sesame, jaggery for anemia']},
+    pitta:{d:'Pitta — Burnout consuming Ojas',r:['Shatavari 1 tsp + warm milk restores Ojas','Amalaki rasayana protects against Pitta burnout','Reduce work hours, take genuine rest breaks','Cooling foods pomegranate, coconut, coriander','Avoid alcohol and caffeine Pitta aggravators']}},
+  CIRCULATORY:{emoji:'❤️',label:'Circulatory & Cardiac',srotas:'Raktavaha + Rasavaha Srotas',src:'CS Vimanasthana 5.8 | CS Chikitsasthana 26',
+    kw:['palpitat','heart','chest pain','blood pressure','hypertension','hypotension','bp','circulation','cold hand','cold feet','numbness','tingling','varicose','anemia','haemoglobin','iron deficiency','cardiovascular','cholesterol','clot','thrombos','arrhythmia','irregular heartbeat'],
+    vkw:['palpitat','arrhythmia','cold hand','cold feet','tingling','numbness'],pkw:['hypertension','chest pain','cholesterol'],kkw:['anemia','haemoglobin','varicose'],def:'pitta',
+    pitta:{d:'Pitta — Raktavaha inflammation (CS Chikitsa 26)',r:['Arjuna bark powder in milk daily cardiac tonic','Punarnava water retention + heart support','Avoid salt, spicy, oily foods strictly','Meditation 20 min daily proven BP reduction','Triphala + amla juice purifies Rakta dhatu']},
+    vata:{d:'Vata — Vyana Vata + Prana Vata disturbed',r:['Arjunarishta decoction daily','Warm sesame oil massage improves circulation','Avoid excessive fasting or meal skipping','Ashwagandha stabilizes Vyana Vata','Warm water sipping throughout the day']},
+    kapha:{d:'Kapha — Avalambaka Kapha excess cholesterol',r:['Guggul proven cholesterol reduction formula','Trikatu + Triphala clears Kapha from channels','Reduce fat, sugar, dairy, salt intake','Regular aerobic exercise mandatory for Kapha','Punarnava reduces fluid retention and edema']}},
+  URINARY_REPRO:{emoji:'💧',label:'Urinary & Reproductive',srotas:'Mutravaha + Shukravaha/Artavavaha Srotas',src:'CS Vimanasthana 5.8 | AH Uttara 34',
+    kw:['urine','urinary','kidney','bladder','frequent urination','burning urination','uti','nephrit','stone','calcul','menstrual','period','pcod','pcos','period pain','irregular period','heavy period','fertility','libido','impoten','erectile','vaginal','leucorrhea','white discharge','hormonal imbalance','sperm'],
+    vkw:['fertility','libido','impoten','erectile','irregular period'],pkw:['burning urination','uti','nephrit','stone','heavy period'],kkw:['pcod','pcos','leucorrhea','white discharge','hormonal'],def:'pitta',
+    pitta:{d:'Pitta — Mutravaha Pitta (CS Chikitsa 26)',r:['Chandraprabha vati classical urinary remedy','Gokshura + Shatavari urinary soother','Coconut water 2x daily cools Pitta in Mutravaha','Avoid spicy, sour, salty foods','Punarnava kidney support and natural diuretic']},
+    vata:{d:'Vata — Apana Vata disturbed (AH Uttara 34)',r:['Shatavari premier female reproductive tonic','Ashwagandha male reproductive support herb','Castor oil pack on lower abdomen for Apana Vata','Warm sesame oil lower back massage daily','Avoid cold foods and excessive fasting']},
+    kapha:{d:'Kapha — PCOD Hormonal Kapha imbalance',r:['Kanchnar guggul thyroid and hormonal Kapha','Trikatu for metabolic improvement in PCOS','Exercise and weight management reduces Kapha','Shatavari + Ashoka for irregular periods','Avoid dairy, sugar, wheat Kapha triggers']}},
+  NEUROLOGICAL:{emoji:'🧬',label:'Neurological',srotas:'Majjavaha Srotas',src:'CS Vimanasthana 5.8 | CS Chikitsasthana 28',
+    kw:['headache','migrain','vertigo','dizzy','tinnitus','ear ring','numbness','tremor','twitch','nerve','memory','forget','alzheimer','parkinson','epilepsy','seizure','facial pain','carpal tunnel','neuropath','pins needles','blackout','faint','syncope','balance','coordination'],
+    vkw:['tremor','twitch','numbness','pins needles','memory','forget','vertigo','dizzy'],pkw:['migrain','headache','facial pain'],kkw:['brain fog','slow thought','heavy head'],def:'vata',
+    vata:{d:'Vata — Majjavaha Srotas (CS Chikitsa 28)',r:['Brahmi (Bacopa monnieri) premier Majja nervine','Ashwagandha + Brahmi combination 500mg each','Ksheerabala Nasya 2 drops daily nourishes Majja','Avoid stress, irregular meals, excess screen time','Shirovasti or Shirodhara deeply nourishes Majja dhatu']},
+    pitta:{d:'Pitta — inflammatory headache and migraine',r:['Shatavari + Brahmi ghee for Pitta migraines','Cold sesame oil on forehead during attack','Avoid trigger foods cheese, wine, spicy, MSG','Sandalwood paste on forehead cools Pitta','Sheetali pranayama during headache episodes']},
+    kapha:{d:'Kapha — Tarpaka Kapha blocking Majja channels',r:['Vacha (Acorus calamus) clears Kapha from brain','Brahmi + Trikatu combination sharpens cognition','Dry ginger nasya clears Kapha from head','Exercise daily prevents Kapha brain stagnation','Avoid heavy foods and daytime sleep']}},
+  EYES:{emoji:'👁️',label:'Eyes & Vision',srotas:'Alochaka Pitta + Raktavaha',src:'CS Indriyasthana 1 | CS Vimanasthana 8.102 | AH Uttara 10-16',
+    kw:['eye','vision','blur','blurry','sight','cataract','glaucoma','conjunctiv','red eye','dry eye','eye pain','eye strain','screen strain','watery eye','discharge from eye','floater','night blind','eye twitch','itchy eye','burning eye','swollen eye','dark circle'],
+    vkw:['dry eye','eye twitch','floater','night blind'],pkw:['red eye','burning eye','itchy eye'],kkw:['watery eye','discharge','swollen eye','conjunctiv'],def:'pitta',
+    pitta:{d:'Pitta — Alochaka Pitta (CS Vimanasthana 8.102)',r:['Triphala eyewash twice daily 1 tsp in cool water','Rose water eye drops 2 drops each eye','Amalaki daily premier Pitta eye tonic','20-20-20 rule every 20 min look 20ft for 20 sec','Avoid excess screen, spicy food, alcohol']},
+    vata:{d:'Vata — dry eyes, twitching (Vyana Vata)',r:['Ghee Nasya 2 drops warm ghee in each nostril','Netra Tarpana ghee eye bath under Vaidya guidance','Triphala ghrita nourishes eye tissue','Increase omega-3 and ghee in diet','Avoid dry windy environments and excess screen']},
+    kapha:{d:'Kapha — discharge, swelling in eyes',r:['Honey + rose water eye wash antibacterial','Triphala + Neem water eyewash combination','Avoid dairy, sugar Kapha aggravators for eyes','Warm compress clears Kapha discharge from eyes','Trikatu internally to reduce Kapha accumulation']}}
+};
+
+// Smart Symptom Analysis — identify categories from any symptom text
+function identifySymptomCategories(allSymptomsText){
+  var sl=allSymptomsText.toLowerCase();
+  var found=[];
+  var catIds=Object.keys(SC);
+  catIds.forEach(function(cid){
+    var cat=SC[cid];
+    var matched=cat.kw.some(function(k){ return sl.includes(k); });
+    if(matched && found.indexOf(cid)<0) found.push(cid);
+  });
+  return found;
+}
+
+// Determine sub-dosha within a category from symptom text
+function getSubDosha(cat, sl){
+  var vScore=cat.vkw?cat.vkw.filter(function(k){return sl.includes(k);}).length:0;
+  var pScore=cat.pkw?cat.pkw.filter(function(k){return sl.includes(k);}).length:0;
+  var kScore=cat.kkw?cat.kkw.filter(function(k){return sl.includes(k);}).length:0;
+  if(vScore>pScore&&vScore>kScore) return 'vata';
+  if(pScore>vScore&&pScore>kScore) return 'pitta';
+  if(kScore>vScore&&kScore>pScore) return 'kapha';
+  return cat.def||'vata';
+}
+
 const SYMPTOMS=[
   // VATA (10 symptoms) — CS Sutrasthana 12; CS Nidanasthana 1
   {i:"💨",t:"Bloating / Gas",d:"vata",detail:"Apana Vata disturbed — colon-seat of Vata"},
@@ -2020,10 +2132,42 @@ function drawDoshaChart(r){
 // ══════════════════════════════════════════════════════════════════
 // SYMPTOMS
 // ══════════════════════════════════════════════════════════════════
+function addCustomSymptom(){
+  var inp=document.getElementById('custom-sym-input');
+  if(!inp) return;
+  var val=inp.value.trim();
+  if(!val||val.length<2){ inp.focus(); return; }
+  if(val.length>60) val=val.substring(0,60);
+  // Avoid duplicates
+  var exists=appState.customSymptoms.some(function(s){return s.toLowerCase()===val.toLowerCase();});
+  if(exists){ inp.value=''; return; }
+  appState.customSymptoms.push(val);
+  inp.value='';
+  renderCustomChips();
+}
+
+function removeCustomSymptom(idx){
+  appState.customSymptoms.splice(idx,1);
+  renderCustomChips();
+}
+
+function renderCustomChips(){
+  var el=document.getElementById('custom-sym-chips');
+  if(!el) return;
+  el.innerHTML=appState.customSymptoms.map(function(s,i){
+    return '<span style="display:inline-flex;align-items:center;gap:5px;background:rgba(201,151,58,.2);'+
+      'border:1px solid rgba(201,151,58,.5);border-radius:20px;padding:4px 10px;font-size:11px;color:#E8C070;">'+
+      s+' <button onclick="removeCustomSymptom('+i+');" '+
+      'style="background:none;border:none;color:#E8C070;cursor:pointer;font-size:13px;padding:0;line-height:1;">×</button></span>';
+  }).join('');
+}
+
+
 function renderSymptoms(){
   const sg=document.getElementById('sym-grid');
   if(!sg) return;
   sg.innerHTML=SYMPTOMS.map((s,i)=>`<button class="sym-chip ${appState.pickedSymptoms.has(i)?'picked':''}" onclick="toggleSym(${i})"><span>${s.i}</span> ${s.t}</button>`).join('');
+  renderCustomChips();
 }
 function toggleSym(i){
   appState.pickedSymptoms.has(i)?appState.pickedSymptoms.delete(i):appState.pickedSymptoms.add(i);
@@ -2031,9 +2175,34 @@ function toggleSym(i){
 }
 function analyseSymptoms(){
   const picked=[...appState.pickedSymptoms];
-  if(picked.length===0){ alert('Please select at least one symptom.'); return; }
+  const custom=appState.customSymptoms||[];
+  if(picked.length===0&&custom.length===0){ alert('Please select at least one symptom or add a custom symptom.'); return; }
   const cnt={vata:0,pitta:0,kapha:0};
   picked.forEach(i=>{cnt[SYMPTOMS[i].d]++;});
+
+  // Keyword mapping for custom symptoms (CS Sutrasthana 12 — Dosha symptom classification)
+  const VATA_KW=['pain','ache','joint','knee','back','neck','shoulder','spine','cramp','spasm',
+    'stress','anxiety','fear','worry','nervous','insomnia','sleep','dry','constipat','gas','bloat',
+    'tremor','twitch','palpitat','cold hand','cold feet','irregular','fatigue','weak','thin','loss',
+    'memory','forget','tinnitus','vertigo','dizziness','stiff'];
+  const PITTA_KW=['burn','acid','heartburn','inflam','rash','acne','skin','redness','itch',
+    'fever','heat','sweat','anger','irritab','frustrat','migrain','headache','head','eye','vision',
+    'liver','gallbladder','urine','yellow','bile','loose stool','diarrh','sharp','hot','hair fall','hair loss','alopecia','scalp'];
+  const KAPHA_KW=['congestion','mucus','phlegm','sinus','cough','weight','obese','swelling',
+    'water retention','edema','sluggish','letharg','depress','sad','motivation','brain fog',
+    'slow','heavy','tired','asthma','wheez','sugar crav','sweet','dull','cold skin','clam'];
+
+  custom.forEach(function(s){
+    var sl=s.toLowerCase();
+    var vScore=VATA_KW.filter(function(k){return sl.includes(k);}).length;
+    var pScore=PITTA_KW.filter(function(k){return sl.includes(k);}).length;
+    var kScore=KAPHA_KW.filter(function(k){return sl.includes(k);}).length;
+    if(vScore>pScore&&vScore>kScore) cnt.vata++;
+    else if(pScore>vScore&&pScore>kScore) cnt.pitta++;
+    else if(kScore>vScore&&kScore>pScore) cnt.kapha++;
+    else cnt.vata++; // default unrecognized → Vata (nervous system/unspecified)
+  });
+
   let dom='vata';
   if(cnt.pitta>=cnt.vata&&cnt.pitta>=cnt.kapha) dom='pitta';
   else if(cnt.kapha>=cnt.vata&&cnt.kapha>=cnt.pitta) dom='kapha';
@@ -2041,13 +2210,14 @@ function analyseSymptoms(){
   const symBox=document.getElementById('sym-result-box');
   if(!symBox) return;
   const pickedNames=picked.map(i=>SYMPTOMS[i].t).join(', ');
-  appState._symNames=pickedNames;
+  const allSymptomNames=pickedNames+(custom.length?', '+custom.join(', '):'');
+  appState._symNames=allSymptomNames;
   appState._symDom=dom;
   symBox.innerHTML=`<div class="sym-result fade-in"><h4>⚕️ ${a.title}</h4><p>${a.desc}</p><p style="font-size:11px;font-weight:700;color:rgba(255,255,255,.55);margin-bottom:6px;">IMMEDIATE REMEDIES:</p><ul class="remedy-list">${a.remedies.map(r=>`<li>${r}</li>`).join('')}</ul><p style="font-size:10px;color:rgba(255,255,255,.35);margin-top:10px;font-style:italic;">📚 ${a.ref}</p></div>
     <div class="ai-section" style="margin-top:12px;" id="ai-sym-section">
     <div class="ai-badge">✦ AI-POWERED</div>
     <div class="ai-section-title">🌿 AyurMind AI — Deep Symptom Analysis</div>
-    <div class="ai-section-sub">Tap below to get targeted Ayurvedic remedies for your specific symptoms (${pickedNames})</div>
+    <div class="ai-section-sub">Tap below to get targeted Ayurvedic remedies for your specific symptoms (${allSymptomNames||pickedNames})</div>
         <div id="sym-vikriti-note"></div>
 <div id="ai-sym-output">
       <button class="ai-btn" onclick="getAISymptomAnalysis(appState._symNames||'',appState._symDom||'vata')">✦ Analyze My Symptoms with AI</button>
@@ -3250,6 +3420,60 @@ function buildResultResponse(r) {
     '\n⚕️ Educational guidance. Consult a BAMS/MD Ayurveda physician for clinical care.';
   return resp;
 }
+// Smart multi-category symptom response
+function buildSmartSymptomResponse(allSymptomsText, prakritiData){
+  var sl = allSymptomsText.toLowerCase();
+  var cats = identifySymptomCategories(allSymptomsText);
+  var r = prakritiData;
+  var prakritiLine = r ? (PD[r.dominant].name+' Prakriti (Vata '+r.vata+'% | Pitta '+r.pitta+'% | Kapha '+r.kapha+'%)') : 'Prakriti not yet assessed';
+
+  if(cats.length===0){
+    // Unrecognized symptoms — use existing buildSymptomResponse
+    return null;
+  }
+
+  var lines=[];
+  lines.push('⚕️ AyurMind AI — Smart Symptom Analysis');
+  lines.push('Your Prakriti: '+prakritiLine);
+  lines.push('');
+  lines.push('📊 '+cats.length+' System'+(cats.length>1?'s':'')+' Identified');
+  lines.push('');
+
+  cats.forEach(function(cid,idx){
+    var cat=SC[cid];
+    var subDosha=getSubDosha(cat,sl);
+    var remedy=cat[subDosha]||cat[cat.def];
+    lines.push((idx+1)+'. '+cat.emoji+' '+cat.label.toUpperCase());
+    lines.push('   Affected Channel: '+cat.srotas);
+    lines.push('   Imbalance: '+remedy.d);
+    lines.push('');
+    lines.push('   Remedies:');
+    remedy.r.forEach(function(rem,ri){
+      lines.push('   '+(ri+1)+'. '+rem);
+    });
+    lines.push('   Source: '+cat.src);
+    lines.push('');
+  });
+
+  // Overall dosha summary
+  var doshaCount={vata:0,pitta:0,kapha:0};
+  cats.forEach(function(cid){
+    var d=getSubDosha(SC[cid],sl);
+    doshaCount[d]++;
+  });
+  var dominant='vata';
+  if(doshaCount.pitta>=doshaCount.vata&&doshaCount.pitta>=doshaCount.kapha) dominant='pitta';
+  else if(doshaCount.kapha>=doshaCount.vata&&doshaCount.kapha>=doshaCount.pitta) dominant='kapha';
+
+  lines.push('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+  lines.push('Overall Dominant Vikriti: '+dominant.charAt(0).toUpperCase()+dominant.slice(1));
+  lines.push('');
+  lines.push('⚕️ Educational assessment. Consult a Vaidya (BAMS/MD Ayurveda) for clinical confirmation.');
+  lines.push('Source: CS Vimanasthana 5.3-8 (Srotas) | CS Nidanasthana | AH Sutrasthana');
+  return lines.join('\n');
+}
+
+
 function buildSymptomResponse(r, prompt) {
   // Determine which dosha imbalance from prompt context
   let dom = r ? r.dominant : 'vata';
@@ -3344,6 +3568,28 @@ async function getAIResultAdvice() {
 async function getAISymptomAnalysis(symptoms, dominantImbalance) {
   var outputEl = document.getElementById('ai-sym-output');
   if (!outputEl) return;
+
+  // Try smart multi-category analysis first
+  var smartResult = buildSmartSymptomResponse(symptoms, appState.resultData);
+  if(smartResult){
+    outputEl.innerHTML='';
+    var rDiv=document.createElement('div');
+    rDiv.className='ai-response';
+    rDiv.style.cssText='font-size:11px;line-height:1.85;white-space:pre-line;padding:12px;';
+    rDiv.textContent=smartResult;
+    outputEl.appendChild(rDiv);
+    // Add follow-up questions
+    var qnaEl=document.getElementById('ai-sym-qna');
+    if(qnaEl){
+      qnaEl.innerHTML='<div class="ai-badge" style="margin-top:12px;margin-bottom:6px;">💡 ASK ME MORE — Tap a question</div>'+
+        '<div id="ai-questions-sym" style="display:flex;flex-direction:column;gap:6px;"></div>'+
+        '<div id="ai-qa-answer-sym" style="margin-top:8px;"></div>';
+      buildAIQuestionsFor('ai-questions-sym','ai-qa-answer-sym',dominantImbalance);
+    }
+    return;
+  }
+
+  // Fallback to existing local engine for unrecognized symptoms
   await callClaudeAPI('symptoms '+symptoms+' '+dominantImbalance+' Srotas Diagnosis', outputEl, function(){
     // After AI response - add ASK ME MORE below
     var qnaEl = document.getElementById('ai-sym-qna');
@@ -5961,14 +6207,7 @@ function renderNadiPPG(){
   title.className='tool-section-title';
   title.textContent='🫀 Nadi PPG — Pulse Rhythm Analysis';
   wrap.appendChild(title);
-  var auth=document.createElement('div');
-  auth.style.cssText='background:#1a3a2a;border-radius:12px;padding:12px 14px;margin-bottom:12px;color:#fff;';
-  auth.innerHTML=
-    '<div style="font-size:10px;color:#c9973a;font-weight:700;letter-spacing:1.5px;margin-bottom:5px;">CS VIMANASTHANA 8.94-106 | PPG: PMC4321461, PMC5595574, PMC8474463</div>'+
-    '<p style="font-size:11px;color:rgba(255,255,255,.85);line-height:1.7;margin:0 0 5px;">'+
-    '<strong style="color:#E8C070;">How AyurMind Pulse Analysis works:</strong> Phone torch shines light through your fingertip. Blood absorbs torch light with each heartbeat — camera detects brightness change (Photoplethysmography). Validated in 50+ peer-reviewed studies (±5 BPM accuracy).</p>'+
-    '<p style="font-size:10px;color:rgba(255,255,255,.4);margin:0;">Note: Fingerprint sensor is NOT accessible via any browser/WebAPI — it is hardware-locked. Camera PPG is the only validated scientific method available in HTML apps (PMC-verified).</p>';
-  wrap.appendChild(auth);
+
   var lockBar=document.createElement('div');
   lockBar.id='ppg-lock';
   lockBar.style.cssText='text-align:center;padding:11px 16px;border-radius:12px;font-weight:700;font-size:13px;background:rgba(201,151,58,.22);color:#E8C070;margin-bottom:12px;transition:all .3s;border:1.5px solid #C9973A;letter-spacing:.5px;';
@@ -5985,6 +6224,21 @@ function renderNadiPPG(){
     '<strong>5.</strong> Hold still, breathe normally — 30 seconds<br>'+
     '<span style="color:#c9973a;font-size:10.5px;">⚠️ Torch light passes through fingertip — press firmly, do not move</span></div>';
   wrap.appendChild(steps);
+
+  // 3 Tips from research document
+  var tipsCard=document.createElement('div');
+  tipsCard.style.cssText='background:#EBF5EC;border-radius:10px;padding:12px 14px;margin-top:8px;border:1.5px solid #7AC4A0;';
+  tipsCard.innerHTML=
+    '<div style="font-size:10px;font-weight:700;color:#1A3A2A;letter-spacing:1px;margin-bottom:8px;">FOR BEST RESULTS</div>'+
+    '<div style="font-size:11px;color:#1A3A2A;line-height:1.9;">'+
+    '🤚 <strong>Keep finger completely still</strong> — movement causes wrong readings<br>'+
+    '🌡️ <strong>Cold hands?</strong> Rub palms 20 sec before — cold reduces blood flow<br>'+
+    '🎨 <strong>Press firmly</strong> — especially for darker skin tones, firm contact improves signal<br>'+
+    '⏰ <strong>Best time:</strong> Morning, empty stomach, 5 min seated rest (CS Sutrasthana 7)<br>'+
+    '<span style="font-size:10px;color:#5A5A5A;">Avoid measuring after food, exercise, or stress</span>'+
+    '</div>'+
+    '<div style="font-size:9.5px;color:#4A7C5E;margin-top:6px;padding-top:5px;border-top:1px solid rgba(26,58,42,.15);">Source: Tamura et al. (PPG Clinical Review) | PMC5595574 | PMC8474463 | CS Sutrasthana 7</div>';
+  wrap.appendChild(tipsCard);
   var camCard=document.createElement('div');
   camCard.style.cssText='background:var(--dg);border-radius:14px;padding:14px;margin-bottom:12px;';
   var hrRow=document.createElement('div');
