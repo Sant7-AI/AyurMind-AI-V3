@@ -2633,9 +2633,7 @@ function renderVikritiResult(){
 function renderDoctors(){
   const el=document.getElementById('doc-content');
   if(!el) return;
-
-  // State
-  if(!window._docState) window._docState={radius:15,userLat:null,userLng:null,located:false};
+  if(!window._docState) window._docState={radius:15,userLat:null,userLng:null,located:false,city:''};
   const DS=window._docState;
 
   function haversine(lat1,lon1,lat2,lon2){
@@ -2648,170 +2646,221 @@ function renderDoctors(){
     return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
   }
 
-  function renderDocList(){
-    const radius=DS.radius;
-    let docs=DOCTORS.map(function(d){
-      var dist=null;
-      if(DS.userLat&&d.lat&&d.lng){
-        dist=haversine(DS.userLat,DS.userLng,d.lat,d.lng);
-      }
-      return Object.assign({},d,{dist:dist});
-    });
+  // Google Maps URLs with coordinates
+  var mapsUrl=DS.userLat?
+    'https://www.google.com/maps/search/Ayurvedic+doctor/@'+DS.userLat+','+DS.userLng+',13z':
+    'https://www.google.com/maps/search/Ayurvedic+doctor+near+me';
+  var mapsHospUrl=DS.userLat?
+    'https://www.google.com/maps/search/Ayurvedic+hospital+near+me/@'+DS.userLat+','+DS.userLng+',12z':
+    'https://www.google.com/maps/search/Ayurvedic+hospital+near+me';
+  var mapsKarmaUrl=DS.userLat?
+    'https://www.google.com/maps/search/Panchakarma+center/@'+DS.userLat+','+DS.userLng+',13z':
+    'https://www.google.com/maps/search/Panchakarma+center+near+me';
 
-    // Filter by radius if location available
-    if(DS.userLat&&radius!==99999){
-      docs=docs.filter(function(d){return d.dist===null||d.dist<=radius;});
-    }
-    // Sort by distance
-    docs.sort(function(a,b){
-      if(a.dist===null&&b.dist===null) return 0;
-      if(a.dist===null) return 1;
-      if(b.dist===null) return -1;
-      return a.dist-b.dist;
-    });
+  // Practo — use city if available
+  var practoUrl=DS.city?
+    'https://www.practo.com/'+DS.city.toLowerCase().replace(/\s+/g,'-').replace(/[^a-z-]/g,'')+'/ayurvedic-doctor':
+    'https://www.practo.com/search/doctors?results_type=doctor&specialization=Ayurvedic+Doctor&city=India';
 
-    var cityQuery=DS.userCity?encodeURIComponent('Ayurvedic doctor '+DS.userCity):'Ayurvedic+doctor+near+me';
-    var mapsUrl=DS.userLat?
-      'https://www.google.com/maps/search/Ayurvedic+hospital+near+me/@'+DS.userLat+','+DS.userLng+',13z':
-      'https://www.google.com/maps/search/Ayurvedic+doctor+near+me';
-    var practoUrl=DS.userCity?
-      'https://www.practo.com/'+DS.userCity.toLowerCase().replace(/\s+/g,'-')+'/ayurvedic-doctor':
-      'https://www.practo.com/india/ayurvedic-doctor';
+  // Filter + sort doctors
+  var docs=DOCTORS.map(function(d){
+    var dist=null;
+    if(DS.userLat&&d.lat&&d.lng) dist=haversine(DS.userLat,DS.userLng,d.lat,d.lng);
+    return Object.assign({},d,{dist:dist});
+  });
+  if(DS.userLat&&DS.radius!==99999) docs=docs.filter(function(d){return d.dist===null||d.dist<=DS.radius;});
+  docs.sort(function(a,b){
+    if(a.dist===null&&b.dist===null) return 0;
+    if(a.dist===null) return 1;
+    if(b.dist===null) return -1;
+    return a.dist-b.dist;
+  });
 
-    var html_='';
+  var h='';
 
-    // ── India stats banner (Ministry of AYUSH 2022-23) ─────────
-    html_+='<div style="background:linear-gradient(135deg,#1A3A2A,#0F2018);border-radius:12px;padding:12px 14px;margin-bottom:12px;border:1px solid rgba(201,151,58,.3);">'
-      +'<div style="font-size:9px;font-weight:700;color:#C9973A;letter-spacing:1.2px;margin-bottom:6px;">AYURVEDA IN INDIA — MINISTRY OF AYUSH 2022-23</div>'
-      +'<div style="display:flex;gap:10px;flex-wrap:wrap;">'
-      +'<div style="text-align:center;flex:1;min-width:80px;">'
-        +'<div style="font-size:20px;font-weight:700;color:#E8C070;">~7 Lakh</div>'
-        +'<div style="font-size:9px;color:rgba(255,255,255,.55);">Registered Ayurvedic Doctors</div></div>'
-      +'<div style="text-align:center;flex:1;min-width:80px;">'
-        +'<div style="font-size:20px;font-weight:700;color:#E8C070;">3,598</div>'
-        +'<div style="font-size:9px;color:rgba(255,255,255,.55);">Govt. Ayurvedic Hospitals</div></div>'
-      +'<div style="text-align:center;flex:1;min-width:80px;">'
-        +'<div style="font-size:20px;font-weight:700;color:#E8C070;">25,000+</div>'
-        +'<div style="font-size:9px;color:rgba(255,255,255,.55);">Ayurvedic Dispensaries</div></div>'
-      +'</div>'
-      +'<div style="font-size:9px;color:rgba(255,255,255,.3);margin-top:6px;">Source: Ministry of AYUSH Annual Report 2022-23 | CCIM India</div>'
+  // ── India stats ───────────────────────────────────────────────
+  h+='<div style="background:linear-gradient(135deg,#1A3A2A,#0F2018);border-radius:12px;padding:12px 14px;margin-bottom:12px;border:1px solid rgba(201,151,58,.3);">'
+    +'<div style="font-size:9px;font-weight:700;color:#C9973A;letter-spacing:1.2px;margin-bottom:8px;">AYURVEDA IN INDIA — MINISTRY OF AYUSH 2022-23</div>'
+    +'<div style="display:flex;gap:8px;flex-wrap:wrap;">'
+    +'<div style="text-align:center;flex:1;min-width:72px;"><div style="font-size:18px;font-weight:700;color:#E8C070;">~7 Lakh</div><div style="font-size:9px;color:rgba(255,255,255,.8);">Registered Doctors</div></div>'
+    +'<div style="text-align:center;flex:1;min-width:72px;"><div style="font-size:18px;font-weight:700;color:#E8C070;">3,598</div><div style="font-size:9px;color:rgba(255,255,255,.8);">Govt. Hospitals</div></div>'
+    +'<div style="text-align:center;flex:1;min-width:72px;"><div style="font-size:18px;font-weight:700;color:#E8C070;">25,000+</div><div style="font-size:9px;color:rgba(255,255,255,.8);">Dispensaries</div></div>'
+    +'</div>'
+    +'<div style="font-size:9px;color:rgba(255,255,255,.55);margin-top:6px;">Source: Ministry of AYUSH Annual Report 2022-23 | CCIM India</div>'
+    +'</div>';
+
+  // ── Location detect + radius ──────────────────────────────────
+  h+='<div style="background:#1A3A2A;border-radius:12px;padding:12px;margin-bottom:12px;border:1px solid rgba(201,151,58,.3);">';
+  h+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:8px;">';
+  h+='<div>';
+  h+='<div style="font-size:12px;font-weight:700;color:#E8C070;margin-bottom:2px;">Find Doctors Near You</div>';
+  if(DS.located){
+    h+='<div style="font-size:10px;color:#4ADE80;">📍 '+(DS.city?DS.city+' detected':'Location detected')+'</div>';
+  } else {
+    h+='<div style="font-size:10px;color:rgba(255,255,255,.7);">Enable location for nearby doctors</div>';
+  }
+  h+='</div>';
+  if(!DS.located){
+    h+='<button onclick="detectDocLocation();" style="padding:9px 16px;background:#C9973A;border:none;border-radius:9px;color:#1A3A2A;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;">📍 Detect Location</button>';
+  } else {
+    h+='<button onclick="window._docState.located=false;window._docState.userLat=null;window._docState.userLng=null;window._docState.city=\'\';renderDoctors();" style="padding:7px 12px;background:rgba(201,151,58,.15);border:1px solid rgba(201,151,58,.4);border-radius:8px;color:#E8C070;font-size:10px;cursor:pointer;font-family:inherit;">✕ Clear</button>';
+  }
+  h+='</div>';
+  // Radius buttons
+  h+='<div style="display:flex;gap:6px;flex-wrap:wrap;">';
+  var radii=[{l:'15 km',v:15},{l:'50 km',v:50},{l:'150 km',v:150},{l:'500 km',v:500},{l:'All India',v:99999}];
+  radii.forEach(function(rb){
+    var active=DS.radius===rb.v;
+    h+='<button onclick="setDocRadius('+rb.v+');" style="padding:5px 12px;border-radius:20px;border:1.5px solid '+(active?'#C9973A':'rgba(255,255,255,.3)')+';background:'+(active?'rgba(201,151,58,.2)':'transparent')+';color:'+(active?'#E8C070':'rgba(255,255,255,.75)')+';font-size:10px;font-weight:700;cursor:pointer;font-family:inherit;">'+rb.l+'</button>';
+  });
+  h+='</div></div>';
+
+  // ── Hardcoded doctors list ────────────────────────────────────
+  if(docs.length>0){
+    h+='<div style="font-size:10px;font-weight:700;color:#C9973A;letter-spacing:1px;margin-bottom:8px;">'
+      +(DS.located?'HOSPITALS NEAR YOU ('+docs.length+')':'FEATURED AYURVEDIC HOSPITALS')
       +'</div>';
-
-    // ── Location + radius controls ─────────────────────────────
-    html_+='<div style="background:rgba(255,255,255,.04);border-radius:12px;padding:12px;margin-bottom:12px;">'
-      +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;gap:8px;flex-wrap:wrap;">'
-      +'<div style="font-size:12px;font-weight:700;color:#E8C070;">Find Doctors Near You</div>'
-      +(DS.located
-        ?'<div style="font-size:10px;color:#4ADE80;">📍 Location detected</div>'
-        :'<button onclick="detectDocLocation();" style="padding:7px 14px;background:#C9973A;border:none;border-radius:8px;color:#1A3A2A;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;">📍 Detect My Location</button>'
-      )
-      +'</div>'
-      +'<div style="display:flex;gap:6px;flex-wrap:wrap;">'
-      +['15 km','50 km','150 km','500 km','All India'].map(function(label,idx){
-          var vals=[15,50,150,500,99999];
-          var v=vals[idx];
-          var active=DS.radius===v;
-          return '<button onclick="setDocRadius('+v+');" style="padding:5px 11px;border-radius:20px;border:1.5px solid '+(active?'#C9973A':'rgba(255,255,255,.15)')+';background:'+(active?'rgba(201,151,58,.2)':'transparent')+';color:'+(active?'#E8C070':'rgba(255,255,255,.55)')+';font-size:10px;font-weight:700;cursor:pointer;font-family:inherit;">'+label+'</button>';
-        }).join('')
-      +'</div>'
-      +'</div>';
-
-    // ── Matching doctors ───────────────────────────────────────
-    if(docs.length>0){
-      html_+='<div style="font-size:10px;font-weight:700;color:#C9973A;letter-spacing:1px;margin-bottom:8px;">'
-        +(DS.located?'DOCTORS WITHIN '+(radius===99999?'ALL INDIA':radius+' KM'):' FEATURED AYURVEDIC HOSPITALS')
-        +(docs.length?' ('+docs.length+')':'')
+    docs.forEach(function(d){
+      var distBadge=d.dist!==null?'<span style="color:#4ADE80;font-size:10px;"> • '+d.dist.toFixed(1)+' km</span>':'';
+      h+='<div class="doc-card">'
+        +'<div class="doc-avatar">'+d.emoji+'</div>'
+        +'<div class="doc-info" style="flex:1;">'
+          +'<h4>'+d.name+distBadge+'</h4>'
+          +'<p>'+d.spec+'</p>'
+          +'<p style="font-size:10px;color:var(--muted);">📍 '+d.loc+'</p>'
+          +'<div class="doc-tags">'+d.tags.map(function(t){return '<span class="pill pill-green">'+t+'</span>';}).join('')+'</div>'
+        +'</div></div>'
+        +'<div style="display:flex;gap:8px;margin-top:-8px;margin-bottom:10px;">'
+          +'<a href="tel:'+d.phone+'" style="flex:1;"><button class="btn btn-gold btn-full btn-sm">📞 Call</button></a>'
+          +'<a href="https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(d.name+' '+d.loc)+'" target="_blank" style="flex:1;"><button class="btn btn-green btn-full btn-sm">🗺️ Maps</button></a>'
         +'</div>';
-      html_+=docs.map(function(d){
-        var distLabel=d.dist!==null?('<span style="color:#4ADE80;font-size:10px;"> • '+d.dist.toFixed(1)+' km away</span>'):'';
-        return '<div class="doc-card">'
-          +'<div class="doc-avatar">'+d.emoji+'</div>'
-          +'<div class="doc-info" style="flex:1;">'
-            +'<h4>'+d.name+distLabel+'</h4>'
-            +'<p>'+d.spec+'</p>'
-            +'<p style="font-size:10px;color:var(--muted);">📍 '+d.loc+'</p>'
-            +'<div class="doc-tags">'+d.tags.map(function(tag){return '<span class="pill pill-green">'+tag+'</span>';}).join('')+'</div>'
-          +'</div></div>'
-          +'<div style="display:flex;gap:8px;margin-top:-8px;margin-bottom:10px;">'
-            +'<a href="tel:'+d.phone+'" style="flex:1;"><button class="btn btn-gold btn-full btn-sm">📞 Call</button></a>'
-            +'<a href="https://maps.google.com?q='+encodeURIComponent(d.name+' '+d.loc)+'" target="_blank" style="flex:1;"><button class="btn btn-green btn-full btn-sm">🗺️ Map</button></a>'
-          +'</div>';
-      }).join('');
-    } else {
-      html_+='<div style="text-align:center;padding:20px;color:rgba(255,255,255,.5);font-size:12px;">No doctors found within '+radius+' km.<br>Try increasing the radius or search on Google Maps.</div>';
-    }
-
-    // ── Find more doctors online ───────────────────────────────
-    html_+='<div style="margin-top:12px;">'
-      +'<div style="font-size:10px;font-weight:700;color:#C9973A;letter-spacing:1px;margin-bottom:8px;">FIND MORE AYURVEDIC DOCTORS</div>'
-      +'<div style="display:flex;flex-direction:column;gap:8px;">'
-      +'<a href="'+mapsUrl+'" target="_blank" style="text-decoration:none;">'
-        +'<div style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:11px 14px;display:flex;align-items:center;gap:10px;">'
-          +'<span style="font-size:20px;">🗺️</span>'
-          +'<div><div style="font-size:12px;font-weight:700;color:#E8C070;">Google Maps</div>'
-          +'<div style="font-size:10px;color:rgba(255,255,255,.5);">Ayurvedic doctors near your location</div></div>'
-        +'</div></a>'
-      +'<a href="'+practoUrl+'" target="_blank" style="text-decoration:none;">'
-        +'<div style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:11px 14px;display:flex;align-items:center;gap:10px;">'
-          +'<span style="font-size:20px;">👨‍⚕️</span>'
-          +'<div><div style="font-size:12px;font-weight:700;color:#E8C070;">Practo</div>'
-          +'<div style="font-size:10px;color:rgba(255,255,255,.5);">India largest doctor booking platform</div></div>'
-        +'</div></a>'
-      +'<a href="https://www.justdial.com/Jaipur/Ayurvedic-Doctors/nct-10209585" target="_blank" style="text-decoration:none;">'
-        +'<div style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:11px 14px;display:flex;align-items:center;gap:10px;">'
-          +'<span style="font-size:20px;">📋</span>'
-          +'<div><div style="font-size:12px;font-weight:700;color:#E8C070;">JustDial</div>'
-          +'<div style="font-size:10px;color:rgba(255,255,255,.5);">Local Ayurvedic doctors and clinics</div></div>'
-        +'</div></a>'
-      +'<a href="https://ayush.gov.in" target="_blank" style="text-decoration:none;">'
-        +'<div style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:11px 14px;display:flex;align-items:center;gap:10px;">'
-          +'<span style="font-size:20px;">🏛️</span>'
-          +'<div><div style="font-size:12px;font-weight:700;color:#E8C070;">AYUSH Portal (Govt. of India)</div>'
-          +'<div style="font-size:10px;color:rgba(255,255,255,.5);">Official Ministry of AYUSH — govt. hospitals</div></div>'
-        +'</div></a>'
-      +'</div></div>';
-
-    el.innerHTML=html_;
+    });
+  } else if(DS.located){
+    h+='<div style="text-align:center;padding:16px;color:rgba(255,255,255,.8);font-size:12px;background:#1A3A2A;border:1px solid rgba(255,255,255,.15);border-radius:10px;margin-bottom:12px;">No hospitals found within '+DS.radius+' km.<br>Increase radius or use Google Maps below.</div>';
   }
 
-  renderDocList();
+  // ── Find doctors on Google Maps ───────────────────────────────
+  h+='<div style="margin-top:4px;">'
+    +'<div style="font-size:10px;font-weight:700;color:#C9973A;letter-spacing:1px;margin-bottom:8px;">'
+    +(DS.located?'FIND MORE DOCTORS ON GOOGLE MAPS':'SEARCH AYURVEDIC DOCTORS')
+    +'</div>'
+    +'<div style="display:flex;flex-direction:column;gap:8px;">';
+
+  // Google Maps — Ayurvedic doctors
+  h+='<a href="'+mapsUrl+'" target="_blank" style="text-decoration:none;">'
+    +'<div style="background:#1A3A2A;border:1.5px solid rgba(201,151,58,.35);border-radius:10px;padding:11px 14px;display:flex;align-items:center;gap:10px;">'
+      +'<span style="font-size:22px;">🗺️</span>'
+      +'<div style="flex:1;">'
+        +'<div style="font-size:12px;font-weight:700;color:#E8C070;">Ayurvedic Doctors</div>'
+        +'<div style="font-size:10px;color:rgba(255,255,255,.8);">'
+        +(DS.located?'Near your location ('+DS.city+')':'Search on Google Maps')
+        +'</div>'
+      +'</div>'
+      +'<span style="color:#C9973A;font-size:16px;">›</span>'
+    +'</div></a>';
+
+  // Google Maps — Ayurvedic hospitals
+  h+='<a href="'+mapsHospUrl+'" target="_blank" style="text-decoration:none;">'
+    +'<div style="background:#1A3A2A;border:1.5px solid rgba(201,151,58,.35);border-radius:10px;padding:11px 14px;display:flex;align-items:center;gap:10px;">'
+      +'<span style="font-size:22px;">🏥</span>'
+      +'<div style="flex:1;">'
+        +'<div style="font-size:12px;font-weight:700;color:#E8C070;">Ayurvedic Hospitals</div>'
+        +'<div style="font-size:10px;color:rgba(255,255,255,.8);">'
+        +(DS.located?'Near your location':'Search on Google Maps')
+        +'</div>'
+      +'</div>'
+      +'<span style="color:#C9973A;font-size:16px;">›</span>'
+    +'</div></a>';
+
+  // Google Maps — Panchakarma
+  h+='<a href="'+mapsKarmaUrl+'" target="_blank" style="text-decoration:none;">'
+    +'<div style="background:#1A3A2A;border:1.5px solid rgba(201,151,58,.35);border-radius:10px;padding:11px 14px;display:flex;align-items:center;gap:10px;">'
+      +'<span style="font-size:22px;">🌊</span>'
+      +'<div style="flex:1;">'
+        +'<div style="font-size:12px;font-weight:700;color:#E8C070;">Panchakarma Centers</div>'
+        +'<div style="font-size:10px;color:rgba(255,255,255,.8);">'
+        +(DS.located?'Near your location':'Search on Google Maps')
+        +'</div>'
+      +'</div>'
+      +'<span style="color:#C9973A;font-size:16px;">›</span>'
+    +'</div></a>';
+
+  // Practo (only if city available)
+  if(DS.city){
+    h+='<a href="'+practoUrl+'" target="_blank" style="text-decoration:none;">'
+      +'<div style="background:#1A3A2A;border:1.5px solid rgba(201,151,58,.35);border-radius:10px;padding:11px 14px;display:flex;align-items:center;gap:10px;">'
+        +'<span style="font-size:22px;">👨‍⚕️</span>'
+        +'<div style="flex:1;">'
+          +'<div style="font-size:12px;font-weight:700;color:#E8C070;">Practo — '+DS.city+'</div>'
+          +'<div style="font-size:10px;color:rgba(255,255,255,.75);">Book Ayurvedic doctors online</div>'
+        +'</div>'
+        +'<span style="color:#C9973A;font-size:16px;">›</span>'
+      +'</div></a>';
+  }
+
+  // AYUSH portal always shown
+  h+='<a href="https://ayush.gov.in" target="_blank" style="text-decoration:none;">'
+    +'<div style="background:#1A3A2A;border:1.5px solid rgba(201,151,58,.35);border-radius:10px;padding:11px 14px;display:flex;align-items:center;gap:10px;">'
+      +'<span style="font-size:22px;">🏛️</span>'
+      +'<div style="flex:1;">'
+        +'<div style="font-size:12px;font-weight:700;color:#E8C070;">AYUSH Portal — Govt. of India</div>'
+        +'<div style="font-size:10px;color:rgba(255,255,255,.75);">Official government AYUSH hospitals</div>'
+      +'</div>'
+      +'<span style="color:#C9973A;font-size:16px;">›</span>'
+    +'</div></a>';
+
+  h+='</div></div>';
+
+  el.innerHTML=h;
 }
 
 function detectDocLocation(){
   const el=document.getElementById('doc-content');
   if(!el) return;
   if(!navigator.geolocation){
-    alert('Geolocation not supported on this device/browser.');
+    alert('Geolocation not supported. Please use Chrome or Safari.');
     return;
   }
-  // Show loading
-  var locBtn=el.querySelector('button[onclick="detectDocLocation();"]');
-  if(locBtn){locBtn.textContent='📍 Detecting...';locBtn.disabled=true;}
+  el.innerHTML='<div style="text-align:center;padding:32px 16px;color:rgba(255,255,255,.6);">'
+    +'<div style="font-size:28px;margin-bottom:10px;">📍</div>'
+    +'<div style="font-size:13px;font-weight:700;color:#E8C070;margin-bottom:6px;">Detecting your location...</div>'
+    +'<div style="font-size:11px;">Please allow location access when prompted</div>'
+    +'</div>';
 
   navigator.geolocation.getCurrentPosition(
     function(pos){
+      window._docState=window._docState||{};
       window._docState.userLat=pos.coords.latitude;
       window._docState.userLng=pos.coords.longitude;
       window._docState.located=true;
-      // Reverse geocode city name using free API
-      fetch('https://nominatim.openstreetmap.org/reverse?lat='+pos.coords.latitude+'&lon='+pos.coords.longitude+'&format=json')
+      // Reverse geocode using OpenStreetMap Nominatim (free, no API key)
+      fetch('https://nominatim.openstreetmap.org/reverse?lat='+pos.coords.latitude+'&lon='+pos.coords.longitude+'&format=json&accept-language=en',
+        {headers:{'User-Agent':'AyurMindApp/1.0'}})
         .then(function(r){return r.json();})
         .then(function(data){
-          window._docState.userCity=data.address.city||data.address.town||data.address.village||data.address.county||'';
+          var addr=data.address||{};
+          window._docState.city=addr.city||addr.town||addr.village||addr.county||addr.state_district||'';
           renderDoctors();
         })
-        .catch(function(){renderDoctors();});
+        .catch(function(){
+          window._docState.city='';
+          renderDoctors();
+        });
     },
     function(err){
-      alert('Location access denied or unavailable. Please allow location access and try again.');
+      var msg=err.code===1?'Location access denied. Please allow location in browser settings.':
+              err.code===2?'Location unavailable. Check GPS settings.':
+              'Location request timed out. Try again.';
+      window._docState=window._docState||{radius:15,userLat:null,userLng:null,located:false,city:''};
       renderDoctors();
+      setTimeout(function(){alert(msg);},100);
     },
-    {timeout:10000,enableHighAccuracy:false}
+    {timeout:12000,enableHighAccuracy:true,maximumAge:60000}
   );
 }
 
 function setDocRadius(r){
-  if(!window._docState) window._docState={radius:15,userLat:null,userLng:null,located:false};
+  window._docState=window._docState||{radius:15,userLat:null,userLng:null,located:false,city:''};
   window._docState.radius=r;
   renderDoctors();
 }
@@ -6566,6 +6615,27 @@ function showNadiPPGResult(bpm){
     +'</div>'
 
     +'<p style="font-size:9px;color:rgba(255,255,255,.25);font-style:italic;margin-top:8px;">⚕️ PPG gives approximate pulse rate and rhythm. Classical Nadi Pariksha requires a trained Vaidya\'s 3-finger technique for full diagnosis (CS Vimanasthana 8.94-106). This is for health awareness only.</p>';
+
+  // BP Reference Card (Educational — WHO/JNC8 Guidelines)
+  // PPG cannot measure BP — this is reference only
+  var bpCard=document.createElement('div');
+  bpCard.style.cssText='background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:12px 14px;margin-top:10px;';
+  bpCard.innerHTML=
+    '<div style="font-size:9px;font-weight:700;color:#C9973A;letter-spacing:1.2px;margin-bottom:8px;">BP REFERENCE — WHO / JNC 8 GUIDELINES</div>'+
+    '<div style="font-size:10px;color:rgba(255,255,255,.55);margin-bottom:6px;">⚠️ PPG measures pulse rate only — NOT blood pressure. Use a proper BP monitor.</div>'+
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;">'+
+      '<div style="font-size:10px;padding:5px 7px;background:rgba(74,222,128,.12);border-radius:6px;color:rgba(255,255,255,.8);">'+
+        '<strong style="color:#4ADE80;">Normal</strong><br>&lt;120 / &lt;80 mmHg</div>'+
+      '<div style="font-size:10px;padding:5px 7px;background:rgba(251,191,36,.12);border-radius:6px;color:rgba(255,255,255,.8);">'+
+        '<strong style="color:#FBB724;">Elevated</strong><br>120-129 / &lt;80 mmHg</div>'+
+      '<div style="font-size:10px;padding:5px 7px;background:rgba(251,146,60,.12);border-radius:6px;color:rgba(255,255,255,.8);">'+
+        '<strong style="color:#FB923C;">Stage 1</strong><br>130-139 / 80-89 mmHg</div>'+
+      '<div style="font-size:10px;padding:5px 7px;background:rgba(239,68,68,.12);border-radius:6px;color:rgba(255,255,255,.8);">'+
+        '<strong style="color:#EF4444;">Stage 2</strong><br>≥140 / ≥90 mmHg</div>'+
+    '</div>'+
+    '<div style="font-size:9px;color:rgba(255,255,255,.3);margin-top:7px;border-top:1px solid rgba(255,255,255,.08);padding-top:6px;">'+
+    'Source: WHO Hypertension Guidelines 2023 | JNC 8 | Lancet 2021</div>';
+  wrap.appendChild(bpCard);
 
   // Retry
   var retryBtn=document.createElement('button');
